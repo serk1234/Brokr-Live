@@ -1,0 +1,182 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+
+
+
+
+
+.container {
+
+  margin-bottom: 30px; /* Maintain spacing above the footer */
+}
+
+
+/* Content box styling */
+.content-box {
+  background-color: white; /* Ensure background is white */
+  border: 2px solid black; /* Add black border */
+  border-radius: 10px; /* Optional: adjust border-radius */
+  padding: 20px; /* Maintain padding inside the box */
+  box-shadow: none; /* Remove any existing shadow */
+}
+
+@media (max-width: 768px) {
+  .max-w-4xl {
+    max-width: 100%;
+    padding: 0 16px;
+  }
+
+  .text-4xl {
+    font-size: 1.5rem; /* Adjust heading size for smaller screens */
+  }
+
+  .text-2xl {
+    font-size: 1.25rem; /* Adjust subheading size */
+  }
+
+  .rounded-lg {
+    margin: 0 auto;
+  }
+
+  .flex-grow {
+    padding: 16px;
+  }
+
+  .overflow-y-auto {
+    max-height: 300px; /* Reduce scrollable area height */
+  }
+
+  .flex {
+    flex-direction: column; /* Stack elements vertically */
+  }
+
+  input {
+    margin-bottom: 16px; /* Add spacing between input and button */
+    width: 100%; /* Full-width inputs */
+  }
+
+  button, .StylizedButton {
+    width: 100%; /* Full-width buttons */
+    font-size: 1rem; /* Adjust button font size */
+  }
+
+  h1, h2, h3, p {
+    text-align: center; /* Center-align text */
+  }
+}
+
+.flex-grow {
+  padding-bottom: 4rem; /* Add padding to push the box higher */
+}
+
+.flex-row {
+  flex-direction: row !important; /* Force horizontal layout on all screen sizes */
+}
+
+.menu {
+  width: 240px; /* Fixed width for the side menu */
+  flex-shrink: 0; /* Prevent resizing */
+}
+
+.content {
+  flex-grow: 1; /* Content expands to fill available space */
+  width: calc(100% - 240px); /* Adjust width dynamically */
+}
+
+
+/* Align the logo (brokr.) to the left */
+.logo-left {
+  text-align: left;
+}
+
+/* Style the "Or" separator with lines on both sides */
+.separator {
+  position: relative;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #6b7280; /* Tailwind gray-500 */
+}
+
+.separator::before,
+.separator::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background-color: #d1d5db; /* Tailwind gray-300 */
+  transform: translateY(-50%);
+}
+
+.separator::before {
+  left: 0;
+}
+
+.separator::after {
+  right: 0;
+}
+
+/* Ensure buttons are consistently sized */
+.btn {
+  width: 100%;
+  padding: 0.5rem 1rem; /* px-4 py-2 in Tailwind */
+  font-weight: 600;
+  border-radius: 0.25rem; /* Tailwind rounded */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-google {
+  background-color: white;
+  border: 1px solid black;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 1);
+  gap: 0.5rem; /* Tailwind gap-2 */
+}
+
+.btn-google:hover {
+  background-color: #f9fafb; /* Tailwind gray-50 */
+}
+
+.btn-email {
+  background-color: #a3e636; /* Tailwind lime-400 */
+  border: 1px solid black;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 1);
+}
+
+.btn-email:hover {
+  background-color: black;
+  color: white;
+}
+
+/* Default Sidebar Styles */
+.sidebar {
+  display: flex;
+  flex-direction: column; /* Default to vertical */
+  gap: 1rem; /* Space between items */
+}
+
+@media (max-width: 640px) {
+  /* Adjust for mobile */
+  .sidebar {
+    flex-direction: row; /* Change to horizontal layout */
+    flex-wrap: nowrap; /* Ensure they stay in a single row */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Align items vertically */
+    overflow-x: auto; /* Allow horizontal scrolling if needed */
+    padding: 0.5rem 0; /* Add some spacing */
+  }
+
+  .sidebar-item {
+    flex: 0 0 auto; /* Prevent items from stretching */
+    text-align: center; /* Center text and icons */
+    padding: 0.5rem; /* Add some padding */
+  }
+
+  .sidebar-item svg {
+    display: block;
+    margin: 0 auto 0.25rem; /* Center icons and add space below */
+  }
+}

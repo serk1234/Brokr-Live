@@ -1,0 +1,13 @@
+{
+    "rewrites": [
+      {
+        "source": "/dashboard",
+        "destination": "https://dashboard-be1zh2p34-serkans-projects-9636d2f8.vercel.app"
+      },
+      {
+        "source": "/dashboard/(.*)",
+        "destination": "https://dashboard-be1zh2p34-serkans-projects-9636d2f8.vercel.app/$1"
+      }
+    ]
+  }
+  
