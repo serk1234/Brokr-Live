@@ -505,35 +505,7 @@ function Contentmanager({ items = [], dataroomId }) {
   const gridTemplateColumns =
     "minmax(300px, 2fr) minmax(150px, 1fr) minmax(100px, 0.7fr) minmax(160px, 1fr)";
 
-  function ConfirmModal({ onClose, onConfirm }) {
-    console.log("ConfirmModal rendered"); // Debugging log
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
-        <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
-          <h2 className="text-lg font-semibold mb-4">
-            Are you sure you want to remove this file?
-          </h2>
-          <p className="text-sm text-gray-600 mb-6">
-            This action cannot be undone.
-          </p>
-          <div className="flex justify-end gap-3">
-            <button
-              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-black rounded-lg"
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-            <button
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
-              onClick={onConfirm}
-            >
-              Remove
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+
 
 
 
@@ -633,7 +605,7 @@ function Contentmanager({ items = [], dataroomId }) {
                 onClick={() => {
                   console.log("Opening confirmation modal"); // Debugging log
                   setFileToRemove(selectedFile); // Set the file to remove
-                  setShowConfirmModal(true); // Open the confirmation modal
+                  // Open the confirmation modal
                 }}
                 variant="danger"
               />
@@ -652,16 +624,7 @@ function Contentmanager({ items = [], dataroomId }) {
               />
             </div>
 
-            {true && (
-              <ConfirmModal
-                onClose={() => setShowConfirmModal(false)}
-                onConfirm={() => {
-                  handleRemove(fileToRemove); // Delete the file
-                  setSelectedFile(null); // Clear the selected file
-                  setShowConfirmModal(false); // Close the modal
-                }}
-              />
-            )}
+
 
 
           </div>

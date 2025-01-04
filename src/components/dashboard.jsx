@@ -99,11 +99,10 @@ function Dashboard({
                   </div>
                 </div>
                 <div
-                  className={`px-2 py-1 rounded text-xs ${
-                    member.role === "Admin"
+                  className={`px-2 py-1 rounded text-xs ${member.role === "Admin"
                       ? "bg-[#A3E636] text-white"
                       : "bg-[#ddd] text-gray-700"
-                  }`}
+                    }`}
                 >
                   {member.role === "Admin" ? "Full Access" : "View Only"}
                 </div>

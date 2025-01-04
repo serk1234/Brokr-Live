@@ -14,7 +14,7 @@ function Menu({
 
     {
       name: "dashboard",
-      icon: "fas fa-file-lines",
+      icon: "fas fa-dashboard",
       label: "Dashboard",
       badge: contentCount || null,
     },
@@ -46,9 +46,8 @@ function Menu({
           {tabs.map((tab) => (
             <li
               key={tab.name}
-              className={`group flex items-center justify-between cursor-pointer hover:bg-gray-100 p-2 rounded ${
-                activeTab === tab.name ? "bg-gray-100" : ""
-              }`}
+              className={`group flex items-center justify-between cursor-pointer hover:bg-gray-100 p-2 rounded ${activeTab === tab.name ? "bg-gray-100" : ""
+                }`}
               onClick={() => setActiveTab(tab.name)}
             >
               <div className="flex items-center">
