@@ -1,10 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import JSZip, { file } from "jszip";
+import JSZip from "jszip";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
-
-
 
 function ModernButton({ text, icon, onClick, variant = "primary" }) {
   const baseClasses =
@@ -15,11 +13,6 @@ function ModernButton({ text, icon, onClick, variant = "primary" }) {
     secondary: "bg-black/5 hover:bg-black/10 text-black",
     danger: "bg-red-50 hover:bg-red-100 text-red-600",
   };
-
-
-
-
-
 
   return (
     <button onClick={onClick} className={`${baseClasses} ${variants[variant]}`}>
@@ -79,17 +72,22 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
 
         if (uploadError) throw uploadError;
 
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
         if (userError) throw userError;
 
-        const { error: insertError } = await supabase.from("file_uploads").insert([
-          {
-            name: sanitizedFileName,
-            uploaded_by: user.email,
-            upload_at: new Date().toISOString(),
-            dataroom_id: dataroomId,
-          },
-        ]);
+        const { error: insertError } = await supabase
+          .from("file_uploads")
+          .insert([
+            {
+              name: sanitizedFileName,
+              uploaded_by: user.email,
+              upload_at: new Date().toISOString(),
+              dataroom_id: dataroomId,
+            },
+          ]);
 
         if (insertError) throw insertError;
 
@@ -106,15 +104,10 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
     }
   };
 
-
-
-
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="content-box p-6">
         {/* Your content here */}
-
-
 
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold">Upload File</h2>
@@ -127,8 +120,9 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         </div>
 
         <div
-          className={`relative border-2 border-dashed rounded-xl p-8 text-center ${dragActive ? "border-[#A3E636] bg-[#A3E636]/5" : "border-black/10"
-            }`}
+          className={`relative border-2 border-dashed rounded-xl p-8 text-center ${
+            dragActive ? "border-[#A3E636] bg-[#A3E636]/5" : "border-black/10"
+          }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -183,10 +177,11 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
           <button
             onClick={handleSubmit}
             disabled={!file}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${file
-              ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
-              : "bg-black/5 text-black/40 cursor-not-allowed"
-              }`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              file
+                ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
+                : "bg-black/5 text-black/40 cursor-not-allowed"
+            }`}
           >
             Upload
           </button>
@@ -205,20 +200,64 @@ function Contentmanager({ items = [], dataroomId }) {
   const [loadingContent, setLoadingContent] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [fileToRemove, setFileToRemove] = useState(null);
+  const [isLocked, setIsLocked] = useState(false);
 
   const customStyles = {
     content: {
-      top: '50%',
-      left: '50%',
-      right: 'auto',
-      bottom: 'auto',
-      marginRight: '-50%',
-      transform: 'translate(-50%, -50%)',
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      marginRight: "-50%",
+      transform: "translate(-50%, -50%)",
     },
   };
 
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  useEffect(() => {
+    fetchFiles();
+  }, [dataroomId]);
+
+  const fetchFiles = async () => {
+    if (!dataroomId) {
+      console.error("Dataroom ID is missing");
+      return;
+    }
+
+    try {
+      console.log(`dataroomid data->${dataroomId}`);
+
+      var dataRoomDetail = await supabase
+        .from("datarooms")
+        //.select("files_locked, status")
+        .select("*")
+        .eq("id", dataroomId)
+        .single();
+      console.log("dataroomid data ", dataRoomDetail);
+      setIsLocked(dataRoomDetail.data.files_locked || false);
+
+      const { data, error } = await supabase
+        .from("file_uploads")
+        .select("name, new_name, uploaded_by, upload_at, locked, id") // Fetch necessary fields
+        .eq("dataroom_id", dataroomId);
+      console.log("upload data", data);
+
+      if (error) {
+        console.error("Error fetching files:", error.message);
+      } else {
+        const formattedData = data.map((file) => ({
+          ...file,
+          upload_at: file.upload_at
+            ? new Date(file.upload_at).toISOString()
+            : null,
+        }));
+        setFiles(formattedData || []);
+      }
+    } catch (err) {
+      console.error("Unexpected error fetching files:", err.message);
+    }
+  };
 
   const handleFileView = async (file) => {
     setSelectedFile(file);
@@ -288,45 +327,74 @@ function Contentmanager({ items = [], dataroomId }) {
     }
   };
 
-
   // Function to get the display name (new_name or fallback to name)
   const getDisplayName = (file) => file.new_name || file.name;
 
-
   const toggleLock = async (file) => {
+    console.log(file);
     try {
-      // Update the visibility in the database
-      const { error } = await supabase
+      lockUploadFiles(dataroomId);
+
+      const { data, error } = await supabase
         .from("file_uploads")
-        .update({ visible_to_user: !file.locked }) // Toggle visibility
-        .eq("name", file.name)
-        .eq("dataroom_id", dataroomId);
+        .update({ locked: !file.locked }) // Toggle visibility
+        //  .eq("name", file.name)
+        .eq("id", file.id);
 
       if (error) throw error;
 
-      // Update local state
-      setFiles((prevFiles) =>
-        prevFiles.filter((f) => f.name !== file.name)
+      /*       var index = files.findIndex((e) => e.id == file.id);
+      console.log("index", index);
+
+      console.log(files);
+      files[index].locked = !file.locked;
+      console.log(files); */
+      setFiles(
+        files.map((e) => {
+          if (e.id == file.id) {
+            e.locked = !file.locked;
+          }
+          return e;
+        })
       );
 
-      console.log(`${file.name} visibility updated.`);
+      // Update local state
+      // setFiles((prevFiles) => prevFiles.filter((f) => f.name !== file.name));
+
+      console.log(`${file.id} ${file.name} visibility updated.`);
     } catch (err) {
       console.error("Error toggling file lock:", err.message);
     }
   };
 
+  const lockUploadFiles = async (id) => {
+    // Update visibility for all files in the database
+    const { error } = await supabase
+      .from("file_uploads")
+      .update({ locked: !isLocked }) // Set visibility to false
+      .eq("dataroom_id", dataroomId);
+    if (error) throw error;
+  };
   const toggleLockAll = async () => {
+    lockUploadFiles(dataroomId);
     try {
-      // Update visibility for all files in the database
-      const { error } = await supabase
-        .from("file_uploads")
-        .update({ visible_to_user: false }) // Set visibility to false
-        .eq("dataroom_id", dataroomId);
+      const { error1 } = await supabase
+        .from("datarooms")
+        .update({ files_locked: !isLocked }) // Toggle visibility
+        //  .eq("name", file.name)
+        .eq("id", dataroomId);
 
-      if (error) throw error;
+      if (error1) throw error1;
+      setIsLocked(!isLocked);
+      setFiles(
+        files.map((e) => {
+          e.locked = !e.locked;
+          return e;
+        })
+      );
 
       // Update local state
-      setFiles([]);
+      // setFiles([]);
       console.log("All files locked and removed from user view.");
     } catch (err) {
       console.error("Error locking all files:", err.message);
@@ -336,11 +404,15 @@ function Contentmanager({ items = [], dataroomId }) {
   const downloadFile = async (fileName) => {
     try {
       // Fetch the file from Supabase storage
-      const { data, error } = await supabase.storage.from('file_uploads').download(`files/${fileName}`);
+      const { data, error } = await supabase.storage
+        .from("file_uploads")
+        .download(`files/${fileName}`);
       if (error) throw error;
 
       // Convert ReadableStream to Blob
-      const blob = new Blob([data], { type: data.type || "application/octet-stream" });
+      const blob = new Blob([data], {
+        type: data.type || "application/octet-stream",
+      });
 
       // Create a download URL and trigger the download
       const url = URL.createObjectURL(blob);
@@ -358,18 +430,22 @@ function Contentmanager({ items = [], dataroomId }) {
     }
   };
 
-
   const downloadAllFiles = async () => {
     const zip = new JSZip();
 
     try {
       // Fetch each file from Supabase and add to the ZIP
       for (const file of files) {
-        const { data, error } = await supabase.storage.from('file_uploads').download(`files/${file.name}`);
-        if (error) throw new Error(`Failed to download ${file.name}: ${error.message}`);
+        const { data, error } = await supabase.storage
+          .from("file_uploads")
+          .download(`files/${file.name}`);
+        if (error)
+          throw new Error(`Failed to download ${file.name}: ${error.message}`);
 
         // Add file content to ZIP
-        const blob = new Blob([data], { type: data.type || "application/octet-stream" });
+        const blob = new Blob([data], {
+          type: data.type || "application/octet-stream",
+        });
         zip.file(file.name, blob);
       }
 
@@ -388,7 +464,6 @@ function Contentmanager({ items = [], dataroomId }) {
     }
   };
 
-
   const handleUpload = (newFile) => {
     console.log("uploaded file", newFile);
     setFiles((prevFiles) => [...prevFiles, newFile]);
@@ -402,7 +477,10 @@ function Contentmanager({ items = [], dataroomId }) {
         .remove([`files/${fileToRemove.name}`]);
 
       if (storageError) {
-        console.error("Error removing file from storage:", storageError.message);
+        console.error(
+          "Error removing file from storage:",
+          storageError.message
+        );
         return;
       }
 
@@ -414,12 +492,17 @@ function Contentmanager({ items = [], dataroomId }) {
         .eq("dataroom_id", dataroomId);
 
       if (dbError) {
-        console.error("Error removing file metadata from database:", dbError.message);
+        console.error(
+          "Error removing file metadata from database:",
+          dbError.message
+        );
         return;
       }
 
       // Remove the file from the local state
-      setFiles((prevFiles) => prevFiles.filter((file) => file.name !== fileToRemove.name));
+      setFiles((prevFiles) =>
+        prevFiles.filter((file) => file.name !== fileToRemove.name)
+      );
       console.log("File successfully removed:", fileToRemove.name);
     } catch (err) {
       console.error("Unexpected error removing file:", err.message);
@@ -430,12 +513,13 @@ function Contentmanager({ items = [], dataroomId }) {
     try {
       // Supabase storage and database logic
       console.log("Removing file:", fileToRemove.name); // Debugging log
-      setFiles((prevFiles) => prevFiles.filter((file) => file.name !== fileToRemove.name));
+      setFiles((prevFiles) =>
+        prevFiles.filter((file) => file.name !== fileToRemove.name)
+      );
     } catch (err) {
       console.error("Unexpected error removing file:", err.message);
     }
   };
-
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -466,55 +550,11 @@ function Contentmanager({ items = [], dataroomId }) {
     }
   };
 
-
-  const fetchFiles = async () => {
-    if (!dataroomId) {
-      console.error("Dataroom ID is missing");
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from("file_uploads")
-        .select("name, new_name, uploaded_by, upload_at") // Fetch necessary fields
-        .eq("dataroom_id", dataroomId);
-
-      if (error) {
-        console.error("Error fetching files:", error.message);
-      } else {
-        const formattedData = data.map((file) => ({
-          ...file,
-          upload_at: file.upload_at ? new Date(file.upload_at).toISOString() : null,
-        }));
-        setFiles(formattedData || []);
-      }
-    } catch (err) {
-      console.error("Unexpected error fetching files:", err.message);
-    }
-  };
-
-  useEffect(() => {
-    fetchFiles();
-  }, [dataroomId]);
-
-
-
-
-
-
   const gridTemplateColumns =
     "minmax(300px, 2fr) minmax(150px, 1fr) minmax(100px, 0.7fr) minmax(160px, 1fr)";
 
-
-
-
-
-
-
-
   return (
     <div className="w-full bg-transparent rounded-2xl border border-black p-6 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-
       {selectedFile ? (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl border border-black/10 shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
@@ -572,7 +612,6 @@ function Contentmanager({ items = [], dataroomId }) {
                 </div>
               </div>
 
-
               <div className="bg-black/5 rounded-xl p-6 flex justify-center items-center">
                 {fileURL ? (
                   selectedFile?.name?.match(/\.(jpg|jpeg|png|gif)$/i) ? (
@@ -598,7 +637,6 @@ function Contentmanager({ items = [], dataroomId }) {
             </div>
 
             <div className="flex justify-end gap-3 p-6 border-t border-black/10">
-
               <ModernButton
                 text="Remove"
                 icon="fa-trash"
@@ -623,21 +661,17 @@ function Contentmanager({ items = [], dataroomId }) {
                 variant="primary"
               />
             </div>
-
-
-
-
           </div>
         </div>
-
       ) : (
         // Existing code for the default view
 
         <div
-          className={`flex flex-col relative ${dragActive
-            ? "after:absolute after:inset-0 after:bg-[#A3E636]/5 after:border-2 after:border-dashed after:border-[#A3E636] after:rounded-2xl after:pointer-events-none"
-            : ""
-            }`}
+          className={`flex flex-col relative ${
+            dragActive
+              ? "after:absolute after:inset-0 after:bg-[#A3E636]/5 after:border-2 after:border-dashed after:border-[#A3E636] after:rounded-2xl after:pointer-events-none"
+              : ""
+          }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -667,12 +701,23 @@ function Contentmanager({ items = [], dataroomId }) {
                 onClick={downloadAllFiles}
                 variant="secondary"
               />
-              <ModernButton
-                text="Lock All"
-                icon="fa-lock"
-                onClick={toggleLockAll}
-                variant="danger"
-              />
+
+              {isLocked && (
+                <ModernButton
+                  text="Unlock All"
+                  icon="fa-lock-open"
+                  onClick={toggleLockAll}
+                  variant="danger"
+                />
+              )}
+              {!isLocked && (
+                <ModernButton
+                  text="Lock All"
+                  icon="fa-lock"
+                  onClick={toggleLockAll}
+                  variant="danger"
+                />
+              )}
             </div>
           </div>
 
@@ -692,8 +737,9 @@ function Contentmanager({ items = [], dataroomId }) {
             <div
               key={index}
               style={{ display: "grid", gridTemplateColumns, gap: "1.5rem" }}
-              className={`items-center py-4 px-4 hover:bg-black/5 transition-colors ${file.locked ? "bg-amber-50" : ""
-                }`}
+              className={`items-center py-4 px-4 hover:bg-black/5 transition-colors ${
+                file.locked ? "bg-amber-50" : ""
+              }`}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <span className="shrink-0 w-10 h-10 flex items-center justify-center bg-[#A3E636]/10 rounded-xl">
@@ -716,13 +762,14 @@ function Contentmanager({ items = [], dataroomId }) {
                       />
                     ) : (
                       <div className="flex items-center gap-2">
-                        <span className="truncate font-medium">{getDisplayName(file)}</span>
+                        <span className="truncate font-medium">
+                          {getDisplayName(file)}
+                        </span>
                         <button
                           onClick={() => {
                             setNewName(file.new_name || file.name); // Load current name into edit mode
                             setEditingName(file);
                           }}
-
                           className="shrink-0 w-8 h-8 flex items-center justify-center text-sm hover:bg-black/10 rounded-full transition-all group"
                         >
                           <i className="fas fa-pencil-alt "></i>
@@ -735,8 +782,6 @@ function Contentmanager({ items = [], dataroomId }) {
                   </div>
                 </div>
               </div>
-
-
 
               <div className="truncate text-black/60 text-sm">
                 {file.uploaded_by}
