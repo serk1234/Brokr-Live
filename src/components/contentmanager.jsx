@@ -397,13 +397,13 @@ function Contentmanager({ items = [], dataroomId }) {
         .eq("id", dataroomId);
 
       if (error1) throw error1;
-      setIsLocked(!isLocked);
       setFiles(
         files.map((e) => {
-          e.locked = !e.locked;
+          e.locked = !isLocked;
           return e;
         })
       );
+      setIsLocked(!isLocked);
 
       // Update local state
       // setFiles([]);
