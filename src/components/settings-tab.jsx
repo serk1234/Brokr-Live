@@ -1,12 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
 import MainSettingsSection from "./main-settings-section";
 import SecondarySettingsSection from "./secondary-settings-section";
-import { useRouter } from "next/router";
 
-function SettingsTab({ dataroomName, setDataroomName, displayStatus, setDisplayStatus }) {
+function SettingsTab({
+  dataroomName,
+  setDataroomName,
+  displayStatus,
+  setDisplayStatus,
+}) {
   const [localStatus, setLocalStatus] = useState(displayStatus || "");
   const [loading, setLoading] = useState(false);
   const [toggleStates, setToggleStates] = useState([
@@ -67,7 +72,11 @@ function SettingsTab({ dataroomName, setDataroomName, displayStatus, setDisplayS
 
       const { error } = await supabase
         .from("datarooms")
-        .update({ status: localStatus, name: newName, organization: organizationName })
+        .update({
+          status: localStatus,
+          name: newName,
+          organization: organizationName,
+        })
         .eq("name", dataroomName);
 
       if (error) throw error;
@@ -88,16 +97,29 @@ function SettingsTab({ dataroomName, setDataroomName, displayStatus, setDisplayS
   const handleToggleLockStatus = async () => {
     setLoading(true);
     try {
+      console.log(`dataroom id ${dataroomId}`);
       const newLockStatus = !filesLocked;
       const { error } = await supabase
         .from("datarooms")
         .update({ files_locked: newLockStatus })
-        .eq("name", dataroomName);
+        .eq("id", dataroomId);
 
       if (error) throw error;
 
       setFilesLocked(newLockStatus);
-      alert(`Files have been ${newLockStatus ? "locked" : "unlocked"} successfully!`);
+
+      const { error1 } = await supabase
+        .from("file_uploads")
+        .update({
+          locked: newLockStatus,
+        })
+        .eq("dataroom_id", dataroomId);
+      if (error1) {
+        alert(error);
+      }
+      alert(
+        `Files have been ${newLockStatus ? "locked" : "unlocked"} successfully!`
+      );
     } catch (err) {
       console.error("Error toggling lock status:", err.message);
     } finally {
@@ -113,7 +135,10 @@ function SettingsTab({ dataroomName, setDataroomName, displayStatus, setDisplayS
         return;
       }
 
-      const { error } = await supabase.from("datarooms").delete().eq("name", dataroomName);
+      const { error } = await supabase
+        .from("datarooms")
+        .delete()
+        .eq("name", dataroomName);
       if (error) throw error;
 
       alert("Dataroom deleted successfully!");
@@ -154,11 +179,21 @@ function SettingsTab({ dataroomName, setDataroomName, displayStatus, setDisplayS
         />
 
         {/* Secondary Settings Section */}
-        <SecondarySettingsSection  dataroomId={dataroomId}
+        <SecondarySettingsSection
+          dataroomId={dataroomId}
           options={[
-            { title: "Allow Uploads", description: "Users can upload documents" },
-            { title: "Allow Invitations", description: "Invite users to the dataroom" },
-            { title: "Two-Factor Authentication", description: "Enhance security for your dataroom" },
+            {
+              title: "Allow Uploads",
+              description: "Users can upload documents",
+            },
+            {
+              title: "Allow Invitations",
+              description: "Invite users to the dataroom",
+            },
+            {
+              title: "Two-Factor Authentication",
+              description: "Enhance security for your dataroom",
+            },
           ]}
           onToggle={(index) =>
             setToggleStates((prev) => {
@@ -174,7 +209,9 @@ function SettingsTab({ dataroomName, setDataroomName, displayStatus, setDisplayS
         <div className="bg-white p-6 rounded-lg border border-black shadow-md space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="font-medium">{filesLocked ? "Unlock All Files" : "Lock All Files"}</div>
+              <div className="font-medium">
+                {filesLocked ? "Unlock All Files" : "Lock All Files"}
+              </div>
               <div className="text-sm text-gray-500">
                 {filesLocked
                   ? "Unlock all files in this dataroom and restore access."
@@ -218,7 +255,8 @@ function SettingsTab({ dataroomName, setDataroomName, displayStatus, setDisplayS
           <div className="bg-white rounded-lg p-6 shadow-lg w-96 space-y-4">
             <h2 className="text-xl font-semibold">Confirm Deletion</h2>
             <p className="text-sm text-gray-600">
-              Are you sure you want to delete this dataroom? This action cannot be undone.
+              Are you sure you want to delete this dataroom? This action cannot
+              be undone.
             </p>
             <div className="flex justify-end space-x-4">
               <button
