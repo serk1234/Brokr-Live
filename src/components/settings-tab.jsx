@@ -6,7 +6,7 @@ import { supabase } from "../../src/app/supabaseClient";
 import MainSettingsSection from "./main-settings-section";
 import SecondarySettingsSection from "./secondary-settings-section";
 import PrivacyPolicyModal from "./privacypolicy";
-import { useRouter } from "next/router";
+
 
 
 function SettingsTab({ dataroomName, setDataroomName, displayStatus, setDisplayStatus }) {
