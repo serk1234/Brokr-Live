@@ -1,11 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { supabase } from "../../src/app/supabaseClient";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { supabase } from "../../src/app/supabaseClient";
 
-function Teamsecteam({ dataroomName }) {
+function Teamsecteam({ dataroomName, dataroomId }) {
   const [showPopup, setShowPopup] = useState(false);
   const [users, setUsers] = useState([]);
-  const [newUser, setNewUser] = useState({ name: "", email: "", permission: "view", isAdmin: false });
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    permission: "view",
+    isAdmin: false,
+  });
   const [loading, setLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const router = useRouter();
@@ -54,16 +59,14 @@ function Teamsecteam({ dataroomName }) {
 
       if (magicLinkError) throw magicLinkError;
 
-      const { error: insertError } = await supabase
-        .from("datarooms")
-        .insert([
-          {
-            name: currentDataroom,
-            user_email: newUser.email,
-            invited_by: inviterEmail,
-            created_at: new Date(),
-          },
-        ]);
+      const { error: insertError } = await supabase.from("datarooms").insert([
+        {
+          name: currentDataroom,
+          user_email: newUser.email,
+          invited_by: inviterEmail,
+          created_at: new Date(),
+        },
+      ]);
 
       if (insertError) throw insertError;
 
@@ -124,18 +127,21 @@ function Teamsecteam({ dataroomName }) {
           <div className="bg-white p-6 rounded-lg w-[90%] max-w-md">
             <h3 className="text-lg font-semibold mb-4">Add Team Member</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
-             
               <input
                 type="email"
                 placeholder="Email"
                 value={newUser.email}
-                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, email: e.target.value })
+                }
                 className="w-full p-2 border rounded"
                 required
               />
               <select
                 value={newUser.permission}
-                onChange={(e) => setNewUser({ ...newUser, permission: e.target.value })}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, permission: e.target.value })
+                }
                 className="w-full p-2 border rounded"
               >
                 <option value="view">View Only</option>
@@ -161,7 +167,6 @@ function Teamsecteam({ dataroomName }) {
           >
             <div className="flex justify-between items-start mb-4">
               <div>
-               
                 <div className="text-gray-600">{user.user_email}</div>
               </div>
               <button
@@ -172,9 +177,15 @@ function Teamsecteam({ dataroomName }) {
               </button>
             </div>
             <div>
-              <div className="text-gray-600">Permissions: {user.permission}</div>
-              <div className="text-gray-600">Invited By: {user.invited_by || "N/A"}</div>
-              <div className="text-gray-600">Created At: {new Date(user.created_at).toLocaleString()}</div>
+              <div className="text-gray-600">
+                Permissions: {user.permission}
+              </div>
+              <div className="text-gray-600">
+                Invited By: {user.invited_by || "N/A"}
+              </div>
+              <div className="text-gray-600">
+                Created At: {new Date(user.created_at).toLocaleString()}
+              </div>
             </div>
           </div>
         ))}

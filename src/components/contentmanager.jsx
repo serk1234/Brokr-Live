@@ -343,9 +343,9 @@ function Contentmanager({ items = [], dataroomId }) {
   const getDisplayName = (file) => file.new_name || file.name;
 
   const toggleLock = async (file) => {
-    console.log(file);
+    console.log("toggleLock", file);
     try {
-      lockUploadFiles(dataroomId);
+      // lockUploadFiles(dataroomId);
 
       const { data, error } = await supabase
         .from("file_uploads")
@@ -413,7 +413,7 @@ function Contentmanager({ items = [], dataroomId }) {
     }
   };
 
-  const downloadFile = async (fileName, filePath) => {
+  const downloadFile = async (fileName, filePath, id) => {
     try {
       // Fetch the file from Supabase storage
       const { data, error } = await supabase.storage
@@ -421,6 +421,11 @@ function Contentmanager({ items = [], dataroomId }) {
         // .download(`files/${fileName}`);
         .download(filePath);
       if (error) throw error;
+
+      await supabase.from("file_downloads").insert({
+        dataroom_id: dataroomId,
+        file_id: id,
+      });
 
       // Convert ReadableStream to Blob
       const blob = new Blob([data], {
@@ -463,6 +468,10 @@ function Contentmanager({ items = [], dataroomId }) {
           console.log(`Failed to download ${file.name}: ${error.message}`);
           // throw new Error(`Failed to download ${file.name}: ${error.message}`);
         }
+        await supabase.from("file_downloads").insert({
+          dataroom_id: dataroomId,
+          file_id: file.id,
+        });
       }
 
       // Generate the ZIP and trigger the download
@@ -668,7 +677,11 @@ function Contentmanager({ items = [], dataroomId }) {
                 text="Download"
                 icon="fa-download"
                 onClick={() =>
-                  downloadFile(selectedFile.name, selectedFile.file_path)
+                  downloadFile(
+                    selectedFile.name,
+                    selectedFile.file_path,
+                    selectedFile.id
+                  )
                 }
                 variant="secondary"
               />
@@ -815,7 +828,9 @@ function Contentmanager({ items = [], dataroomId }) {
                   <i className="fas fa-eye"></i>
                 </button>
                 <button
-                  onClick={() => downloadFile(file.name, file.file_path)}
+                  onClick={() =>
+                    downloadFile(file.name, file.file_path, file.id)
+                  }
                   className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
                 >
                   <i className="fas fa-download"></i>
