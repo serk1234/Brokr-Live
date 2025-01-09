@@ -65,10 +65,21 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
     if (file) {
       try {
         const sanitizedFileName = sanitizeFileName(file.name);
+        console.log(sanitizeFileName);
+        const date = new Date();
+
+        const timestamp = `${date.getFullYear()}-${
+          date.getMonth() + 1
+        }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
+
+        var fileName = timestamp + "_" + sanitizedFileName;
+
+        var filePath = `files/${dataroomId}/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from("file_uploads")
-          .upload(`files/${sanitizedFileName}`, file);
+          // .upload(`files/${sanitizedFileName}`, file);
+          .upload(filePath, file);
 
         if (uploadError) throw uploadError;
 
@@ -83,6 +94,7 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
           .insert([
             {
               name: sanitizedFileName,
+              file_path: filePath,
               uploaded_by: user.email,
               upload_at: new Date().toISOString(),
               dataroom_id: dataroomId,
@@ -239,7 +251,7 @@ function Contentmanager({ items = [], dataroomId }) {
 
       const { data, error } = await supabase
         .from("file_uploads")
-        .select("name, new_name, uploaded_by, upload_at, locked, id") // Fetch necessary fields
+        .select("name, new_name, uploaded_by, upload_at, locked, id, file_path") // Fetch necessary fields
         .eq("dataroom_id", dataroomId);
       console.log("upload data", data);
 
@@ -401,12 +413,13 @@ function Contentmanager({ items = [], dataroomId }) {
     }
   };
 
-  const downloadFile = async (fileName) => {
+  const downloadFile = async (fileName, filePath) => {
     try {
       // Fetch the file from Supabase storage
       const { data, error } = await supabase.storage
         .from("file_uploads")
-        .download(`files/${fileName}`);
+        // .download(`files/${fileName}`);
+        .download(filePath);
       if (error) throw error;
 
       // Convert ReadableStream to Blob
@@ -438,15 +451,18 @@ function Contentmanager({ items = [], dataroomId }) {
       for (const file of files) {
         const { data, error } = await supabase.storage
           .from("file_uploads")
-          .download(`files/${file.name}`);
-        if (error)
-          throw new Error(`Failed to download ${file.name}: ${error.message}`);
-
-        // Add file content to ZIP
-        const blob = new Blob([data], {
-          type: data.type || "application/octet-stream",
-        });
-        zip.file(file.name, blob);
+          // .download(`files/${file.name}`);
+          .download(file.file_path);
+        if (!error) {
+          // Add file content to ZIP
+          const blob = new Blob([data], {
+            type: data.type || "application/octet-stream",
+          });
+          zip.file(file.name, blob);
+        } else {
+          console.log(`Failed to download ${file.name}: ${error.message}`);
+          // throw new Error(`Failed to download ${file.name}: ${error.message}`);
+        }
       }
 
       // Generate the ZIP and trigger the download
@@ -651,7 +667,9 @@ function Contentmanager({ items = [], dataroomId }) {
               <ModernButton
                 text="Download"
                 icon="fa-download"
-                onClick={() => downloadFile(selectedFile.name)}
+                onClick={() =>
+                  downloadFile(selectedFile.name, selectedFile.file_path)
+                }
                 variant="secondary"
               />
               <ModernButton
@@ -797,7 +815,7 @@ function Contentmanager({ items = [], dataroomId }) {
                   <i className="fas fa-eye"></i>
                 </button>
                 <button
-                  onClick={() => downloadFile(file.name)}
+                  onClick={() => downloadFile(file.name, file.file_path)}
                   className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
                 >
                   <i className="fas fa-download"></i>
