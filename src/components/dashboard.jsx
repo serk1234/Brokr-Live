@@ -1,7 +1,7 @@
 "use client";
-import React from "react";
-import StylizedButton from "../components/stylized-button";
 
+import { supabase } from "@/app/supabaseClient";
+import { useEffect, useState } from "react";
 
 function Dashboard({
   stats = {},
@@ -9,7 +9,13 @@ function Dashboard({
   activities = [],
   documents = [],
   teamMembers = [],
+  dataroomId,
 }) {
+  const [totalUser, setTotalUser] = useState("Loading...");
+  const [totalActiveUser, setTotalActiveUser] = useState("Loading...");
+  const [totalDownloads, setTotalDownloads] = useState("Loading...");
+  const [timeSpent, setTimeSpend] = useState("Loading...");
+
   const handleViewClick = (section) => {
     const routes = {
       team: "/9998",
@@ -19,6 +25,29 @@ function Dashboard({
     };
     window.location.href = routes[section];
   };
+
+  useEffect(() => {
+    const fetchUserSessionAndData = async () => {
+      var result = await supabase
+        .from("datarooms")
+        .select("*,file_uploads(*),invited_users(*),file_downloads(*) ")
+        .eq("id", dataroomId)
+        .single();
+      console.log(result);
+      if (result.error) {
+        console.log(result.error);
+        return;
+      }
+      setTotalUser(result.data.invited_users.length.toString());
+      setTotalDownloads(result.data.file_downloads.length.toString());
+      setTotalActiveUser(
+        result.data.invited_users
+          .filter((e) => e.status == "active")
+          .length.toString()
+      );
+    };
+    fetchUserSessionAndData();
+  }, []);
 
   return (
     <div className="bg-white text-black p-8 rounded-2xl">
@@ -32,23 +61,18 @@ function Dashboard({
         {[
           {
             label: "Total Users",
-            value: stats.totalUsers,
+            value: totalUser,
             growth: stats.userGrowth,
           },
           {
             label: "Active Users",
-            value: stats.activeUsers,
+            value: totalActiveUser,
             growth: stats.activeGrowth,
           },
           {
             label: "Downloads",
-            value: stats.downloads,
+            value: totalDownloads,
             growth: stats.downloadGrowth,
-          },
-          {
-            label: "Time Spent",
-            value: stats.timeSpent,
-            growth: stats.timeGrowth,
           },
         ].map((stat, index) => (
           <div
@@ -99,10 +123,11 @@ function Dashboard({
                   </div>
                 </div>
                 <div
-                  className={`px-2 py-1 rounded text-xs ${member.role === "Admin"
+                  className={`px-2 py-1 rounded text-xs ${
+                    member.role === "Admin"
                       ? "bg-[#A3E636] text-white"
                       : "bg-[#ddd] text-gray-700"
-                    }`}
+                  }`}
                 >
                   {member.role === "Admin" ? "Full Access" : "View Only"}
                 </div>

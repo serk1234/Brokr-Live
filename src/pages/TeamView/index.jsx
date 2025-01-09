@@ -128,14 +128,18 @@ function MainComponent() {
               setOrganization={setOrganization}
             />
           )}
-          {activeTab === "dashboard" && <Dashboard />}
+          {activeTab === "dashboard" && dataroomId && (
+            <Dashboard dataroomId={dataroomId} />
+          )}
           {activeTab === "users" && <Usermanagement />}
           {activeTab === "dashboard" && <Dashcompteam />}
           {activeTab === "activity" && <Teamactivity activities={[]} />}
           {activeTab === "contents" && dataroomId && (
             <Contentmanager items={[]} dataroomId={dataroomId} />
           )}
-          {activeTab === "team" && <Teamsecteam />}
+          {activeTab === "team" && dataroomId && (
+            <Teamsecteam dataroomId={dataroomId} />
+          )}
         </div>
       </div>
 
@@ -144,7 +148,6 @@ function MainComponent() {
       <div className="team-view-footer">
         <Footer />
       </div>
-
     </div>
   );
 }

@@ -68,8 +68,9 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         console.log(sanitizeFileName);
         const date = new Date();
 
-        const timestamp = `${date.getFullYear()}-${date.getMonth() + 1
-          }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
+        const timestamp = `${date.getFullYear()}-${
+          date.getMonth() + 1
+        }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
 
         var fileName = timestamp + "_" + sanitizedFileName;
 
@@ -131,8 +132,9 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         </div>
 
         <div
-          className={`relative border-2 border-dashed rounded-xl p-8 text-center ${dragActive ? "border-[#A3E636] bg-[#A3E636]/5" : "border-black/10"
-            }`}
+          className={`relative border-2 border-dashed rounded-xl p-8 text-center ${
+            dragActive ? "border-[#A3E636] bg-[#A3E636]/5" : "border-black/10"
+          }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -187,10 +189,11 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
           <button
             onClick={handleSubmit}
             disabled={!file}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${file
-              ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
-              : "bg-black/5 text-black/40 cursor-not-allowed"
-              }`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              file
+                ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
+                : "bg-black/5 text-black/40 cursor-not-allowed"
+            }`}
           >
             Upload
           </button>
@@ -340,9 +343,9 @@ function Contentmanager({ items = [], dataroomId }) {
   const getDisplayName = (file) => file.new_name || file.name;
 
   const toggleLock = async (file) => {
-    console.log(file);
+    console.log("toggleLock", file);
     try {
-      lockUploadFiles(dataroomId);
+      // lockUploadFiles(dataroomId);
 
       const { data, error } = await supabase
         .from("file_uploads")
@@ -394,13 +397,13 @@ function Contentmanager({ items = [], dataroomId }) {
         .eq("id", dataroomId);
 
       if (error1) throw error1;
-      setIsLocked(!isLocked);
       setFiles(
         files.map((e) => {
-          e.locked = !e.locked;
+          e.locked = !isLocked;
           return e;
         })
       );
+      setIsLocked(!isLocked);
 
       // Update local state
       // setFiles([]);
@@ -410,7 +413,7 @@ function Contentmanager({ items = [], dataroomId }) {
     }
   };
 
-  const downloadFile = async (fileName, filePath) => {
+  const downloadFile = async (fileName, filePath, id) => {
     try {
       // Fetch the file from Supabase storage
       const { data, error } = await supabase.storage
@@ -418,6 +421,11 @@ function Contentmanager({ items = [], dataroomId }) {
         // .download(`files/${fileName}`);
         .download(filePath);
       if (error) throw error;
+
+      await supabase.from("file_downloads").insert({
+        dataroom_id: dataroomId,
+        file_id: id,
+      });
 
       // Convert ReadableStream to Blob
       const blob = new Blob([data], {
@@ -460,6 +468,10 @@ function Contentmanager({ items = [], dataroomId }) {
           console.log(`Failed to download ${file.name}: ${error.message}`);
           // throw new Error(`Failed to download ${file.name}: ${error.message}`);
         }
+        await supabase.from("file_downloads").insert({
+          dataroom_id: dataroomId,
+          file_id: file.id,
+        });
       }
 
       // Generate the ZIP and trigger the download
@@ -665,7 +677,11 @@ function Contentmanager({ items = [], dataroomId }) {
                 text="Download"
                 icon="fa-download"
                 onClick={() =>
-                  downloadFile(selectedFile.name, selectedFile.file_path)
+                  downloadFile(
+                    selectedFile.name,
+                    selectedFile.file_path,
+                    selectedFile.id
+                  )
                 }
                 variant="secondary"
               />
@@ -682,10 +698,11 @@ function Contentmanager({ items = [], dataroomId }) {
         // Existing code for the default view
 
         <div
-          className={`flex flex-col relative ${dragActive
-            ? "after:absolute after:inset-0 after:bg-[#A3E636]/5 after:border-2 after:border-dashed after:border-[#A3E636] after:rounded-2xl after:pointer-events-none"
-            : ""
-            }`}
+          className={`flex flex-col relative ${
+            dragActive
+              ? "after:absolute after:inset-0 after:bg-[#A3E636]/5 after:border-2 after:border-dashed after:border-[#A3E636] after:rounded-2xl after:pointer-events-none"
+              : ""
+          }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -751,8 +768,9 @@ function Contentmanager({ items = [], dataroomId }) {
             <div
               key={index}
               style={{ display: "grid", gridTemplateColumns, gap: "1.5rem" }}
-              className={`items-center py-4 px-4 hover:bg-black/5 transition-colors ${file.locked ? "bg-amber-50" : ""
-                }`}
+              className={`items-center py-4 px-4 hover:bg-black/5 transition-colors ${
+                file.locked ? "bg-amber-50" : ""
+              }`}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <span className="shrink-0 w-10 h-10 flex items-center justify-center bg-[#A3E636]/10 rounded-xl">
@@ -810,7 +828,9 @@ function Contentmanager({ items = [], dataroomId }) {
                   <i className="fas fa-eye"></i>
                 </button>
                 <button
-                  onClick={() => downloadFile(file.name, file.file_path)}
+                  onClick={() =>
+                    downloadFile(file.name, file.file_path, file.id)
+                  }
                   className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
                 >
                   <i className="fas fa-download"></i>
