@@ -4,11 +4,14 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
 import MainSettingsSection from "./main-settings-section";
 import SecondarySettingsSection from "./secondary-settings-section";
+import PrivacyPolicyModal from "./privacypolicy";
 import { useRouter } from "next/router";
+
 
 function SettingsTab({ dataroomName, setDataroomName, displayStatus, setDisplayStatus }) {
   const [localStatus, setLocalStatus] = useState(displayStatus || "");
   const [loading, setLoading] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [toggleStates, setToggleStates] = useState([
     true,
     true,
@@ -153,8 +156,11 @@ function SettingsTab({ dataroomName, setDataroomName, displayStatus, setDisplayS
           setDisplayStatus={setLocalStatus}
         />
 
+
+
+
         {/* Secondary Settings Section */}
-        <SecondarySettingsSection  dataroomId={dataroomId}
+        <SecondarySettingsSection dataroomId={dataroomId}
           options={[
             { title: "Allow Uploads", description: "Users can upload documents" },
             { title: "Allow Invitations", description: "Invite users to the dataroom" },
@@ -183,11 +189,9 @@ function SettingsTab({ dataroomName, setDataroomName, displayStatus, setDisplayS
             </div>
             <button
               onClick={handleToggleLockStatus}
-              className={`px-4 py-2 ${
-                filesLocked ? "bg-green-500" : "bg-amber-400"
-              } rounded border border-black hover:${
-                filesLocked ? "bg-green-600" : "bg-amber-500"
-              } transition`}
+              className={`px-4 py-2 ${filesLocked ? "bg-green-500" : "bg-amber-400"
+                } rounded border border-black hover:${filesLocked ? "bg-green-600" : "bg-amber-500"
+                } transition`}
               disabled={loading}
             >
               <i className={`fas ${filesLocked ? "fa-unlock" : "fa-lock"}`}></i>{" "}
@@ -211,6 +215,29 @@ function SettingsTab({ dataroomName, setDataroomName, displayStatus, setDisplayS
           </div>
         </div>
       </div>
+
+
+      <div className="bg-white p-6 rounded-lg border border-black shadow-md mt-6 sm:hidden">
+        <div className="text-center text-gray-500 text-sm sm:hidden">
+          © 2024 brokr Technologies Inc. All rights reserved.
+          <br />
+          <button
+            onClick={() => setShowPrivacyModal(true)} // Show modal on click
+            className="text-blue-500 hover:underline sm:hidden" // Hide on desktop, show on mobile
+          >
+            Privacy & Terms
+          </button>
+        </div>
+
+        {/* Render the modal */}
+        <PrivacyPolicyModal
+          show={showPrivacyModal}
+          onClose={() => setShowPrivacyModal(false)} // Close modal on click
+        />
+      </div>
+
+
+
 
       {/* Confirmation Modal */}
       {showDeleteModal && (

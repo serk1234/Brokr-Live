@@ -85,7 +85,7 @@ function MainComponent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100 font-open-sans">
+    <div className=" team-view min-h-screen flex flex-col bg-gray-100 font-open-sans">
       {/* Header */}
       <HeaderLive email={userEmail} />
 
@@ -103,7 +103,7 @@ function MainComponent() {
       {/* Main Content */}
       <div className="flex flex-col sm:flex-row flex-1">
         {/* Sidebar */}
-        <div className="w-full sm:w-[240px] bg-gray-100 text-black flex flex-col border-r border-gray-300 sidebar">
+        <div className="w-full sm:w-[240px] bg-gray-100 text-black flex flex-col border-r border-gray-300 sidebars">
           <Menu
             activeTab={activeTab}
             setActiveTab={setActiveTab}
@@ -137,7 +137,11 @@ function MainComponent() {
       </div>
 
       {/* Footer */}
-      <Footer />
+      {/* Footer */}
+      <div className="team-view-footer">
+        <Footer />
+      </div>
+
     </div>
   );
 }
