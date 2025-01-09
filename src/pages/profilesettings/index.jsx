@@ -8,6 +8,7 @@ import Footer from "../../components/footer";
 import { supabase } from "../../../src/app/supabaseClient";
 
 
+
 function MainComponent() {
   const [name, setName] = useState("");
   const [organization, setOrganization] = useState("");

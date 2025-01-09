@@ -5,8 +5,9 @@ import StylizedButton from "../components/stylized-button";
 
 function NewComponent({ email }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [newName, setNewName] = useState("Jane Doe");
+  const [name, setNewName] = useState("Jane Doe");
   const [newOrg, setNewOrg] = useState("XYZ Inc.");
+
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [planName, setPlanName] = useState("");
   const [planDetails, setPlanDetails] = useState("");
@@ -79,6 +80,7 @@ function NewComponent({ email }) {
                     type="text"
                     value={newOrg}
                     onChange={(e) => setNewOrg(e.target.value)}
+                    //  onChange={(e) => handleChange(setNewOrg, e.target.value)}
                     className="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-[#A3E636] outline-none"
                     name="organization"
                   />
@@ -104,15 +106,15 @@ function NewComponent({ email }) {
                     <i className="fas fa-user text-gray-400"></i>
                     Name
                   </label>
-                  <span className="font-open-sans text-lg">{newName}</span>
-                </div>
+                  <span className="font-open-sans text-lg"></span>
+                </div >
                 <div className="flex-1">
                   <label className="block text-sm font-open-sans text-gray-500 flex items-center gap-2">
                     <i className="fas fa-building text-gray-400"></i>
                     Organization
                   </label>
-                  <span className="font-open-sans text-lg">{newOrg}</span>
-                </div>
+                  <span className="font-open-sans text-lg"></span>
+                </div >
                 <div className="flex-1">
                   <label className="block text-sm font-open-sans text-gray-500 flex items-center gap-2">
                     <i className="fas fa-envelope text-gray-400"></i>
@@ -120,11 +122,11 @@ function NewComponent({ email }) {
                   </label>
                   <span className="font-open-sans text-lg">{email}</span>
                 </div>
-              </div>
-            )}
-          </div>
+              </div >
+            )
+            }
+          </div >
 
-          {/* Subscription Section */}
           <div className="bg-white rounded-xl p-6 shadow-lg relative">
             <div className="flex items-center justify-between gap-4 mb-6">
               <div className="flex items-center gap-4">
@@ -141,6 +143,7 @@ function NewComponent({ email }) {
                 <StylizedButton
                   text="Manage"
                   onClick={handleManage}
+                // onClick={() => setShowStripe(true)}
                 />
               </div>
             </div>
@@ -188,16 +191,21 @@ function NewComponent({ email }) {
                         width: `${(storageUsed / storageLimit) * 100}%`,
                       }}
                     >
-                      <div className="w-full h-full bg-[url('data:image/svg+xml;base64,...')] opacity-50"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                      <div className="w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2IiBoZWlnaHQ9IjYiPgo8cmVjdCB3aWR0aD0iNiIgaGVpZ2h0PSI2IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMikiPjwvcmVjdD4KPHBhdGggZD0iTTAgNkw2IDBaTTYgNkwwIDBaIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIxIj48L3BhdGg+Cjwvc3ZnPg==')] opacity-50"></div>
+                    </div >
+                  </div >
+                </div >
+              </div >
+            </div >
+          </div >
+
+
+
+
+
 
           {/* Support Section */}
-          <div className="bg-white rounded-xl p-6 shadow-lg relative">
+          < div className="bg-white rounded-xl p-6 shadow-lg relative" >
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-[#E0E7F1] flex items-center justify-center">
@@ -212,10 +220,10 @@ function NewComponent({ email }) {
                 />
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
+          </div >
+        </div >
+      </div >
+    </div >
   );
 }
 
