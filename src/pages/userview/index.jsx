@@ -286,8 +286,4 @@ function UserView() {
   );
 }
 
-<<<<<<< HEAD
 export default UserView;
-=======
-export default UserView;
->>>>>>> a833f8039c7e47d2a3acfa6c14203d04dedcbecd
