@@ -124,7 +124,7 @@ function UserView() {
             const { data: fileData, error: fileError } = await supabase
               .from("file_uploads")
               .select(
-                "name, new_name, uploaded_by, upload_at, locked, file_path"
+                "name, new_name, uploaded_by, upload_at, locked, file_path, id"
               )
               .eq("dataroom_id", dataroomId);
 
@@ -177,6 +177,8 @@ function UserView() {
   };
 
   const handleDownload = async () => {
+    console.log("handle download run");
+
     if (selectedFile) {
       try {
         const { data, error } = await supabase.storage
@@ -187,10 +189,12 @@ function UserView() {
           console.error("Error downloading file:", error.message);
           return;
         }
-        supabase.from("file_downloads").insert({
+        var downloadStatus = await supabase.from("file_downloads").insert({
           dataroom_id: router.query.id,
           file_id: selectedFile.id,
         });
+        console.log(selectedFile, "download status ", downloadStatus);
+
         const blob = new Blob([data], {
           type: data.type || "application/octet-stream",
         });
@@ -278,7 +282,7 @@ function UserView() {
               }}
               zoom={zoom}
               setZoom={setZoom}
-              handleDownload={handleDownload()}
+              handleDownload={handleDownload}
             />
           ) : (
             <p className="text-gray-600">Select a file to view its details</p>

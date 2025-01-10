@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import StylizedButton from "../components/stylized-button";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
+import StylizedButton from "../components/stylized-button";
 
 function NewComponent({ email }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -10,6 +11,7 @@ function NewComponent({ email }) {
   const [newOrg, setNewOrg] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showPricingTable, setShowPricingTable] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     // Fetch the latest profile data on component mount
@@ -67,14 +69,12 @@ function NewComponent({ email }) {
         return;
       }
 
-      const { error } = await supabase
-        .from("profile_updates")
-        .insert({
-          user_email: email,
-          new_name: newName,
-          new_organization: newOrg,
-          updated_at: new Date().toISOString(),
-        });
+      const { error } = await supabase.from("profile_updates").insert({
+        user_email: email,
+        new_name: newName,
+        new_organization: newOrg,
+        updated_at: new Date().toISOString(),
+      });
 
       if (error) {
         console.error("Error saving profile update:", error.message);
@@ -89,11 +89,15 @@ function NewComponent({ email }) {
   };
 
   const handleSubscribe = () => {
-    setShowPricingTable(true);
+    // setShowPricingTable(true);
+    router.push("/subscription"); // Update to match your folder structure
   };
 
   const handleManageSubscription = () => {
-    window.location.href = "https://billing.stripe.com/p/login/7sI5mU7e46wE7MQ144";
+    // Redirect to Stripe Customer Portal for managing subscription
+    window.location.href =
+      "https://billing.stripe.com/p/login/7sI5mU7e46wE7MQ144";
+    /*   window.location.href = "https://billing.stripe.com/p/login/7sI5mU7e46wE7MQ144"; */
   };
 
   return (
@@ -122,7 +126,9 @@ function NewComponent({ email }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold mb-1">Organization</label>
+                <label className="block text-sm font-bold mb-1">
+                  Organization
+                </label>
                 <input
                   type="text"
                   value={newOrg}
@@ -166,16 +172,30 @@ function NewComponent({ email }) {
             <h2 className="text-2xl font-medium">Subscription</h2>
             <StylizedButton
               text={isSubscribed ? "Manage" : "Subscribe"}
-              onClick={isSubscribed ? handleManageSubscription : handleSubscribe}
+              onClick={
+                isSubscribed ? handleManageSubscription : handleSubscribe
+              }
             />
           </div>
 
           {showPricingTable && (
             <div className="mt-4">
-              <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
-              <stripe-pricing-table
+              <script
+                async
+                src="https://js.stripe.com/v3/pricing-table.js"
+              ></script>
+              {/*  <stripe-pricing-table
                 pricing-table-id="prctbl_1QfSw5E43xWZCXH3onBilnVu"
                 publishable-key="pk_live_51QX5gGE43xWZCXH3ivdyoCspjeEUT2TVUCeNyAvwykKpSw95ZayoUndnephVBzkySNaqtjvJ0JVjTU4KEW7GLdN100uKErd8KG"
+              ></stripe-pricing-table>
+
+              <script
+                async
+                src="https://js.stripe.com/v3/pricing-table.js"
+              ></script> */}
+              <stripe-pricing-table
+                pricing-table-id="prctbl_1QfokrE43xWZCXH3U7IfKTYf"
+                publishable-key="pk_test_51QX5gGE43xWZCXH3LJ2HhFEboXxnv9Xas2Nnwm2vCmvyijbxXIV17UrkpTRgVELKcAsFUNYakl1nGFaItc0oC51N00jOTphvFi"
               ></stripe-pricing-table>
             </div>
           )}
@@ -185,13 +205,15 @@ function NewComponent({ email }) {
         <div className="bg-white rounded-xl p-6 shadow-lg relative">
           <div className="flex items-center justify-between gap-4">
             <h2 className="text-2xl font-medium">Support</h2>
-            <StylizedButton text="Chat" onClick={() => alert("Support chat clicked")} />
+            <StylizedButton
+              text="Chat"
+              onClick={() => alert("Support chat clicked")}
+            />
           </div>
         </div>
       </div>
     </div>
   );
 }
-
 
 export default NewComponent;

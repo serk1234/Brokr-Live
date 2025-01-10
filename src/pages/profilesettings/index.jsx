@@ -1,13 +1,10 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import NewComponent from "../../components/new-component";
-import StylizedButton from "../../components/stylized-button";
-import HeaderLive from "../../components/header-live";
+import { useEffect, useState } from "react";
+import { supabase } from "../../../src/app/supabaseClient";
 import "../../app/globals.css";
 import Footer from "../../components/footer";
-import { supabase } from "../../../src/app/supabaseClient";
-
-
+import HeaderLive from "../../components/header-live";
+import NewComponent from "../../components/new-component";
 
 function MainComponent() {
   const [name, setName] = useState("");
@@ -39,8 +36,6 @@ function MainComponent() {
     setAutoUpgrade(!autoUpgrade);
     setHasChanges(true);
   };
-
-
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -91,7 +86,6 @@ function MainComponent() {
         storageUsed={storageUsed}
         storageLimit={storageLimit}
       />
-
 
       {/* Footer */}
       <Footer title="Create" logoSrc="/logo.png" />
