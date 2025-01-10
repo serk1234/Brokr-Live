@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import StylizedButton from "../components/stylized-button";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
+import StylizedButton from "../components/stylized-button";
 
 function NewComponent({ email }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -15,6 +16,7 @@ function NewComponent({ email }) {
   const [showPricingTable, setShowPricingTable] = useState(false);
   const [storageUsed] = useState(35);
   const [storageLimit] = useState(50);
+  const router = useRouter();
 
   useEffect(() => {
     // Fetch subscription status from Supabase
@@ -43,12 +45,14 @@ function NewComponent({ email }) {
   }, [email]);
 
   const handleSubscribe = () => {
-    setShowPricingTable(true);
+    // setShowPricingTable(true);
+    router.push("/subscription"); // Update to match your folder structure
   };
 
   const handleManageSubscription = () => {
     // Redirect to Stripe Customer Portal for managing subscription
-    window.location.href = "https://billing.stripe.com/p/login/7sI5mU7e46wE7MQ144";
+    window.location.href =
+      "https://billing.stripe.com/p/login/7sI5mU7e46wE7MQ144";
   };
 
   const handleEditSubmit = () => {
@@ -67,11 +71,16 @@ function NewComponent({ email }) {
                   <i className="fas fa-user text-2xl"></i>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-medium font-open-sans">Profile</h2>
+                  <h2 className="text-2xl font-medium font-open-sans">
+                    Profile
+                  </h2>
                 </div>
               </div>
               <div className="absolute right-6">
-                <StylizedButton text="Edit" onClick={() => setIsEditing(true)} />
+                <StylizedButton
+                  text="Edit"
+                  onClick={() => setIsEditing(true)}
+                />
               </div>
             </div>
 
@@ -152,13 +161,17 @@ function NewComponent({ email }) {
                   <i className="fas fa-crown text-2xl"></i>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-medium font-open-sans">Subscription</h2>
+                  <h2 className="text-2xl font-medium font-open-sans">
+                    Subscription
+                  </h2>
                 </div>
               </div>
               <div className="absolute right-6">
                 <StylizedButton
                   text={isSubscribed ? "Manage" : "Subscribe"}
-                  onClick={isSubscribed ? handleManageSubscription : handleSubscribe}
+                  onClick={
+                    isSubscribed ? handleManageSubscription : handleSubscribe
+                  }
                 />
               </div>
             </div>
@@ -166,7 +179,10 @@ function NewComponent({ email }) {
             {showPricingTable && (
               <div className="mt-4">
                 {/* Embed Stripe Pricing Table */}
-                <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
+                <script
+                  async
+                  src="https://js.stripe.com/v3/pricing-table.js"
+                ></script>
                 <stripe-pricing-table
                   pricing-table-id="prctbl_1QfSw5E43xWZCXH3onBilnVu"
                   publishable-key="pk_live_51QX5gGE43xWZCXH3ivdyoCspjeEUT2TVUCeNyAvwykKpSw95ZayoUndnephVBzkySNaqtjvJ0JVjTU4KEW7GLdN100uKErd8KG"
