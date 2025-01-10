@@ -14,13 +14,14 @@ function MainComponent() {
   const [organization, setOrganization] = useState("");
 
   const [isEditing, setIsEditing] = useState(false);
-  const [newName, setNewName] = useState(name);
+  const [newName, setNewName] = useState("");
 
   const [showStripe, setShowStripe] = useState(false);
   const [storageUsed] = useState(35);
   const [storageLimit] = useState(50);
   const [autoUpgrade, setAutoUpgrade] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+
   const [newOrg, setNewOrg] = useState("XYZ Inc.");
   const [email, setEmail] = useState("");
 
