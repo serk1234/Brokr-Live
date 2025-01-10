@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
 import StylizedButton from "../components/stylized-button";
@@ -10,6 +11,7 @@ function NewComponent({ email }) {
   const [newOrg, setNewOrg] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showPricingTable, setShowPricingTable] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     // Fetch the latest profile data on component mount
