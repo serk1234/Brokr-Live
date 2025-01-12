@@ -15,6 +15,33 @@ function Dashboard({
   const [totalActiveUser, setTotalActiveUser] = useState("Loading...");
   const [totalDownloads, setTotalDownloads] = useState("Loading...");
   const [timeSpent, setTimeSpend] = useState("Loading...");
+  const [documentList, setDocumentList] = useState([]);
+
+
+  const incrementFileViews = async (fileId) => {
+    try {
+      const { data, error } = await supabase
+        .from("file_uploads")
+        .update({ views: supabase.raw("views + 1") }) // Increment the views
+        .eq("id", fileId);
+
+      if (error) {
+        console.error("Error updating views:", error.message);
+      } else {
+        console.log("Views updated successfully:", data);
+      }
+    } catch (err) {
+      console.error("Unexpected error updating views:", err.message);
+    }
+  };
+
+  const handleFileView = async (file) => {
+    // Increment the views count
+    await incrementFileViews(file.id);
+
+    // Load the file URL or perform other actions
+    console.log(`File viewed: ${file.name}`);
+  };
 
   const handleViewClick = (section) => {
     const routes = {
@@ -28,26 +55,54 @@ function Dashboard({
 
   useEffect(() => {
     const fetchUserSessionAndData = async () => {
-      var result = await supabase
-        .from("datarooms")
-        .select("*,file_uploads(*),invited_users(*),file_downloads(*) ")
-        .eq("id", dataroomId)
-        .single();
-      console.log(result);
-      if (result.error) {
-        console.log(result.error);
-        return;
+      try {
+        const result = await supabase
+          .from("datarooms")
+          .select("*, file_uploads(*), invited_users(*), file_downloads(*)")
+          .eq("id", dataroomId)
+          .single();
+
+        if (result.error) {
+          console.error(result.error);
+          return;
+        }
+
+        const dataroomData = result.data;
+
+        // Calculate total users and active users
+        setTotalUser(dataroomData.invited_users.length.toString());
+        setTotalActiveUser(
+          dataroomData.invited_users
+            .filter((user) => user.status === "active")
+            .length.toString()
+        );
+
+        // Calculate total downloads
+        setTotalDownloads(dataroomData.file_downloads.length.toString());
+
+        // Process document data for views and downloads
+        const formattedDocuments = dataroomData.file_uploads.map((file) => {
+          const views = file.views || 0; // Add a views field to your database if it doesn't exist
+          const downloads = dataroomData.file_downloads.filter(
+            (download) => download.file_id === file.id
+          ).length;
+
+          return {
+            name: file.name,
+            views,
+            downloads,
+            dateAdded: new Date(file.upload_at).toLocaleDateString(),
+          };
+        });
+
+        setDocumentList(formattedDocuments); // Updated to use renamed setter
+      } catch (err) {
+        console.error("Error fetching data:", err.message);
       }
-      setTotalUser(result.data.invited_users.length.toString());
-      setTotalDownloads(result.data.file_downloads.length.toString());
-      setTotalActiveUser(
-        result.data.invited_users
-          .filter((e) => e.status == "active")
-          .length.toString()
-      );
     };
+
     fetchUserSessionAndData();
-  }, []);
+  }, [dataroomId]);
 
   return (
     <div className="bg-white text-black p-8 rounded-2xl">
@@ -123,11 +178,10 @@ function Dashboard({
                   </div>
                 </div>
                 <div
-                  className={`px-2 py-1 rounded text-xs ${
-                    member.role === "Admin"
-                      ? "bg-[#A3E636] text-white"
-                      : "bg-[#ddd] text-gray-700"
-                  }`}
+                  className={`px-2 py-1 rounded text-xs ${member.role === "Admin"
+                    ? "bg-[#A3E636] text-white"
+                    : "bg-[#ddd] text-gray-700"
+                    }`}
                 >
                   {member.role === "Admin" ? "Full Access" : "View Only"}
                 </div>
@@ -214,7 +268,7 @@ function Dashboard({
           </button>
         </div>
         <div className="space-y-4">
-          {documents.map((doc, index) => (
+          {documentList.map((doc, index) => (
             <div
               key={index}
               className="flex items-center justify-between p-4 bg-[#eee] rounded-xl hover:bg-[#e2e2e2] transition-all duration-300 group"
@@ -258,94 +312,6 @@ function Dashboard({
   );
 }
 
-function StoryComponent() {
-  const mockData = {
-    stats: {
-      totalUsers: 342,
-      userGrowth: 12,
-      activeUsers: 156,
-      activeGrowth: 8,
-      downloads: 1234,
-      downloadGrowth: 15,
-      timeSpent: "456h",
-      timeGrowth: 10,
-    },
-    teamMembers: [
-      { name: "John Doe", role: "Admin", status: "Full Access" },
-      { name: "Jane Smith", role: "Editor", status: "View Only" },
-      { name: "Bob Wilson", role: "Viewer", status: "View Only" },
-      { name: "Alice Brown", role: "Editor", status: "View Only" },
-    ],
-    activeUsers: [
-      {
-        name: "Sarah Johnson",
-        timeSpent: "12h 30m",
-        views: 145,
-        downloads: 23,
-      },
-      { name: "Michael Chen", timeSpent: "10h 15m", views: 98, downloads: 15 },
-      { name: "Emily Davis", timeSpent: "8h 45m", views: 76, downloads: 12 },
-      { name: "James Wilson", timeSpent: "7h 20m", views: 65, downloads: 8 },
-    ],
-    activities: [
-      {
-        type: "view",
-        user: "Sarah Johnson",
-        action: "Viewed Financial Report.pdf",
-        time: "2m ago",
-      },
-      {
-        type: "view",
-        user: "Michael Chen",
-        action: "Viewed Term Sheet.docx",
-        time: "5m ago",
-      },
-      {
-        type: "view",
-        user: "Emily Davis",
-        action: "Viewed Pitch Deck.pptx",
-        time: "10m ago",
-      },
-      {
-        type: "view",
-        user: "James Wilson",
-        action: "Viewed Due Diligence.pdf",
-        time: "15m ago",
-      },
-    ],
-    documents: [
-      {
-        name: "Financial Report.pdf",
-        dateAdded: "2d ago",
-        views: 234,
-        downloads: 45,
-      },
-      {
-        name: "Term Sheet.docx",
-        dateAdded: "3d ago",
-        views: 187,
-        downloads: 32,
-      },
-      {
-        name: "Pitch Deck.pptx",
-        dateAdded: "4d ago",
-        views: 156,
-        downloads: 28,
-      },
-      {
-        name: "Due Diligence.pdf",
-        dateAdded: "5d ago",
-        views: 134,
-        downloads: 23,
-      },
-    ],
-  };
 
-  return (
-    <div className="p-8 bg-white min-h-screen">
-      <MainComponent {...mockData} />
-    </div>
-  );
-}
 
 export default Dashboard;

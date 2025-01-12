@@ -124,7 +124,7 @@ function UserView() {
             const { data: fileData, error: fileError } = await supabase
               .from("file_uploads")
               .select(
-                "name, new_name, uploaded_by, upload_at, locked, file_path, id"
+                "name, new_name, uploaded_by, upload_at, locked, file_path"
               )
               .eq("dataroom_id", dataroomId);
 
@@ -177,8 +177,6 @@ function UserView() {
   };
 
   const handleDownload = async () => {
-    console.log("handle download run");
-
     if (selectedFile) {
       try {
         const { data, error } = await supabase.storage
@@ -189,12 +187,10 @@ function UserView() {
           console.error("Error downloading file:", error.message);
           return;
         }
-        var downloadStatus = await supabase.from("file_downloads").insert({
+        supabase.from("file_downloads").insert({
           dataroom_id: router.query.id,
           file_id: selectedFile.id,
         });
-        console.log(selectedFile, "download status ", downloadStatus);
-
         const blob = new Blob([data], {
           type: data.type || "application/octet-stream",
         });
@@ -234,8 +230,8 @@ function UserView() {
       {showNDA && (
         <Modal
           isOpen={showNDA}
-          onAfterOpen={() => {}}
-          onRequestClose={() => {}}
+          onAfterOpen={() => { }}
+          onRequestClose={() => { }}
           style={customStyles}
           contentLabel="Example Modal"
         >
@@ -255,15 +251,13 @@ function UserView() {
             {files.map((file, index) => (
               <li
                 key={index}
-                className={`flex items-center p-2 rounded-lg cursor-pointer ${
-                  file.locked ? "bg-red-100" : "hover:bg-green-50"
-                }`}
+                className={`flex items-center p-2 rounded-lg cursor-pointer ${file.locked ? "bg-red-100" : "hover:bg-green-50"
+                  }`}
                 onClick={() => handleFileClick(file)}
               >
                 <i
-                  className={`fas ${
-                    file.locked ? "fa-lock" : "fa-file"
-                  } text-gray-500 mr-2`}
+                  className={`fas ${file.locked ? "fa-lock" : "fa-file"
+                    } text-gray-500 mr-2`}
                 ></i>
                 <span className="flex-1 truncate">{getDisplayName(file)}</span>
               </li>
@@ -282,7 +276,7 @@ function UserView() {
               }}
               zoom={zoom}
               setZoom={setZoom}
-              handleDownload={handleDownload}
+              handleDownload={handleDownload()}
             />
           ) : (
             <p className="text-gray-600">Select a file to view its details</p>

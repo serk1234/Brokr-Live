@@ -68,9 +68,8 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         console.log(sanitizeFileName);
         const date = new Date();
 
-        const timestamp = `${date.getFullYear()}-${
-          date.getMonth() + 1
-        }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
+        const timestamp = `${date.getFullYear()}-${date.getMonth() + 1
+          }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
 
         var fileName = timestamp + "_" + sanitizedFileName;
 
@@ -132,9 +131,8 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         </div>
 
         <div
-          className={`relative border-2 border-dashed rounded-xl p-8 text-center ${
-            dragActive ? "border-[#A3E636] bg-[#A3E636]/5" : "border-black/10"
-          }`}
+          className={`relative border-2 border-dashed rounded-xl p-8 text-center ${dragActive ? "border-[#A3E636] bg-[#A3E636]/5" : "border-black/10"
+            }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -189,11 +187,10 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
           <button
             onClick={handleSubmit}
             disabled={!file}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              file
-                ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
-                : "bg-black/5 text-black/40 cursor-not-allowed"
-            }`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${file
+              ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
+              : "bg-black/5 text-black/40 cursor-not-allowed"
+              }`}
           >
             Upload
           </button>
@@ -213,6 +210,7 @@ function Contentmanager({ items = [], dataroomId }) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [fileToRemove, setFileToRemove] = useState(null);
   const [isLocked, setIsLocked] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const customStyles = {
     content: {
@@ -271,8 +269,13 @@ function Contentmanager({ items = [], dataroomId }) {
     }
   };
 
+
   const handleFileView = async (file) => {
-    setSelectedFile(file);
+    setSelectedFile({
+      ...file,
+      uploadedBy: file.uploaded_by, // Include uploader info
+      uploadDate: file.upload_at,  // Include upload date
+    });
     setLoadingContent(true); // Show loader while fetching file URL
 
     try {
@@ -292,6 +295,7 @@ function Contentmanager({ items = [], dataroomId }) {
       setLoadingContent(false); // Hide loader
     }
   };
+
 
   const formatDate = (date) => {
     if (!date) return "N/A"; // Handle null dates
@@ -575,6 +579,18 @@ function Contentmanager({ items = [], dataroomId }) {
     }
   };
 
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    handleResize(); // Initial check
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+
+
+
+
   const gridTemplateColumns =
     "minmax(300px, 2fr) minmax(150px, 1fr) minmax(100px, 0.7fr) minmax(160px, 1fr)";
 
@@ -698,11 +714,10 @@ function Contentmanager({ items = [], dataroomId }) {
         // Existing code for the default view
 
         <div
-          className={`flex flex-col relative ${
-            dragActive
-              ? "after:absolute after:inset-0 after:bg-[#A3E636]/5 after:border-2 after:border-dashed after:border-[#A3E636] after:rounded-2xl after:pointer-events-none"
-              : ""
-          }`}
+          className={`flex flex-col relative ${dragActive
+            ? "after:absolute after:inset-0 after:bg-[#A3E636]/5 after:border-2 after:border-dashed after:border-[#A3E636] after:rounded-2xl after:pointer-events-none"
+            : ""
+            }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -768,9 +783,8 @@ function Contentmanager({ items = [], dataroomId }) {
             <div
               key={index}
               style={{ display: "grid", gridTemplateColumns, gap: "1.5rem" }}
-              className={`items-center py-4 px-4 hover:bg-black/5 transition-colors ${
-                file.locked ? "bg-amber-50" : ""
-              }`}
+              className={`items-center py-4 px-4 hover:bg-black/5 transition-colors ${file.locked ? "bg-amber-50" : ""
+                }`}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <span className="shrink-0 w-10 h-10 flex items-center justify-center bg-[#A3E636]/10 rounded-xl">
