@@ -1,6 +1,6 @@
 "use client";
 
-import { supabase } from "@/app/supabaseClient";
+import { supabase } from "../../src/app/supabaseClient";
 import { useEffect, useState } from "react";
 
 function Dashboard({
