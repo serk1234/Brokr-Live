@@ -38,6 +38,44 @@ function MainComponent() {
   };
 
   useEffect(() => {
+    const handleRedirectToPortal = async () => {
+      if (!customerId) {
+        alert("Please enter a valid Customer ID.");
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const response = await fetch("/api/create-customer-portal-session", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            customerId,
+            returnUrl: "https://example.com/account", // Replace with your return URL
+          }),
+        });
+
+        const { url, error } = await response.json();
+
+        if (error) {
+          console.error("Error:", error);
+          alert("Could not redirect to the customer portal.");
+          setLoading(false);
+          return;
+        }
+
+        // Redirect to the Stripe billing portal
+        window.location.href = url;
+      } catch (err) {
+        console.error("Unexpected error:", err.message);
+        alert("Something went wrong. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
     const fetchUser = async () => {
       const {
         data: { user },
