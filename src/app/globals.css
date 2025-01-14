@@ -3,6 +3,26 @@
 @tailwind utilities;
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 
+
+header {
+    position: relative;
+    /* Establish stacking context */
+    z-index: 50;
+    /* Ensure the header is above other elements */
+}
+
+.dropdown-overlay {
+    z-index: 40;
+    /* Ensures overlay is below dropdown but above content */
+}
+
+.dropdown-content {
+    z-index: 50;
+    /* Ensures dropdown is on top of overlay */
+}
+
+
+
 /* Sidebar Styles */
 /* Scoped Sidebar Styles */
 .team-view .sidebar {

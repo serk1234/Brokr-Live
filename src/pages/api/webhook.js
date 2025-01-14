@@ -11,8 +11,10 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-  if (req.method === "POST") {
+  if (req.method === "POST" || true) {
+    console.log(req.headers);
     const sig = req.headers["stripe-signature"];
+    console.log(process.env.STRIPE_WEBHOOK_SECRET);
     let event;
     try {
       // Read the raw body
@@ -26,7 +28,11 @@ export default async function handler(req, res) {
       );
     } catch (err) {
       console.error("Webhook signature verification failed:", err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
+      return res
+        .status(400)
+        .send(
+          `Webhook Error: ${err.message} ${process.env.STRIPE_WEBHOOK_SECRET} ${sig}`
+        );
     }
 
     if (!event.type) {
@@ -90,7 +96,5 @@ export default async function handler(req, res) {
 
     res.json({ received: true });
   } else {
-    res.setHeader("Allow", "POST");
-    res.status(405).end("Method Not Allowed");
   }
 }

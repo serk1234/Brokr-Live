@@ -68,9 +68,8 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         console.log(sanitizeFileName);
         const date = new Date();
 
-        const timestamp = `${date.getFullYear()}-${
-          date.getMonth() + 1
-        }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
+        const timestamp = `${date.getFullYear()}-${date.getMonth() + 1
+          }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
 
         var fileName = timestamp + "_" + sanitizedFileName;
 
@@ -132,9 +131,8 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         </div>
 
         <div
-          className={`relative border-2 border-dashed rounded-xl p-8 text-center ${
-            dragActive ? "border-[#A3E636] bg-[#A3E636]/5" : "border-black/10"
-          }`}
+          className={`relative border-2 border-dashed rounded-xl p-8 text-center ${dragActive ? "border-[#A3E636] bg-[#A3E636]/5" : "border-black/10"
+            }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -189,11 +187,10 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
           <button
             onClick={handleSubmit}
             disabled={!file}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              file
-                ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
-                : "bg-black/5 text-black/40 cursor-not-allowed"
-            }`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${file
+              ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
+              : "bg-black/5 text-black/40 cursor-not-allowed"
+              }`}
           >
             Upload
           </button>
@@ -271,27 +268,37 @@ function Contentmanager({ items = [], dataroomId }) {
     }
   };
 
+
   const handleFileView = async (file) => {
-    setSelectedFile(file);
-    setLoadingContent(true); // Show loader while fetching file URL
+    setSelectedFile({
+      ...file,
+      uploadedBy: file.uploaded_by,
+      uploadDate: file.upload_at,
+    });
+    setLoadingContent(true);
 
     try {
+      const fileName = file.new_name || file.name; // Use new_name if available
       const { data, error } = await supabase.storage
         .from("file_uploads")
-        .getPublicUrl(`files/${file.name}`);
+        .getPublicUrl(`files/${dataroomId}/${fileName}`);
 
       if (error) {
         console.error("Error fetching file URL:", error.message);
         setFileURL("");
       } else {
-        setFileURL(data.publicUrl); // Set the file's public URL
+        setFileURL(data.publicUrl);
       }
     } catch (err) {
       console.error("Unexpected error fetching file URL:", err.message);
     } finally {
-      setLoadingContent(false); // Hide loader
+      setLoadingContent(false);
     }
   };
+
+
+
+
 
   const formatDate = (date) => {
     if (!date) return "N/A"; // Handle null dates
@@ -578,6 +585,36 @@ function Contentmanager({ items = [], dataroomId }) {
   const gridTemplateColumns =
     "minmax(300px, 2fr) minmax(150px, 1fr) minmax(100px, 0.7fr) minmax(160px, 1fr)";
 
+  function ConfirmModal({ onClose, onConfirm }) {
+    console.log("ConfirmModal rendered"); // Debugging log
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
+        <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+          <h2 className="text-lg font-semibold mb-4">
+            Are you sure you want to remove the file "{fileToRemove?.name}"?
+          </h2>
+          <p className="text-sm text-gray-600 mb-6">
+            This action cannot be undone.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-black rounded-lg"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+              onClick={onConfirm}
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full bg-transparent rounded-2xl border border-black p-6 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
       {selectedFile ? (
@@ -667,7 +704,8 @@ function Contentmanager({ items = [], dataroomId }) {
                 icon="fa-trash"
                 onClick={() => {
                   console.log("Opening confirmation modal"); // Debugging log
-                  setFileToRemove(selectedFile); // Set the file to remove
+                  setFileToRemove(selectedFile);
+                  setShowConfirmModal(true); // Set the file to remove
                   // Open the confirmation modal
                 }}
                 variant="danger"
@@ -685,12 +723,22 @@ function Contentmanager({ items = [], dataroomId }) {
                 }
                 variant="secondary"
               />
-              <ModernButton
-                text={selectedFile.locked ? "Unlock" : "Lock"}
-                icon={selectedFile.locked ? "fa-lock-open" : "fa-lock"}
-                onClick={() => toggleLock(selectedFile)}
-                variant="primary"
-              />
+
+
+              {showConfirmModal && (
+                <ConfirmModal
+                  onClose={() => setShowConfirmModal(false)}
+                  onConfirm={() => {
+                    handleRemove(fileToRemove); // Remove the file
+                    setSelectedFile(null); // Clear selected file
+                    setShowConfirmModal(false); // Close the modal
+                  }}
+                />
+              )}
+
+
+
+
             </div>
           </div>
         </div>
@@ -698,11 +746,10 @@ function Contentmanager({ items = [], dataroomId }) {
         // Existing code for the default view
 
         <div
-          className={`flex flex-col relative ${
-            dragActive
-              ? "after:absolute after:inset-0 after:bg-[#A3E636]/5 after:border-2 after:border-dashed after:border-[#A3E636] after:rounded-2xl after:pointer-events-none"
-              : ""
-          }`}
+          className={`flex flex-col relative ${dragActive
+            ? "after:absolute after:inset-0 after:bg-[#A3E636]/5 after:border-2 after:border-dashed after:border-[#A3E636] after:rounded-2xl after:pointer-events-none"
+            : ""
+            }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -768,9 +815,8 @@ function Contentmanager({ items = [], dataroomId }) {
             <div
               key={index}
               style={{ display: "grid", gridTemplateColumns, gap: "1.5rem" }}
-              className={`items-center py-4 px-4 hover:bg-black/5 transition-colors ${
-                file.locked ? "bg-amber-50" : ""
-              }`}
+              className={`items-center py-4 px-4 hover:bg-black/5 transition-colors ${file.locked ? "bg-amber-50" : ""
+                }`}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <span className="shrink-0 w-10 h-10 flex items-center justify-center bg-[#A3E636]/10 rounded-xl">
@@ -846,11 +892,16 @@ function Contentmanager({ items = [], dataroomId }) {
                   )}
                 </button>
                 <button
-                  onClick={() => handleRemove(file)}
+                  onClick={() => {
+                    console.log("Opening confirmation modal for:", file.name); // Debugging log
+                    setFileToRemove(file); // Set the file to be removed
+                    setShowConfirmModal(true); // Show confirmation modal
+                  }}
                   className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-red-50 text-red-500 transition-colors"
                 >
                   <i className="fas fa-trash"></i>
                 </button>
+
               </div>
             </div>
           ))}
@@ -863,6 +914,16 @@ function Contentmanager({ items = [], dataroomId }) {
           dataroomId={dataroomId}
         />
       )}
+      {showConfirmModal && (
+        <ConfirmModal
+          onClose={() => setShowConfirmModal(false)}
+          onConfirm={() => {
+            handleRemove(fileToRemove); // Remove the selected file
+            setShowConfirmModal(false); // Close the modal
+          }}
+        />
+      )}
+
     </div>
   );
 }

@@ -23,14 +23,14 @@ function Usermanagement() {
         console.error("Dataroom ID is missing");
         return;
       }
-  
+
       const { data, error } = await supabase
         .from("invited_users")
         .select("*")
         .eq("dataroom_id", dataroomId); // Filter users by dataroom_id
-  
+
       if (error) throw error;
-  
+
       setInvitedUsers(data.filter((user) => user.status === "invited"));
       setActiveUsers(data.filter((user) => user.status === "active"));
       setArchivedUsers(data.filter((user) => user.status === "archived"));
@@ -38,7 +38,7 @@ function Usermanagement() {
       console.error("Error fetching users:", err.message);
     }
   };
-  
+
 
   useEffect(() => {
     const dataroomId = router.query.id; // Get dataroom ID from router or props
@@ -46,7 +46,7 @@ function Usermanagement() {
       fetchUsers(dataroomId); // Fetch users for the current dataroom
     }
   }, [router.query.id]);
-  
+
 
   // Watch for session changes and update the status to "active"
   useEffect(() => {
@@ -126,7 +126,7 @@ function Usermanagement() {
       console.error("Dataroom ID is not defined");
       return false;
     }
-  
+
     try {
       const payload = {
         email: inviteeEmail,
@@ -135,16 +135,16 @@ function Usermanagement() {
         invited_at: new Date().toISOString(),
         invited_by: inviterEmail,
       };
-  
+
       console.log("Payload to insert:", payload);
-  
+
       const { error } = await supabase.from("invited_users").insert(payload);
-  
+
       if (error) {
         console.error("Error inviting user:", error.message);
         return false;
       }
-  
+
       console.log(`User ${inviteeEmail} invited to dataroom ID ${dataroomId}`);
       return true;
     } catch (err) {
@@ -152,25 +152,25 @@ function Usermanagement() {
       return false;
     }
   };
-  
+
 
   const sendInvites = async () => {
     setLoading(true);
     const inviterEmail = (await supabase.auth.getUser()).data.user.email; // Get inviter's email
     const dataroomId = router.query.id; // Dynamically get the dataroom ID from the router
-  
+
     if (!dataroomId) {
       alert("No valid dataroom ID found for this invitation.");
       setLoading(false);
       return;
     }
-  
+
     try {
       for (const email of inviteEmails) {
         if (email.trim()) {
           // Send Magic Link
           await sendMagicLink(email, inviterEmail);
-  
+
           // Add the user to the dataroom via handleInvite
           const success = await handleInvite(email, dataroomId, inviterEmail);
           if (!success) {
@@ -178,7 +178,7 @@ function Usermanagement() {
           }
         }
       }
-  
+
       alert("Invitations sent successfully!");
       setInviteEmails([""]); // Reset emails
       fetchUsers(); // Refresh user list
@@ -190,7 +190,7 @@ function Usermanagement() {
       setLoading(false);
     }
   };
-  
+
 
   return (
     <div className="p-6">
@@ -209,9 +209,8 @@ function Usermanagement() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-full font-medium ${
-              activeTab === tab ? "bg-[#A3E636] text-white" : "bg-gray-200"
-            }`}
+            className={`px-4 py-2 rounded-full font-medium ${activeTab === tab ? "bg-[#A3E636] text-white" : "bg-gray-200"
+              }`}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
@@ -226,7 +225,7 @@ function Usermanagement() {
               className="flex justify-between items-center bg-gray-50 p-4 rounded-lg shadow-sm"
             >
               <div>
-                <div className="font-medium">{user.name || "N/A"}</div>
+                <div className="font-medium">{user.name || ""}</div>
                 <div className="text-sm text-gray-600">{user.email}</div>
               </div>
               <div className="text-sm text-gray-500">
@@ -241,11 +240,11 @@ function Usermanagement() {
               className="flex justify-between items-center bg-gray-50 p-4 rounded-lg shadow-sm"
             >
               <div>
-                <div className="font-medium">{user.name || "N/A"}</div>
+                <div className="font-medium">{user.name || ""}</div>
                 <div className="text-sm text-gray-600">{user.email}</div>
               </div>
               <div className="text-sm text-gray-500">
-                Invited by: {user.invited_by || "N/A"}
+                Invited by: {user.invited_by || ""}
                 <br />
                 {new Date(user.invited_at).toLocaleString()}
               </div>
@@ -258,7 +257,7 @@ function Usermanagement() {
               className="flex justify-between items-center bg-gray-50 p-4 rounded-lg shadow-sm"
             >
               <div>
-                <div className="font-medium">{user.name || "N/A"}</div>
+                <div className="font-medium">{user.name || ""}</div>
                 <div className="text-sm text-gray-600">{user.email}</div>
               </div>
               <div className="text-sm text-gray-500">
