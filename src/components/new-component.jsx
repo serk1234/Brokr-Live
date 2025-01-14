@@ -12,7 +12,41 @@ function NewComponent({ email }) {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showPricingTable, setShowPricingTable] = useState(false);
   const router = useRouter();
+  const [customerId, setCustomerId] = useState("");
+  const handleRedirectToPortal = async () => {
+    if (!customerId) {
+      alert("Please enter a valid Customer ID.");
+      return;
+    }
 
+    try {
+      const response = await fetch("/api/create-customer-portal-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerId,
+          returnUrl: "https://example.com/account", // Replace with your return URL
+        }),
+      });
+
+      const { url, error } = await response.json();
+
+      if (error) {
+        console.error("Error:", error);
+        alert("Could not redirect to the customer portal.");
+        return;
+      }
+      // Redirect to the Stripe billing portal
+      window.location.href = url;
+    } catch (err) {
+      console.error("Unexpected error:", err.message);
+      alert("Something went wrong. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     // Fetch the latest profile data on component mount
     const fetchProfileData = async () => {
@@ -50,6 +84,15 @@ function NewComponent({ email }) {
 
         if (data) {
           setIsSubscribed(true);
+
+          const user_stripe = await supabase
+            .from("user_stripe")
+            .select("*")
+            .eq("email", email)
+            .single();
+          if (user_stripe.data) {
+            setCustomerId(user_stripe.data.customer_id);
+          }
         } else if (error) {
           console.log("No active subscription found:", error.message);
         }
@@ -95,9 +138,10 @@ function NewComponent({ email }) {
 
   const handleManageSubscription = () => {
     // Redirect to Stripe Customer Portal for managing subscription
-    window.location.href =
-      "https://billing.stripe.com/p/login/7sI5mU7e46wE7MQ144";
+    // window.location.href =
+    // "https://billing.stripe.com/p/login/7sI5mU7e46wE7MQ144";
     /*   window.location.href = "https://billing.stripe.com/p/login/7sI5mU7e46wE7MQ144"; */
+    handleRedirectToPortal();
   };
 
   return (

@@ -60,7 +60,8 @@ export default async function handler(req, res) {
     // Handle the event
     switch (event.type) {
       //   case "payment_intent.succeeded":
-      case "invoice.payment_succeeded":
+      // case "invoice.payment_succeeded":
+      case "customer.subscription.created":
         const paymentIntent = event.data.object;
         console.log(event.type, customerEmail);
         console.log(paymentIntent.id);
@@ -76,6 +77,18 @@ export default async function handler(req, res) {
           stripe_subscription_id: paymentIntent.id,
           status: "sa",
         });
+        console.log(result);
+        break;
+      case "customer.subscription.deleted":
+        const paymentIntent1122 = event.data.object;
+        console.log(event.type, customerEmail);
+        console.log(paymentIntent1122.id);
+        console.log(paymentIntent1122);
+        console.log(paymentIntent1122.plan);
+        var result = await supabase
+          .from("subscriptions")
+          .delete()
+          .eq("email", customerEmail);
         console.log(result);
         break;
       case "customer.subscription.created":
