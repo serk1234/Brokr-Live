@@ -102,6 +102,10 @@ function HeaderLive({ email }) {
               }
             />
             {dataroomOpen && (
+
+
+
+
               <div className="absolute left-0 mt-2 w-[320px] bg-black/95 backdrop-blur-xl border border-gray-800 rounded-xl shadow-2xl p-2 transition-all duration-200 ease-in-out">
                 {/* Team Datarooms */}
                 <div className="mb-2">

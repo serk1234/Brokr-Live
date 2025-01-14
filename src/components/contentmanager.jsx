@@ -210,7 +210,6 @@ function Contentmanager({ items = [], dataroomId }) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [fileToRemove, setFileToRemove] = useState(null);
   const [isLocked, setIsLocked] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
   const customStyles = {
     content: {
@@ -273,28 +272,32 @@ function Contentmanager({ items = [], dataroomId }) {
   const handleFileView = async (file) => {
     setSelectedFile({
       ...file,
-      uploadedBy: file.uploaded_by, // Include uploader info
-      uploadDate: file.upload_at,  // Include upload date
+      uploadedBy: file.uploaded_by,
+      uploadDate: file.upload_at,
     });
-    setLoadingContent(true); // Show loader while fetching file URL
+    setLoadingContent(true);
 
     try {
+      const fileName = file.new_name || file.name; // Use new_name if available
       const { data, error } = await supabase.storage
         .from("file_uploads")
-        .getPublicUrl(`files/${file.name}`);
+        .getPublicUrl(`files/${dataroomId}/${fileName}`);
 
       if (error) {
         console.error("Error fetching file URL:", error.message);
         setFileURL("");
       } else {
-        setFileURL(data.publicUrl); // Set the file's public URL
+        setFileURL(data.publicUrl);
       }
     } catch (err) {
       console.error("Unexpected error fetching file URL:", err.message);
     } finally {
-      setLoadingContent(false); // Hide loader
+      setLoadingContent(false);
     }
   };
+
+
+
 
 
   const formatDate = (date) => {
@@ -579,20 +582,38 @@ function Contentmanager({ items = [], dataroomId }) {
     }
   };
 
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    handleResize(); // Initial check
-    window.addEventListener("resize", handleResize);
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-
-
-
-
   const gridTemplateColumns =
     "minmax(300px, 2fr) minmax(150px, 1fr) minmax(100px, 0.7fr) minmax(160px, 1fr)";
+
+  function ConfirmModal({ onClose, onConfirm }) {
+    console.log("ConfirmModal rendered"); // Debugging log
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
+        <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+          <h2 className="text-lg font-semibold mb-4">
+            Are you sure you want to remove the file "{fileToRemove?.name}"?
+          </h2>
+          <p className="text-sm text-gray-600 mb-6">
+            This action cannot be undone.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-black rounded-lg"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+              onClick={onConfirm}
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-transparent rounded-2xl border border-black p-6 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
@@ -683,7 +704,8 @@ function Contentmanager({ items = [], dataroomId }) {
                 icon="fa-trash"
                 onClick={() => {
                   console.log("Opening confirmation modal"); // Debugging log
-                  setFileToRemove(selectedFile); // Set the file to remove
+                  setFileToRemove(selectedFile);
+                  setShowConfirmModal(true); // Set the file to remove
                   // Open the confirmation modal
                 }}
                 variant="danger"
@@ -701,12 +723,22 @@ function Contentmanager({ items = [], dataroomId }) {
                 }
                 variant="secondary"
               />
-              <ModernButton
-                text={selectedFile.locked ? "Unlock" : "Lock"}
-                icon={selectedFile.locked ? "fa-lock-open" : "fa-lock"}
-                onClick={() => toggleLock(selectedFile)}
-                variant="primary"
-              />
+
+
+              {showConfirmModal && (
+                <ConfirmModal
+                  onClose={() => setShowConfirmModal(false)}
+                  onConfirm={() => {
+                    handleRemove(fileToRemove); // Remove the file
+                    setSelectedFile(null); // Clear selected file
+                    setShowConfirmModal(false); // Close the modal
+                  }}
+                />
+              )}
+
+
+
+
             </div>
           </div>
         </div>
@@ -860,11 +892,16 @@ function Contentmanager({ items = [], dataroomId }) {
                   )}
                 </button>
                 <button
-                  onClick={() => handleRemove(file)}
+                  onClick={() => {
+                    console.log("Opening confirmation modal for:", file.name); // Debugging log
+                    setFileToRemove(file); // Set the file to be removed
+                    setShowConfirmModal(true); // Show confirmation modal
+                  }}
                   className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-red-50 text-red-500 transition-colors"
                 >
                   <i className="fas fa-trash"></i>
                 </button>
+
               </div>
             </div>
           ))}
@@ -877,6 +914,16 @@ function Contentmanager({ items = [], dataroomId }) {
           dataroomId={dataroomId}
         />
       )}
+      {showConfirmModal && (
+        <ConfirmModal
+          onClose={() => setShowConfirmModal(false)}
+          onConfirm={() => {
+            handleRemove(fileToRemove); // Remove the selected file
+            setShowConfirmModal(false); // Close the modal
+          }}
+        />
+      )}
+
     </div>
   );
 }

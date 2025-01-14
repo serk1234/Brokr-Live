@@ -225,7 +225,7 @@ function Usermanagement() {
               className="flex justify-between items-center bg-gray-50 p-4 rounded-lg shadow-sm"
             >
               <div>
-                <div className="font-medium">{user.name || "N/A"}</div>
+                <div className="font-medium">{user.name || ""}</div>
                 <div className="text-sm text-gray-600">{user.email}</div>
               </div>
               <div className="text-sm text-gray-500">
@@ -240,11 +240,11 @@ function Usermanagement() {
               className="flex justify-between items-center bg-gray-50 p-4 rounded-lg shadow-sm"
             >
               <div>
-                <div className="font-medium">{user.name || "N/A"}</div>
+                <div className="font-medium">{user.name || ""}</div>
                 <div className="text-sm text-gray-600">{user.email}</div>
               </div>
               <div className="text-sm text-gray-500">
-                Invited by: {user.invited_by || "N/A"}
+                Invited by: {user.invited_by || ""}
                 <br />
                 {new Date(user.invited_at).toLocaleString()}
               </div>
@@ -257,7 +257,7 @@ function Usermanagement() {
               className="flex justify-between items-center bg-gray-50 p-4 rounded-lg shadow-sm"
             >
               <div>
-                <div className="font-medium">{user.name || "N/A"}</div>
+                <div className="font-medium">{user.name || ""}</div>
                 <div className="text-sm text-gray-600">{user.email}</div>
               </div>
               <div className="text-sm text-gray-500">

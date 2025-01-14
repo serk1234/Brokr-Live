@@ -160,14 +160,13 @@ function UserView() {
     try {
       const { data, error } = await supabase.storage
         .from("file_uploads")
-        // .getPublicUrl(`files/${file.name}`);
-        .getPublicUrl(file.file_path);
+        .getPublicUrl(file.file_path); // Fetch public URL for viewing
 
       if (error) {
         console.error("Error fetching file URL:", error.message);
         setFileURL("");
       } else {
-        setFileURL(data.publicUrl);
+        setFileURL(data.publicUrl); // Set URL for preview
       }
     } catch (err) {
       console.error("Unexpected error fetching file URL:", err.message);
@@ -276,7 +275,7 @@ function UserView() {
               }}
               zoom={zoom}
               setZoom={setZoom}
-              handleDownload={handleDownload()}
+              handleDownload={handleDownload}
             />
           ) : (
             <p className="text-gray-600">Select a file to view its details</p>
