@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import StylizedButton from "../components/stylized-button";
+
 
 
 function Dashboard({
@@ -229,94 +229,6 @@ function Dashboard({
   );
 }
 
-function StoryComponent() {
-  const mockData = {
-    stats: {
-      totalUsers: 342,
-      userGrowth: 12,
-      activeUsers: 156,
-      activeGrowth: 8,
-      downloads: 1234,
-      downloadGrowth: 15,
-      timeSpent: "456h",
-      timeGrowth: 10,
-    },
-    teamMembers: [
-      { name: "John Doe", role: "Admin", status: "Full Access" },
-      { name: "Jane Smith", role: "Editor", status: "View Only" },
-      { name: "Bob Wilson", role: "Viewer", status: "View Only" },
-      { name: "Alice Brown", role: "Editor", status: "View Only" },
-    ],
-    activeUsers: [
-      {
-        name: "Sarah Johnson",
-        timeSpent: "12h 30m",
-        views: 145,
-        downloads: 23,
-      },
-      { name: "Michael Chen", timeSpent: "10h 15m", views: 98, downloads: 15 },
-      { name: "Emily Davis", timeSpent: "8h 45m", views: 76, downloads: 12 },
-      { name: "James Wilson", timeSpent: "7h 20m", views: 65, downloads: 8 },
-    ],
-    activities: [
-      {
-        type: "view",
-        user: "Sarah Johnson",
-        action: "Viewed Financial Report.pdf",
-        time: "2m ago",
-      },
-      {
-        type: "view",
-        user: "Michael Chen",
-        action: "Viewed Term Sheet.docx",
-        time: "5m ago",
-      },
-      {
-        type: "view",
-        user: "Emily Davis",
-        action: "Viewed Pitch Deck.pptx",
-        time: "10m ago",
-      },
-      {
-        type: "view",
-        user: "James Wilson",
-        action: "Viewed Due Diligence.pdf",
-        time: "15m ago",
-      },
-    ],
-    documents: [
-      {
-        name: "Financial Report.pdf",
-        dateAdded: "2d ago",
-        views: 234,
-        downloads: 45,
-      },
-      {
-        name: "Term Sheet.docx",
-        dateAdded: "3d ago",
-        views: 187,
-        downloads: 32,
-      },
-      {
-        name: "Pitch Deck.pptx",
-        dateAdded: "4d ago",
-        views: 156,
-        downloads: 28,
-      },
-      {
-        name: "Due Diligence.pdf",
-        dateAdded: "5d ago",
-        views: 134,
-        downloads: 23,
-      },
-    ],
-  };
 
-  return (
-    <div className="p-8 bg-white min-h-screen">
-      <MainComponent {...mockData} />
-    </div>
-  );
-}
 
 export default Dashboard;

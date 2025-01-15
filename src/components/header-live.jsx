@@ -10,6 +10,7 @@ function HeaderLive({ email }) {
   const [dataroomOpen, setDataroomOpen] = useState(false);
   const [teamDatarooms, setTeamDatarooms] = useState([]);
   const [userDatarooms, setUserDatarooms] = useState([]);
+  const [name, setname] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -74,7 +75,7 @@ function HeaderLive({ email }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      window.location.href = "https://brokr.live";
+      window.location.href = "https://brokr.app";
     } catch (error) {
       console.error("Error logging out:", error.message);
     }
@@ -164,6 +165,7 @@ function HeaderLive({ email }) {
             className="group w-full px-4 py-2 rounded-lg text-gray-800 font-medium bg-gray-200 hover:bg-gray-300 transition-all duration-200 flex items-center gap-2"
           >
             <i className="fas fa-user"></i>
+            <span className="text-white font-medium">{name || ""}</span>
             <i className="fas fa-chevron-down transition-transform duration-200 ease-in-out"></i>
           </button>
           {profileOpen && (

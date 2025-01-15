@@ -13,6 +13,7 @@ function MainComponent() {
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState("");
 
+
   const [showStripe, setShowStripe] = useState(false);
   const [storageUsed] = useState(35);
   const [storageLimit] = useState(50);
@@ -21,6 +22,8 @@ function MainComponent() {
 
   const [newOrg, setNewOrg] = useState("XYZ Inc.");
   const [email, setEmail] = useState("");
+
+
 
   const handleSubmit = () => {
     setName(newName);
@@ -97,7 +100,8 @@ function MainComponent() {
     <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 flex flex-col">
       {/* Header */}
       <div className="relative z-50">
-        <HeaderLive email={email || "Loading..."} />
+      <HeaderLive email={email || "Loading..."} name={newName || ""} />
+
       </div>
 
       {/* Main Content */}

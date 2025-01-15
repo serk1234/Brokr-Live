@@ -89,13 +89,13 @@ function Usermanagement() {
 
   const addEmailField = () => setInviteEmails([...inviteEmails, ""]);
 
-  const sendMagicLink = async (email, inviterEmail) => {
+  const sendMagicLink = async (email, inviterEmail, dataroomId) => {
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
           shouldCreateUser: true,
-          emailRedirectTo: `${window.location.origin}/userview`, // Redirect to the appropriate page
+          emailRedirectTo: `${window.location.origin}/userview?id=${dataroomId}`, // Append dataroomId
         },
       });
       if (error) throw error;
@@ -105,6 +105,7 @@ function Usermanagement() {
       console.error(`Failed to send magic link to ${email}:`, err.message);
     }
   };
+
 
   const fetchDataroomId = async (dataroomName) => {
     const { data, error } = await supabase
@@ -130,7 +131,7 @@ function Usermanagement() {
     try {
       const payload = {
         email: inviteeEmail,
-        dataroom_id: dataroomId, // Ensure this is the correct dataroom ID
+        dataroom_id: dataroomId, // Correct dataroom ID
         status: "invited",
         invited_at: new Date().toISOString(),
         invited_by: inviterEmail,
@@ -154,10 +155,11 @@ function Usermanagement() {
   };
 
 
+
   const sendInvites = async () => {
     setLoading(true);
     const inviterEmail = (await supabase.auth.getUser()).data.user.email; // Get inviter's email
-    const dataroomId = router.query.id; // Dynamically get the dataroom ID from the router
+    const dataroomId = router.query.id; // Get the dataroom ID from the router
 
     if (!dataroomId) {
       alert("No valid dataroom ID found for this invitation.");
@@ -168,8 +170,8 @@ function Usermanagement() {
     try {
       for (const email of inviteEmails) {
         if (email.trim()) {
-          // Send Magic Link
-          await sendMagicLink(email, inviterEmail);
+          // Send Magic Link with dataroomId
+          await sendMagicLink(email, inviterEmail, dataroomId);
 
           // Add the user to the dataroom via handleInvite
           const success = await handleInvite(email, dataroomId, inviterEmail);
@@ -181,7 +183,7 @@ function Usermanagement() {
 
       alert("Invitations sent successfully!");
       setInviteEmails([""]); // Reset emails
-      fetchUsers(); // Refresh user list
+      fetchUsers(dataroomId); // Refresh user list
       handleCloseInvitePopup(); // Close popup
     } catch (err) {
       console.error("Error sending invites:", err.message);

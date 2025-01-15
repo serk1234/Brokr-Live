@@ -3,6 +3,14 @@
 @tailwind utilities;
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 
+@media (max-width: 768px) {
+    .team-view {
+        padding-bottom: 4rem;
+        /* Adjust this value based on the menu height */
+    }
+}
+
+
 
 header {
     position: relative;
