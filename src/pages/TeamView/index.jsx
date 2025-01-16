@@ -18,7 +18,7 @@ import Dashboard from "../../components/dashboard";
 
 function MainComponent() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("contents");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [displayName, setDisplayName] = useState("Loading...");
   const [teamCount, setTeamCount] = useState(0);
   const [newMessages, setNewMessages] = useState(0);
@@ -27,6 +27,8 @@ function MainComponent() {
   const [status, setStatus] = useState("");
   const [organization, setOrganization] = useState("");
   const [dataroomId, setDataroomId] = useState(null);
+
+
 
   // Fetch user session
   useEffect(() => {
@@ -125,9 +127,12 @@ function MainComponent() {
               setOrganization={setOrganization}
             />
           )}
-          {activeTab === "dashboard" && <Dashboard />}
+
+          {activeTab === "dashboard" && dataroomId && (
+            <Dashboard dataroomId={dataroomId} setActiveTab={setActiveTab} />
+          )}
           {activeTab === "users" && <Usermanagement />}
-          {activeTab === "dashboard" && <Dashcompteam />}
+
           {activeTab === "activity" && <Teamactivity activities={[]} />}
           {activeTab === "contents" && dataroomId && (
             <Contentmanager items={[]} dataroomId={dataroomId} />

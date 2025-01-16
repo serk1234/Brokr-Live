@@ -40,16 +40,7 @@ function MainComponent() {
   };
 
   // Google Login
-  const handleGoogleLogin = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-      });
-      if (error) throw error;
-    } catch (error) {
-      console.error("Error:", error.message);
-    }
-  };
+
 
   return (
     <div className="min-h-screen bg-black bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGZpbGw9IiMxYTFhMWEiIGQ9Ik0wIDBoNjB2NjBIMHoiLz48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBzdHJva2U9IiMyNTI1MjUiIHN0cm9rZS13aWR0aD0iLjUiLz48L2c+PC9zdmc+')] flex items-center justify-center px-4">
@@ -82,16 +73,8 @@ function MainComponent() {
           </button>
 
           {/* Or Separator */}
-          <div className="separator">Or</div>
 
-          {/* Continue with Google Button */}
-          <button
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            className={`btn btn-google ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
-          >
-            Continue with Google
-          </button>
+
         </div>
       </div>
     </div>

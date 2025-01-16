@@ -127,7 +127,7 @@ function SecondarySettingsSection({ dataroomId }) {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="font-medium font-semibold">Custom NDA</h3>
-          <p className="text-sm text-gray-500">Modify the NDA template for this dataroom</p>
+          <p className="text-sm text-gray-500">Modify the NDA  for this dataroom</p>
         </div>
         <div className="flex items-center space-x-4">
           <button
@@ -141,9 +141,10 @@ function SecondarySettingsSection({ dataroomId }) {
 
       {/* Custom NDA Template Modal */}
       {showNdaModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-lg w-full">
-            <h3 className="text-xl font-semibold mb-4">Edit NDA Template</h3>
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
+          <div className="bg-gray-100 p-6 rounded-lg max-w-lg w-full shadow-lg">
+            <h3 className="text-xl font-semibold mb-4">Edit NDA </h3>
             <textarea
               value={ndaText}
               onChange={(e) => setNdaText(e.target.value)}
@@ -158,9 +159,9 @@ function SecondarySettingsSection({ dataroomId }) {
               </button>
               <button
                 onClick={handleSaveNdaTemplate}
-                className="px-4 py-2 bg-green-500 text-white rounded"
+                className="px-4 py-2 bg-[#A3E636] rounded border border-black shadow-lg flex items-center gap-2 hover:bg-[#93d626] transition-color"
               >
-                Save Changes
+                Save
               </button>
             </div>
           </div>

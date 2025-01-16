@@ -13,8 +13,7 @@ function Menu({ activeTab, setActiveTab, teamCount, activeUsers, contentCount })
   return (
     <>
       {/* Desktop Sidebar */}
-
-      <div className=" top-sidebar sm:flex hidden flex-col gap-4 p-4 border-r border-gray-100 ">
+      <div className="top-sidebar sm:flex hidden flex-col gap-4 p-4 border-r border-gray-100">
         <ul className="space-y-4">
           {tabs.map((tab) => (
             <li
@@ -22,8 +21,8 @@ function Menu({ activeTab, setActiveTab, teamCount, activeUsers, contentCount })
               className={`group cursor-pointer ${activeTab === tab.name ? "bg-gray-100" : ""}`}
               onClick={() => setActiveTab(tab.name)}
             >
-              <div className="flex items-center p-2 rounded hover:bg-gray-100">
-                <div className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-lg border border-black">
+              <div className="flex items-center p-2 rounded hover:bg-gray-200 hover:text-black transition-colors">
+                <div className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-lg border border-black group-hover:bg-black group-hover:text-white transition-colors">
                   <i className={tab.icon}></i>
                 </div>
                 <span className="ml-3">{tab.label}</span>
@@ -38,15 +37,13 @@ function Menu({ activeTab, setActiveTab, teamCount, activeUsers, contentCount })
         </ul>
       </div>
 
-
       {/* Mobile Bottom Menu */}
       <div className="mobile-bottom-menu fixed bottom-0 w-full bg-gray-100 border-t border-gray-300 flex justify-around py-3 sm:hidden">
         {tabs.map((tab) => (
           <div
             key={tab.name}
             className={`mobile-bottom-menu-item flex flex-col items-center text-xs 
-            ${activeTab === tab.name ? "text-lime-600" : ""
-              }`}
+            ${activeTab === tab.name ? "text-lime-600" : ""}`}
             onClick={() => setActiveTab(tab.name)}
           >
             <i className={`${tab.icon} text-lg`}></i>

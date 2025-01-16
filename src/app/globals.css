@@ -3,6 +3,40 @@
 @tailwind utilities;
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 
+
+
+@media (max-width: 768px) {
+    .mobile-bottom-menu {
+        @apply fixed bottom-0 w-full bg-gray-100 border-t border-gray-300 flex justify-around py-2;
+        z-index: 60;
+        /* Ensure menu is above other content */
+    }
+
+    .mobile-bottom-menu::before {
+        content: '';
+        position: fixed;
+        top: auto;
+        bottom: 100%;
+        left: 0;
+        right: 0;
+        height: calc(100% - 4rem);
+        /* Adjust height based on menu height */
+        background: rgba(0, 0, 0, 0.6);
+        /* Semi-transparent black */
+        z-index: 50;
+        /* Place the backdrop below the menu but above the content */
+    }
+
+    .mobile-bottom-menu-item {
+        @apply flex flex-col items-center text-xs;
+    }
+
+    .mobile-bottom-menu-item i {
+        @apply text-lg mb-1;
+    }
+}
+
+
 @media (max-width: 768px) {
     .team-view {
         padding-bottom: 4rem;

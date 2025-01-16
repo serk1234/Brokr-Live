@@ -207,7 +207,7 @@ function Usermanagement() {
       </div>
 
       <div className="flex gap-4 mb-6">
-        {["active", "invited", "archived"].map((tab) => (
+        {["active", "invited"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}

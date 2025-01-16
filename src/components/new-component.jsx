@@ -251,8 +251,12 @@ function NewComponent({ email }) {
             <h2 className="text-2xl font-medium">Support</h2>
             <StylizedButton
               text="Chat"
-              onClick={() => alert("Support chat clicked")}
+              onClick={() => {
+                window.location.href =
+                  "mailto:contact@hellobrokr.com?bcc=serkan@hellobrokr.com&subject=brokr%20Support";
+              }}
             />
+
           </div>
         </div>
       </div>

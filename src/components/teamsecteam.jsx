@@ -168,16 +168,7 @@ function Teamsecteam({ dataroomName }) {
                 className="w-full p-2 border rounded"
                 required
               />
-              <select
-                value={newUser.permission}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, permission: e.target.value })
-                }
-                className="w-full p-2 border rounded"
-              >
-                <option value="view">View Only</option>
-                <option value="full">Full Access</option>
-              </select>
+
               <button
                 type="submit"
                 disabled={loading}
@@ -209,7 +200,7 @@ function Teamsecteam({ dataroomName }) {
             </div>
             <div>
               <div className="text-gray-600">
-                Permissions: {user.permission}
+
               </div>
               <div className="text-gray-600">
                 Invited By: {user.invited_by || "N/A"}

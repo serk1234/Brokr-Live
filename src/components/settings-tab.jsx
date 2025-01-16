@@ -6,6 +6,7 @@ import { supabase } from "../../src/app/supabaseClient";
 import MainSettingsSection from "./main-settings-section";
 import PrivacyPolicyModal from "./privacypolicy";
 import SecondarySettingsSection from "./secondary-settings-section";
+import ModernButton from "./modern-button";
 
 function SettingsTab({
   dataroomName,
@@ -222,11 +223,9 @@ function SettingsTab({
             </div>
             <button
               onClick={handleToggleLockStatus}
-              className={`px-4 py-2 ${
-                filesLocked ? "bg-green-500" : "bg-amber-400"
-              } rounded border border-black hover:${
-                filesLocked ? "bg-green-600" : "bg-amber-500"
-              } transition`}
+              className={`px-4 py-2 ${filesLocked ? "bg-green-500" : "bg-amber-400"
+                } rounded border border-black hover:${filesLocked ? "bg-green-600" : "bg-amber-500"
+                } transition`}
               disabled={loading}
             >
               <i className={`fas ${filesLocked ? "fa-unlock" : "fa-lock"}`}></i>{" "}
@@ -242,7 +241,7 @@ function SettingsTab({
               </div>
             </div>
             <button
-              className="px-4 py-2 bg-red-500 text-white rounded border border-black hover:bg-red-600 transition"
+              className="px-4 py-2 bg-red-500 text-white rounded border border-black hover:bg-red-600 transition rounded"
               onClick={() => setShowDeleteModal(true)} // Show the modal
             >
               <i className="fas fa-trash"></i> Delete
