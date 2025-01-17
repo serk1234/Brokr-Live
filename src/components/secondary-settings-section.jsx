@@ -96,19 +96,19 @@ function SecondarySettingsSection({ dataroomId }) {
             Users must sign an NDA before accessing content
           </p>
         </div>
+
         <div className="relative w-full sm:w-auto">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="w-full sm:w-auto px-4 py-2 bg-white border border-black rounded shadow cursor-pointer focus:outline-none"
+            className="w-full sm:w-auto px-4 py-2 bg-white border border-black rounded shadow cursor-pointer focus:outline-none min-w-[150px]"
           >
             {ndaOptions[ndaOption]}
             <i
-              className={`fas fa-chevron-down ml-2 ${isOpen ? "rotate-180" : ""
-                }`}
+              className={`fas fa-chevron-down ml-2 ${isOpen ? "rotate-180" : ""}`}
             ></i>
           </button>
           {isOpen && (
-            <div className="absolute right-0 mt-2 w-full sm:w-auto bg-white border border-black rounded shadow z-10">
+            <div className="absolute right-0 mt-2 min-w-[150px] bg-white border border-black rounded shadow z-10">
               {Object.entries(ndaOptions).map(([value, label]) => (
                 <div
                   key={value}
@@ -125,6 +125,7 @@ function SecondarySettingsSection({ dataroomId }) {
             </div>
           )}
         </div>
+
       </div>
 
       {/* Custom NDA Template Section */}
@@ -137,7 +138,7 @@ function SecondarySettingsSection({ dataroomId }) {
         </div>
         <div>
           <ModernButton
-            className="w-full sm:w-auto px-4 py-2 bg-gray-200 border border-black rounded shadow"
+            className="w-full sm:w-auto px-4 py-2 bg-gray-200  rounded shadow"
             onClick={() => setShowNdaModal(true)}
           >
             Edit

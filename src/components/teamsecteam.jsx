@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
+import ModernButton from "./modern-button";
 
 function Teamsecteam({ dataroomName }) {
   const [showPopup, setShowPopup] = useState(false);
@@ -140,23 +141,23 @@ function Teamsecteam({ dataroomName }) {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
-          <div className="text-xl font-semibold">Team</div>
+          <div className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">Team</div>
           <div className="w-8 h-8 flex items-center justify-center bg-[#A3E636] rounded-full border border-black text-sm font-bold">
             {users.length}
           </div>
         </div>
-        <button
+        <ModernButton
           onClick={() => setShowPopup(true)}
-          className="px-4 py-2 bg-[#A3E636] rounded border border-black"
+          className="px-4 py-2 bg-[#A3E636] rounded "
         >
-          <i className="fas fa-user-plus mr-2"></i>Add Team Member
-        </button>
+          <i className="fas fa-user-plus mr-2"></i>Add Team
+        </ModernButton>
       </div>
 
       {showPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg w-[90%] max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Add Team Member</h3>
+            <h3 className="text-lg font-semibold mb-4">Add Team</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 type="email"
@@ -185,23 +186,20 @@ function Teamsecteam({ dataroomName }) {
         {users.map((user, index) => (
           <div
             key={index}
-            className="bg-white p-4 rounded-lg border border-black"
+            className="bg-gray-100 p-6 rounded-lg shadow-sm bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300"
           >
             <div className="flex justify-between items-start mb-4">
               <div>
-                <div className="text-gray-600">{user.user_email}</div>
+                <div className="text-gray-800 font-semibold">{user.user_email}</div>
               </div>
               <button
-                className="w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded"
+                className="w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full"
                 onClick={() => handleRemove(index)}
               >
                 <i className="fas fa-trash-alt"></i>
               </button>
             </div>
             <div>
-              <div className="text-gray-600">
-
-              </div>
               <div className="text-gray-600">
                 Invited By: {user.invited_by || "N/A"}
               </div>
@@ -212,6 +210,7 @@ function Teamsecteam({ dataroomName }) {
           </div>
         ))}
       </div>
+
     </div>
   );
 }

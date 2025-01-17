@@ -199,7 +199,7 @@ function Usermanagement() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Users</h1>
+        <h1 className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">Users</h1>
         <ModernButton
           text="Invite"
           icon="fa-user-plus"
@@ -210,14 +210,14 @@ function Usermanagement() {
 
       <div className="flex gap-4 mb-6">
         {["active", "invited"].map((tab) => (
-          <button
+          <ModernButton
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 rounded-full font-medium ${activeTab === tab ? "bg-[#A3E636] text-white" : "bg-gray-200"
               }`}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
-          </button>
+          </ModernButton>
         ))}
       </div>
 

@@ -153,12 +153,12 @@ function SettingsTab({
   };
 
   return (
-    <div className="w-full bg-transparent rounded-2xl border border-black p-6 shadow-lg space-y-6">
+    <div className="w-full    p-6  space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between items-center">
-        <h1 className="text-2xl font-semibold mb-4 sm:mb-0">Settings</h1>
+        <h1 className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">Settings</h1>
         <ModernButton
           onClick={handleSave}
-          className="px-4 py-2 bg-[#A3E636] rounded border border-black shadow-lg flex items-center gap-2 hover:bg-[#93d626] transition-colors"
+          className="px-4 py-2 bg-[#A3E636] rounded shadow-lg flex items-center gap-2 hover:bg-[#93d626] transition-colors"
           disabled={loading}
         >
           {loading ? (
@@ -166,7 +166,7 @@ function SettingsTab({
           ) : (
             <i className="fas fa-save"></i>
           )}
-          <span>{loading ? "Saving..." : "Save Changes"}</span>
+          <span>{loading ? "Saving..." : "Save"}</span>
         </ModernButton>
 
 
@@ -226,13 +226,15 @@ function SettingsTab({
             </div>
             <ModernButton
               onClick={handleToggleLockStatus}
-              className={`w-full sm:w-auto px-4 py-2 ${filesLocked ? "bg-green-500" : "bg-amber-400"
-                } rounded border border-black hover:${filesLocked ? "bg-green-600" : "bg-amber-500"
-                } transition`}
+              className={`w-[150px] h-[50px] bg-amber-400 rounded flex items-center justify-center hover:bg-amber-500 transition`}
               disabled={loading}
             >
-              <i className={`fas ${filesLocked ? "fa-unlock" : "fa-lock"}`}></i>{" "}
-              {filesLocked ? "Unlock All" : "Lock All"}
+              <div className="flex items-center">
+                <span className="w-5 flex items-center justify-center leading-none">
+                  <i className={`fas ${filesLocked ? "fa-unlock" : "fa-lock"}`}></i>
+                </span>
+                <span className="ml-2">{filesLocked ? "Unlock All" : "Lock All"}</span>
+              </div>
             </ModernButton>
           </div>
 
@@ -245,10 +247,15 @@ function SettingsTab({
               </div>
             </div>
             <ModernButton
-              className="w-full sm:w-auto px-4 py-2 bg-red-500 text-white rounded border border-black hover:bg-red-600 transition"
+              className="w-[150px] h-[50px] bg-red-500 text-white rounded flex items-center justify-center hover:bg-red-600 transition"
               onClick={() => setShowDeleteModal(true)}
             >
-              <i className="fas fa-trash"></i> Delete
+              <div className="flex items-center">
+                <span className="w-5 flex items-center justify-center leading-none">
+                  <i className="fas fa-trash"></i>
+                </span>
+                <span className="ml-2">Delete</span>
+              </div>
             </ModernButton>
           </div>
         </div>

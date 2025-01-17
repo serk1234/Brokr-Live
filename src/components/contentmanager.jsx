@@ -68,9 +68,8 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         console.log(sanitizeFileName);
         const date = new Date();
 
-        const timestamp = `${date.getFullYear()}-${
-          date.getMonth() + 1
-        }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
+        const timestamp = `${date.getFullYear()}-${date.getMonth() + 1
+          }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
 
         var fileName = timestamp + "_" + sanitizedFileName;
 
@@ -132,9 +131,8 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         </div>
 
         <div
-          className={`relative border-2 border-dashed rounded-xl p-8 text-center ${
-            dragActive ? "border-[#A3E636] bg-[#A3E636]/5" : "border-black/10"
-          }`}
+          className={`relative border-2 border-dashed rounded-xl p-8 text-center ${dragActive ? "border-[#A3E636] bg-[#A3E636]/5" : "border-black/10"
+            }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -189,11 +187,10 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
           <button
             onClick={handleSubmit}
             disabled={!file}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              file
-                ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
-                : "bg-black/5 text-black/40 cursor-not-allowed"
-            }`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${file
+              ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
+              : "bg-black/5 text-black/40 cursor-not-allowed"
+              }`}
           >
             Upload
           </button>
@@ -615,7 +612,7 @@ function Contentmanager({ items = [], dataroomId }) {
   }
 
   return (
-    <div className="w-full bg-transparent rounded-2xl border border-black p-6 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+    <div className="w-full bg-transparent rounded-2xl  p-6 ">
       {selectedFile ? (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl border border-black/10 shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
@@ -740,11 +737,10 @@ function Contentmanager({ items = [], dataroomId }) {
         // Existing code for the default view
 
         <div
-          className={`flex flex-col relative ${
-            dragActive
-              ? "after:absolute after:inset-0 after:bg-[#A3E636]/5 after:border-2 after:border-dashed after:border-[#A3E636] after:rounded-2xl after:pointer-events-none"
-              : ""
-          }`}
+          className={`flex flex-col relative ${dragActive
+            ? "after:absolute after:inset-0 after:bg-[#A3E636]/5 after:border-2 after:border-dashed after:border-[#A3E636] after:rounded-2xl after:pointer-events-none"
+            : ""
+            }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -902,7 +898,7 @@ function Contentmanager({ items = [], dataroomId }) {
           ))} */}
           {/* Header Section */}
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
-            <h1 className="text-xl md:text-2xl font-semibold">Contents</h1>
+            <h1 className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">Contents</h1>
             <div className="flex flex-wrap gap-2 md:gap-3">
               <ModernButton
                 text={window.innerWidth > 768 ? "Upload" : ""}
@@ -935,7 +931,7 @@ function Contentmanager({ items = [], dataroomId }) {
           </div>
 
           {/* Table Header - Hidden on mobile */}
-          <div className="hidden md:grid md:grid-cols-[2fr_1fr_1fr_auto] gap-6 py-3 px-4 border-b border-black/10">
+          <div className="hidden md:grid md:grid-cols-[2fr_1fr_1fr_auto] gap-6 py-3 px-4 ">
             <div className="text-black/40 text-sm font-medium">Name</div>
             <div className="text-black/40 text-sm font-medium">Uploaded By</div>
             <div className="text-black/40 text-sm font-medium">Uploaded</div>
@@ -949,9 +945,8 @@ function Contentmanager({ items = [], dataroomId }) {
             <div
               key={index}
               className={`grid grid-cols-[1fr_auto] md:grid-cols-[2fr_1fr_1fr_auto] gap-2 md:gap-6 
-    items-center py-3 px-3 md:px-4 hover:bg-black/5 transition-colors ${
-      file.locked ? "bg-amber-50" : ""
-    }`}
+    items-center py-3 px-3 md:px-4 hover:bg-black/5 transition-colors ${file.locked ? "bg-amber-50" : ""
+                }`}
             >
               {/* File Name and Icon Section */}
               <div className="flex items-center gap-2 md:gap-3 min-w-0 col-span-2 md:col-span-1">
@@ -1031,9 +1026,8 @@ function Contentmanager({ items = [], dataroomId }) {
                   className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
                 >
                   <i
-                    className={`fas fa-${
-                      file.locked ? "lock" : "lock-open"
-                    } text-sm md:text-base`}
+                    className={`fas fa-${file.locked ? "lock" : "lock-open"
+                      } text-sm md:text-base`}
                   ></i>
                 </button>
                 <button
