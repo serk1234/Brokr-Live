@@ -5,6 +5,7 @@ import ModernButton from "./modern-button";
 import { useRouter } from "next/router";
 
 
+
 function Usermanagement() {
   const [activeTab, setActiveTab] = useState("active");
   const [activeUsers, setActiveUsers] = useState([]);
@@ -13,6 +14,7 @@ function Usermanagement() {
   const [loading, setLoading] = useState(false);
   const [inviteEmails, setInviteEmails] = useState([""]);
   const [showInvitePopup, setShowInvitePopup] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(null);
   const router = useRouter();
 
 
@@ -224,14 +226,18 @@ function Usermanagement() {
           activeUsers.map((user) => (
             <div
               key={user.email}
-              className="flex justify-between items-center bg-gray-50 p-4 rounded-lg shadow-sm"
+              className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 flex justify-between items-center mb-4"
             >
-              <div>
-                <div className="font-medium">{user.name || ""}</div>
-                <div className="text-sm text-gray-600">{user.email}</div>
-              </div>
-              <div className="text-sm text-gray-500">
-                {new Date(user.invited_at).toLocaleString()}
+              {/* Left Section: Email */}
+              <div className="font-medium">{user.email}</div>
+
+              {/* Right Section: Active Since */}
+              <div className="text-right text-gray-500">
+                <div className="text-sm">Active Since:</div>
+                <div className="text-sm">
+                  {new Date(user.invited_at).toLocaleDateString()}{" "}
+                  {new Date(user.invited_at).toLocaleTimeString()}
+                </div>
               </div>
             </div>
           ))}
@@ -239,19 +245,19 @@ function Usermanagement() {
           invitedUsers.map((user) => (
             <div
               key={user.email}
-              className="flex justify-between items-center bg-gray-50 p-4 rounded-lg shadow-sm"
+              className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 flex justify-between items-center mb-4"
             >
-              <div>
-                <div className="font-medium">{user.name || ""}</div>
-                <div className="text-sm text-gray-600">{user.email}</div>
-              </div>
-              <div className="text-sm text-gray-500">
-                Invited by: {user.invited_by || ""}
-                <br />
-                {new Date(user.invited_at).toLocaleString()}
+              <div className="font-medium">{user.email}</div>
+              <div className="text-right text-gray-500">
+                <div className="text-sm">Inivted At:</div>
+                <div className="text-sm">
+                  {new Date(user.invited_at).toLocaleDateString()}{" "}
+                  {new Date(user.invited_at).toLocaleTimeString()}
+                </div>
               </div>
             </div>
           ))}
+
         {activeTab === "archived" &&
           archivedUsers.map((user) => (
             <div

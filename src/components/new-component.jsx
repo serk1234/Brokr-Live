@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
 import StylizedButton from "../components/stylized-button";
+import ModernButton from "./modern-button";
 
 function NewComponent({ email }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -148,10 +149,10 @@ function NewComponent({ email }) {
     <div className="min-h-screen bg-gradient-to-b from-white to-[#f8fafc] p-6">
       <div className="max-w-2xl mx-auto">
         {/* Profile Section */}
-        <div className="bg-white rounded-xl p-6 shadow-lg relative mb-6">
+        <div className=" bg-[#f5f5f5] rounded-xl p-6 shadow-lg relative mb-6 border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-medium">Profile</h2>
-            <StylizedButton
+            <ModernButton
               text={isEditing ? "X" : "Edit"}
               onClick={() => setIsEditing(!isEditing)}
             />
@@ -181,7 +182,7 @@ function NewComponent({ email }) {
                   placeholder="Enter new organization"
                 />
               </div>
-              <StylizedButton text="Save" onClick={handleEditSubmit} />
+              <ModernButton text="Save" onClick={handleEditSubmit} />
             </div>
           ) : (
             <div className="space-y-4">
@@ -211,10 +212,10 @@ function NewComponent({ email }) {
         </div>
 
         {/* Subscription Section */}
-        <div className="bg-white rounded-xl p-6 shadow-lg relative mb-6">
+        <div className=" bg-[#f5f5f5] rounded-xl p-6 shadow-lg relative mb-6 border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
           <div className="flex items-center justify-between gap-4 mb-6">
             <h2 className="text-2xl font-medium">Subscription</h2>
-            <StylizedButton
+            <ModernButton
               text={isSubscribed ? "Manage" : "Subscribe"}
               onClick={
                 isSubscribed ? handleManageSubscription : handleSubscribe
@@ -246,10 +247,10 @@ function NewComponent({ email }) {
         </div>
 
         {/* Support Section */}
-        <div className="bg-white rounded-xl p-6 shadow-lg relative">
+        <div className=" bg-[#f5f5f5] rounded-xl p-6 shadow-lg relative  border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
           <div className="flex items-center justify-between gap-4">
             <h2 className="text-2xl font-medium">Support</h2>
-            <StylizedButton
+            <ModernButton
               text="Chat"
               onClick={() => {
                 window.location.href =

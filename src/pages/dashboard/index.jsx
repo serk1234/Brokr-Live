@@ -178,7 +178,7 @@ function MainComponent() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-black rounded-xl p-6 shadow-md border border-[#A3E636] max-w-md w-full">
+          < div className="bg-black rounded-xl p-6 shadow-md border border-[#A3E636] w-11/12 max-w-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-white">New Dataroom</h2>
               <StylizedButton
