@@ -153,10 +153,10 @@ function SettingsTab({
   };
 
   return (
-    <div className="w-full bg-transparent rounded-2xl border border-black p-6 shadow-lg">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Settings</h1>
-        <button
+    <div className="w-full bg-transparent rounded-2xl border border-black p-6 shadow-lg space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between items-center">
+        <h1 className="text-2xl font-semibold mb-4 sm:mb-0">Settings</h1>
+        <ModernButton
           onClick={handleSave}
           className="px-4 py-2 bg-[#A3E636] rounded border border-black shadow-lg flex items-center gap-2 hover:bg-[#93d626] transition-colors"
           disabled={loading}
@@ -167,7 +167,9 @@ function SettingsTab({
             <i className="fas fa-save"></i>
           )}
           <span>{loading ? "Saving..." : "Save Changes"}</span>
-        </button>
+        </ModernButton>
+
+
       </div>
 
       <div className="space-y-6">
@@ -209,43 +211,45 @@ function SettingsTab({
         />
 
         {/* Archive and Delete Section */}
-        <div className="bg-white p-6 rounded-lg border border-black shadow-md space-y-6">
-          <div className="flex items-center justify-between">
+        <div className="bg-[#f5f5f5] p-6 rounded-2xl border border-[#ddd] shadow-md space-y-6 hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
+          {/* Lock All Files Section */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
             <div>
-              <div className="font-medium">
+              <div className="font-medium mb-2">
                 {filesLocked ? "Unlock All Files" : "Lock All Files"}
               </div>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-700">
                 {filesLocked
                   ? "Unlock all files in this dataroom and restore access."
                   : "Lock all files in this dataroom and restrict access."}
               </div>
             </div>
-            <button
+            <ModernButton
               onClick={handleToggleLockStatus}
-              className={`px-4 py-2 ${filesLocked ? "bg-green-500" : "bg-amber-400"
+              className={`w-full sm:w-auto px-4 py-2 ${filesLocked ? "bg-green-500" : "bg-amber-400"
                 } rounded border border-black hover:${filesLocked ? "bg-green-600" : "bg-amber-500"
                 } transition`}
               disabled={loading}
             >
               <i className={`fas ${filesLocked ? "fa-unlock" : "fa-lock"}`}></i>{" "}
               {filesLocked ? "Unlock All" : "Lock All"}
-            </button>
+            </ModernButton>
           </div>
 
-          <div className="flex items-center justify-between">
+          {/* Delete Dataroom Section */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
             <div>
-              <div className="font-medium">Delete Dataroom</div>
-              <div className="text-sm text-gray-500">
-                Permanently delete this dataroom and its contents
+              <div className="font-medium mb-2">Delete Dataroom</div>
+              <div className="text-sm text-gray-700">
+                Permanently delete this dataroom and its contents.
               </div>
             </div>
-            <button
-              className="px-4 py-2 bg-red-500 text-white rounded border border-black hover:bg-red-600 transition rounded"
-              onClick={() => setShowDeleteModal(true)} // Show the modal
+            <ModernButton
+              className="w-full sm:w-auto px-4 py-2 bg-red-500 text-white rounded border border-black hover:bg-red-600 transition"
+              onClick={() => setShowDeleteModal(true)}
             >
               <i className="fas fa-trash"></i> Delete
-            </button>
+            </ModernButton>
           </div>
         </div>
       </div>
