@@ -148,18 +148,9 @@ function UserView() {
     }
   }, [router.query.id, hasCheckedNDA]);
 
-
   const handleFileClick = async (file) => {
     if (file.locked) {
       alert("This file is locked and cannot be accessed.");
-      return;
-    }
-
-    console.log("File clicked:", file); // Log the full file object
-
-    // Check if file has all required properties
-    if (!file.id || !file.file_path) {
-      console.error("The file object is missing required properties (id or file_path):", file);
       return;
     }
 
@@ -176,7 +167,6 @@ function UserView() {
         setFileURL("");
       } else {
         setFileURL(data.publicUrl); // Set URL for preview
-        console.log("File URL fetched successfully:", data.publicUrl);
       }
     } catch (err) {
       console.error("Unexpected error fetching file URL:", err.message);
@@ -185,25 +175,9 @@ function UserView() {
     }
   };
 
-
   const handleDownload = async () => {
     if (selectedFile) {
       try {
-        console.log("Selected file ID:", selectedFile.id); // Log file ID for debugging
-
-        // Validate that file_id exists in file_uploads
-        const { data: fileExists, error: fileError } = await supabase
-          .from("file_uploads")
-          .select("id")
-          .eq("id", selectedFile.id)
-          .single();
-
-        if (fileError || !fileExists) {
-          console.error("Invalid file_id: File does not exist in file_uploads");
-          return;
-        }
-
-        // Fetch the file from Supabase storage
         const { data, error } = await supabase.storage
           .from("file_uploads")
           .download(selectedFile.file_path);
@@ -212,23 +186,15 @@ function UserView() {
           console.error("Error downloading file:", error.message);
           return;
         }
+        supabase.from("file_downloads").insert({
+          dataroom_id: router.query.id,
+          file_id: selectedFile.id,
+        });
+
+
 
         // Insert a download record
-        const { error: insertError } = await supabase
-          .from("file_downloads")
-          .insert({
-            dataroom_id: router.query.id,
-            file_id: selectedFile.id,
-            downloaded_by: userEmail,
-            download_at: new Date().toISOString(),
-          });
 
-        if (insertError) {
-          console.error("Error recording download in file_downloads:", insertError.message);
-          return;
-        }
-
-        console.log(`Download recorded for file: ${selectedFile.name}`);
 
         // Trigger file download in the browser
         const blob = new Blob([data], {

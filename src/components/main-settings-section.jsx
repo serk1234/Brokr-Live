@@ -10,16 +10,16 @@ function MainSettingsSection({
   setOrganization,
 }) {
   return (
-    <div className="bg-white p-6 rounded-lg border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] space-y-4">
+    <div className="bg-[#f5f5f5] p-6 rounded-2xl border border-[#ddd] shadow-md space-y-6 hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
       {/* Name Input */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="font-medium">Name</div>
-          <div className="text-sm text-gray-500">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
+        <div className="sm:w-auto w-full">
+          <div className="font-medium mb-2">Name</div>
+          <div className="text-sm text-gray-700">
             Set the display name for your dataroom
           </div>
         </div>
-        <div className="w-[280px]">
+        <div className="w-full sm:w-[280px]">
           <input
             type="text"
             name="name"
@@ -31,14 +31,14 @@ function MainSettingsSection({
       </div>
 
       {/* Organization Input */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="font-medium">Organization</div>
-          <div className="text-sm text-gray-500">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
+        <div className="sm:w-auto w-full">
+          <div className="font-medium mb-2">Organization</div>
+          <div className="text-sm text-gray-700">
             This will be displayed to users
           </div>
         </div>
-        <div className="w-[280px]">
+        <div className="w-full sm:w-[280px]">
           <input
             type="text"
             name="organization"
@@ -51,6 +51,7 @@ function MainSettingsSection({
     </div>
   );
 }
+
 
 export default MainSettingsSection;
 

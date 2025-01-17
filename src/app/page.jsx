@@ -2,10 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
 import { useRouter } from "next/navigation";
+import Popup from "../components/Popup"; // Adjust the path based on your file structure
 
 function MainComponent() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
+  const [popupMessage, setPopupMessage] = useState(null);
   const router = useRouter(); // For redirecting the user
 
   // Listen for auth state changes and redirect to dashboard
@@ -31,16 +33,13 @@ function MainComponent() {
     try {
       const { error } = await supabase.auth.signInWithOtp({ email });
       if (error) throw error;
-      alert("Check your email for the magic link!");
+      setPopupMessage("Check your email for the magic link!");
     } catch (error) {
       console.error("Error:", error.message);
     } finally {
       setLoading(false);
     }
   };
-
-  // Google Login
-
 
   return (
     <div className="min-h-screen bg-black bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGZpbGw9IiMxYTFhMWEiIGQ9Ik0wIDBoNjB2NjBIMHoiLz48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBzdHJva2U9IiMyNTI1MjUiIHN0cm9rZS13aWR0aD0iLjUiLz48L2c+PC9zdmc+')] flex items-center justify-center px-4">
@@ -71,12 +70,13 @@ function MainComponent() {
           >
             {loading ? "Loading..." : "Continue with Email"}
           </button>
-
-          {/* Or Separator */}
-
-
         </div>
       </div>
+
+      {/* Popup */}
+      {popupMessage && (
+        <Popup message={popupMessage} onClose={() => setPopupMessage(null)} />
+      )}
     </div>
   );
 }
