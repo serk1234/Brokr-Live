@@ -106,6 +106,8 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         onUpload({
           name: sanitizedFileName,
           uploaded_by: user.email,
+          file_path: filePath,
+
           upload_at: new Date().toISOString(),
         });
 
@@ -282,9 +284,11 @@ function Contentmanager({ items = [], dataroomId }) {
     setLoadingContent(true);
 
     try {
+      console.log(file);
       const { data, error } = await supabase.storage
         .from("file_uploads")
-        .getPublicUrl(`files/${dataroomId}/${displayName}`);
+        // .getPublicUrl(`files/${dataroomId}/${displayName}`);
+        .getPublicUrl(file.file_path);
 
       if (error) {
         console.error("Error fetching file URL:", error.message);

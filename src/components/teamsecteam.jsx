@@ -49,9 +49,9 @@ function Teamsecteam({ dataroomName }) {
       setIsFetching(true);
       try {
         const { data, error } = await supabase
-          .from("datarooms")
-          .select("name, user_email, invited_by, created_at")
-          .eq("id", router.query.id)
+          .from("dataroom_teams")
+          .select("*")
+          .eq("dataroom_id", router.query.id)
           .order("created_at", { ascending: true }); /* await supabase
           .from("datarooms")
           .select("email, invited_by, invited_at")
@@ -72,7 +72,7 @@ function Teamsecteam({ dataroomName }) {
       fetchInvitedUsers();
     } */
     fetchInvitedUsers();
-  }, [router.query.id]);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -89,22 +89,25 @@ function Teamsecteam({ dataroomName }) {
 
       if (magicLinkError) throw magicLinkError;
 
-      const { error: insertError } = await supabase.from("datarooms").insert([
-        {
-          name: currentDataroom,
-          user_email: newUser.email,
-          invited_by: inviterEmail,
-          created_at: new Date(),
-          permission: newUser.permission,
-        },
-      ]);
+      const { error: insertError } = await supabase
+        .from("dataroom_teams")
+        .insert([
+          {
+            dataroom_id: router.query.id,
+            email: newUser.email,
+            invited_by: inviterEmail,
+            created_at: new Date(),
+            invited_at: new Date(),
+            permission: newUser.permission,
+          },
+        ]);
 
       if (insertError) throw insertError;
 
       setUsers((prevUsers) => [
         ...prevUsers,
         {
-          name: newUser.name,
+          // name: newUser.name,
           email: newUser.email,
           invited_by: inviterEmail,
           created_at: new Date().toISOString(),
@@ -123,7 +126,12 @@ function Teamsecteam({ dataroomName }) {
     }
   };
 
-  const handleRemove = (index) => {
+  const handleRemove = async (team, index) => {
+    var result = await supabase
+      .from("dataroom_teams")
+      .delete()
+      .eq("id", team.id);
+
     if (!users[index].isAdmin) {
       setUsers(users.filter((_, i) => i !== index));
     }
@@ -189,19 +197,17 @@ function Teamsecteam({ dataroomName }) {
           >
             <div className="flex justify-between items-start mb-4">
               <div>
-                <div className="text-gray-600">{user.user_email}</div>
+                <div className="text-gray-600">{user.email}</div>
               </div>
               <button
                 className="w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded"
-                onClick={() => handleRemove(index)}
+                onClick={() => handleRemove(user, index)}
               >
                 <i className="fas fa-trash-alt"></i>
               </button>
             </div>
             <div>
-              <div className="text-gray-600">
-
-              </div>
+              <div className="text-gray-600"></div>
               <div className="text-gray-600">
                 Invited By: {user.invited_by || "N/A"}
               </div>
