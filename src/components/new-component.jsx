@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
 import StylizedButton from "../components/stylized-button";
+import SubscribeView from "../pages/subscription/index";
 import ModernButton from "./modern-button";
 
 function NewComponent({ email }) {
@@ -14,6 +15,7 @@ function NewComponent({ email }) {
   const [showPricingTable, setShowPricingTable] = useState(false);
   const router = useRouter();
   const [customerId, setCustomerId] = useState("");
+  const [showSubscribeTable, setshowSubscribeTable] = useState(false);
   const handleRedirectToPortal = async () => {
     if (!customerId) {
       alert("Please enter a valid Customer ID.");
@@ -133,8 +135,9 @@ function NewComponent({ email }) {
   };
 
   const handleSubscribe = () => {
+    setshowSubscribeTable(true);
     // setShowPricingTable(true);
-    router.push("/subscription"); // Update to match your folder structure
+    // router.push("/subscription"); // Update to match your folder structure
   };
 
   const handleManageSubscription = () => {
@@ -222,6 +225,9 @@ function NewComponent({ email }) {
               }
             />
           </div>
+          {!isSubscribed && showSubscribeTable && (
+            <SubscribeView></SubscribeView>
+          )}
 
           {showPricingTable && (
             <div className="mt-4">
@@ -257,7 +263,6 @@ function NewComponent({ email }) {
                   "mailto:contact@hellobrokr.com?bcc=serkan@hellobrokr.com&subject=brokr%20Support";
               }}
             />
-
           </div>
         </div>
       </div>

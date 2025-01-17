@@ -91,12 +91,6 @@ export default async function handler(req, res) {
           .eq("email", customerEmail);
         console.log(result);
         break;
-      case "customer.subscription.created":
-        /*  const paymentIntent1 = event.data.object;
-        console.log(event.type, cussubscriptiotomerEmail);
-        console.log(paymentIntent1);
-        console.log("PaymentIntent was successful!", paymentIntent1); */
-        break;
 
       case "payment_intent.payment_failed":
         const paymentFailed = event.data.object;
