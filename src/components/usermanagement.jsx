@@ -4,8 +4,6 @@ import { supabase } from "../../src/app/supabaseClient";
 import ModernButton from "./modern-button";
 import { useRouter } from "next/router";
 
-
-
 function Usermanagement() {
   const [activeTab, setActiveTab] = useState("active");
   const [activeUsers, setActiveUsers] = useState([]);
@@ -16,7 +14,6 @@ function Usermanagement() {
   const [showInvitePopup, setShowInvitePopup] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
   const router = useRouter();
-
 
   // Fetch all users from Supabase
   const fetchUsers = async (dataroomId) => {
@@ -41,14 +38,12 @@ function Usermanagement() {
     }
   };
 
-
   useEffect(() => {
     const dataroomId = router.query.id; // Get dataroom ID from router or props
     if (dataroomId) {
       fetchUsers(dataroomId); // Fetch users for the current dataroom
     }
   }, [router.query.id]);
-
 
   // Watch for session changes and update the status to "active"
   useEffect(() => {
@@ -108,7 +103,6 @@ function Usermanagement() {
     }
   };
 
-
   const fetchDataroomId = async (dataroomName) => {
     const { data, error } = await supabase
       .from("datarooms")
@@ -156,8 +150,6 @@ function Usermanagement() {
     }
   };
 
-
-
   const sendInvites = async () => {
     setLoading(true);
     const inviterEmail = (await supabase.auth.getUser()).data.user.email; // Get inviter's email
@@ -194,7 +186,6 @@ function Usermanagement() {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="p-6">
@@ -233,10 +224,8 @@ function Usermanagement() {
 
               {/* Right Section: Active Since */}
               <div className="text-right text-gray-500">
-                <div className="text-sm">Active Since:</div>
                 <div className="text-sm">
-                  {new Date(user.invited_at).toLocaleDateString()}{" "}
-                  {new Date(user.invited_at).toLocaleTimeString()}
+                  Active Since: {new Date(user.invited_at).toLocaleDateString()} {new Date(user.invited_at).toLocaleTimeString('en-US')}
                 </div>
               </div>
             </div>
@@ -249,10 +238,8 @@ function Usermanagement() {
             >
               <div className="font-medium">{user.email}</div>
               <div className="text-right text-gray-500">
-                <div className="text-sm">Inivted At:</div>
                 <div className="text-sm">
-                  {new Date(user.invited_at).toLocaleDateString()}{" "}
-                  {new Date(user.invited_at).toLocaleTimeString()}
+                  Invited At: {new Date(user.invited_at).toLocaleDateString()} {new Date(user.invited_at).toLocaleTimeString('en-US')}
                 </div>
               </div>
             </div>
@@ -307,7 +294,7 @@ function Usermanagement() {
               <button
                 onClick={sendInvites}
                 disabled={loading}
-                className="w-full bg-[#A3E636] text-white p-2 rounded mt-4"
+                className="w-full bg-[#A3E636] text-black p-2 rounded mt-4"
               >
                 {loading ? "Sending..." : "Send Invites"}
               </button>
