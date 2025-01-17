@@ -68,8 +68,9 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         console.log(sanitizeFileName);
         const date = new Date();
 
-        const timestamp = `${date.getFullYear()}-${date.getMonth() + 1
-          }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
+        const timestamp = `${date.getFullYear()}-${
+          date.getMonth() + 1
+        }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
 
         var fileName = timestamp + "_" + sanitizedFileName;
 
@@ -131,8 +132,9 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         </div>
 
         <div
-          className={`relative border-2 border-dashed rounded-xl p-8 text-center ${dragActive ? "border-[#A3E636] bg-[#A3E636]/5" : "border-black/10"
-            }`}
+          className={`relative border-2 border-dashed rounded-xl p-8 text-center ${
+            dragActive ? "border-[#A3E636] bg-[#A3E636]/5" : "border-black/10"
+          }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -187,10 +189,11 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
           <button
             onClick={handleSubmit}
             disabled={!file}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${file
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              file
                 ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
                 : "bg-black/5 text-black/40 cursor-not-allowed"
-              }`}
+            }`}
           >
             Upload
           </button>
@@ -295,7 +298,6 @@ function Contentmanager({ items = [], dataroomId }) {
       setLoadingContent(false);
     }
   };
-
 
   const formatDate = (date) => {
     if (!date) return "N/A"; // Handle null dates
@@ -738,10 +740,11 @@ function Contentmanager({ items = [], dataroomId }) {
         // Existing code for the default view
 
         <div
-          className={`flex flex-col relative ${dragActive
+          className={`flex flex-col relative ${
+            dragActive
               ? "after:absolute after:inset-0 after:bg-[#A3E636]/5 after:border-2 after:border-dashed after:border-[#A3E636] after:rounded-2xl after:pointer-events-none"
               : ""
-            }`}
+          }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -946,8 +949,9 @@ function Contentmanager({ items = [], dataroomId }) {
             <div
               key={index}
               className={`grid grid-cols-[1fr_auto] md:grid-cols-[2fr_1fr_1fr_auto] gap-2 md:gap-6 
-    items-center py-3 px-3 md:px-4 hover:bg-black/5 transition-colors ${file.locked ? "bg-amber-50" : ""
-                }`}
+    items-center py-3 px-3 md:px-4 hover:bg-black/5 transition-colors ${
+      file.locked ? "bg-amber-50" : ""
+    }`}
             >
               {/* File Name and Icon Section */}
               <div className="flex items-center gap-2 md:gap-3 min-w-0 col-span-2 md:col-span-1">
@@ -1027,8 +1031,9 @@ function Contentmanager({ items = [], dataroomId }) {
                   className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
                 >
                   <i
-                    className={`fas fa-${file.locked ? "lock" : "lock-open"
-                      } text-sm md:text-base`}
+                    className={`fas fa-${
+                      file.locked ? "lock" : "lock-open"
+                    } text-sm md:text-base`}
                   ></i>
                 </button>
                 <button
