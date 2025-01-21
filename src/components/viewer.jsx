@@ -1,10 +1,16 @@
+"use client";
+
+import React from "react";
+
 function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
   return (
     <div className="flex flex-col h-full w-full">
       {/* Header for document details and actions */}
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h2 className="text-lg font-semibold">{selectedDocument.name}</h2>
+      <div className="flex flex-wrap justify-between items-start mb-4 gap-4 sm:gap-6">
+        <div className="flex-1 min-w-[200px]">
+          <h2 className="text-lg font-semibold truncate">
+            {selectedDocument.name}
+          </h2>
           <p className="text-sm text-gray-600">
             Uploaded by {selectedDocument.uploadedBy || "Unknown"} on{" "}
             {new Date(selectedDocument.uploadAt).toLocaleDateString("en-US", {
@@ -14,7 +20,8 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
             })}
           </p>
         </div>
-        <div className="flex items-center gap-4">
+
+        <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
           {/* Zoom controls */}
           <div className="flex items-center gap-3">
             <button
@@ -31,13 +38,14 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
               <i className="fas fa-plus"></i>
             </button>
           </div>
+
           {/* Download button */}
           <button
             onClick={handleDownload}
             className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors"
           >
             <i className="fas fa-download"></i>
-            <span>Download</span>
+            <span className="truncate">Download</span>
           </button>
         </div>
       </div>
@@ -49,7 +57,7 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
             <img
               src={selectedDocument.src}
               alt={selectedDocument.name || "File Preview"}
-              className="w-full h-full object-contain"
+              className="max-w-full max-h-full object-contain"
               style={{
                 transform: `scale(${zoom / 100})`,
                 transformOrigin: "center",
@@ -59,7 +67,7 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
             <iframe
               src={`${selectedDocument.src}#toolbar=0`}
               title="File Viewer"
-              className="w-full h-full border-none"
+              className="w-full h-full"
               style={{
                 transform: `scale(${zoom / 100})`,
                 transformOrigin: "top center",
@@ -78,3 +86,24 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
 }
 
 export default Viewer;
+
+/* CSS for mobile optimizations */
+<style jsx>{`
+  @media (max-width: 640px) {
+    .flex-wrap {
+      flex-direction: column;
+    }
+    .truncate {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .flex-1 {
+      width: 100%;
+    }
+    .min-w-[200px] {
+      min-width: unset;
+    }
+  }
+`}</style>
+

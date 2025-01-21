@@ -3,17 +3,25 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "../../src/app/supabaseClient";
 import ModernButton from "./modern-button";
 import { useRouter } from "next/router";
+import Popup from "./Popup";
 
 function Usermanagement() {
   const [activeTab, setActiveTab] = useState("active");
   const [activeUsers, setActiveUsers] = useState([]);
   const [invitedUsers, setInvitedUsers] = useState([]);
-  const [archivedUsers, setArchivedUsers] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [inviteEmails, setInviteEmails] = useState([""]);
+
   const [showInvitePopup, setShowInvitePopup] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
+
+  const handleRemoveEmailField = (index) => {
+    setInviteEmails(inviteEmails.filter((_, i) => i !== index));
+  };
+
 
   // Fetch all users from Supabase
   const fetchUsers = async (dataroomId) => {
@@ -32,7 +40,7 @@ function Usermanagement() {
 
       setInvitedUsers(data.filter((user) => user.status === "invited"));
       setActiveUsers(data.filter((user) => user.status === "active"));
-      setArchivedUsers(data.filter((user) => user.status === "archived"));
+
     } catch (err) {
       console.error("Error fetching users:", err.message);
     }
@@ -49,14 +57,22 @@ function Usermanagement() {
   useEffect(() => {
     const { subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session?.user?.email) {
+        const dataroomId = router.query.id; // Ensure dataroom ID is available
+        if (!dataroomId) {
+          console.error("Dataroom ID is missing while updating user status");
+          return;
+        }
+
         try {
           const { error } = await supabase
             .from("invited_users")
             .update({ status: "active" })
-            .eq("email", session.user.email);
+            .eq("email", session.user.email)
+            .eq("dataroom_id", dataroomId); // Include dataroom ID in the query
+
           if (error) throw error;
 
-          fetchUsers(); // Refresh the user lists
+          fetchUsers(dataroomId); // Refresh the user lists with the correct dataroom ID
         } catch (err) {
           console.error("Error updating user status:", err.message);
         }
@@ -69,7 +85,7 @@ function Usermanagement() {
         subscription.unsubscribe();
       }
     };
-  }, []);
+  }, [router.query.id]);
 
   const handleInviteClick = () => setShowInvitePopup(true);
 
@@ -152,11 +168,12 @@ function Usermanagement() {
 
   const sendInvites = async () => {
     setLoading(true);
-    const inviterEmail = (await supabase.auth.getUser()).data.user.email; // Get inviter's email
-    const dataroomId = router.query.id; // Get the dataroom ID from the router
+    const inviterEmail = (await supabase.auth.getUser()).data.user.email;
+    const dataroomId = router.query.id;
 
     if (!dataroomId) {
-      alert("No valid dataroom ID found for this invitation.");
+      setSuccessMessage("No valid dataroom ID found for this invitation.");
+      setShowPopup(true);
       setLoading(false);
       return;
     }
@@ -164,10 +181,7 @@ function Usermanagement() {
     try {
       for (const email of inviteEmails) {
         if (email.trim()) {
-          // Send Magic Link with dataroomId
           await sendMagicLink(email, inviterEmail, dataroomId);
-
-          // Add the user to the dataroom via handleInvite
           const success = await handleInvite(email, dataroomId, inviterEmail);
           if (!success) {
             console.error(`Failed to invite ${email}`);
@@ -175,18 +189,19 @@ function Usermanagement() {
         }
       }
 
-      alert("Invitations sent successfully!");
+      setSuccessMessage("Invitations sent successfully!");
+      setShowPopup(true); // Show the popup
       setInviteEmails([""]); // Reset emails
       fetchUsers(dataroomId); // Refresh user list
       handleCloseInvitePopup(); // Close popup
     } catch (err) {
       console.error("Error sending invites:", err.message);
-      alert("An error occurred while sending invitations.");
+      setSuccessMessage("An error occurred while sending invitations.");
+      setShowPopup(true); // Show the popup
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -204,7 +219,7 @@ function Usermanagement() {
           <ModernButton
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-full font-medium ${activeTab === tab ? "bg-[#A3E636] text-white" : "bg-gray-200"
+            className={`px-4 py-2 rounded-full font-medium ${activeTab === tab ? "bg-[#A3E636] text-black" : "bg-gray-200"
               }`}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -213,37 +228,47 @@ function Usermanagement() {
       </div>
 
       <div>
-        {activeTab === "active" &&
-          activeUsers.map((user) => (
-            <div
-              key={user.email}
-              className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 flex justify-between items-center mb-4"
-            >
-              {/* Left Section: Email */}
-              <div className="font-medium">{user.email}</div>
+        <div>
+          {activeTab === "active" &&
+            activeUsers.map((user) => (
+              <div
+                key={user.email}
+                className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4"
+              >
+                <div className="flex flex-wrap justify-between items-center gap-2">
+                  {/* Email Section */}
+                  <div className="font-medium w-full md:w-auto">{user.email}</div>
 
-              {/* Right Section: Active Since */}
-              <div className="text-right text-gray-500">
-                <div className="text-sm">
-                  Active Since: {new Date(user.invited_at).toLocaleDateString()} {new Date(user.invited_at).toLocaleTimeString('en-US')}
+                  {/* Active Since Section */}
+                  <div className="text-gray-500 text-sm w-full md:w-auto md:text-right">
+                    Active Since:{" "}
+                    {new Date(user.invited_at).toLocaleDateString()}{" "}
+                    {new Date(user.invited_at).toLocaleTimeString("en-US")}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        {activeTab === "invited" &&
-          invitedUsers.map((user) => (
-            <div
-              key={user.email}
-              className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 flex justify-between items-center mb-4"
-            >
-              <div className="font-medium">{user.email}</div>
-              <div className="text-right text-gray-500">
-                <div className="text-sm">
-                  Invited At: {new Date(user.invited_at).toLocaleDateString()} {new Date(user.invited_at).toLocaleTimeString('en-US')}
+            ))}
+          {activeTab === "invited" &&
+            invitedUsers.map((user) => (
+              <div
+                key={user.email}
+                className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4"
+              >
+                <div className="flex flex-wrap justify-between items-center gap-2">
+                  {/* Email Section */}
+                  <div className="font-medium w-full md:w-auto">{user.email}</div>
+
+                  {/* Invited At Section */}
+                  <div className="text-gray-500 text-sm w-full md:w-auto md:text-right">
+                    Invited At:{" "}
+                    {new Date(user.invited_at).toLocaleDateString()}{" "}
+                    {new Date(user.invited_at).toLocaleTimeString("en-US")}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+        </div>
+
 
         {activeTab === "archived" &&
           archivedUsers.map((user) => (
@@ -281,12 +306,19 @@ function Usermanagement() {
                     onChange={(e) => updateEmail(index, e.target.value)}
                     className="w-full p-2 border rounded"
                   />
-                  {index === inviteEmails.length - 1 && (
+                  {index === inviteEmails.length - 1 ? (
                     <button
                       onClick={addEmailField}
-                      className="bg-[#A3E636] text-white p-2 rounded"
+                      className="bg-[#A3E636] text-black p-2 rounded"
                     >
                       +
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleRemoveEmailField(index)}
+                      className="bg-red-500 text-white p-2 rounded"
+                    >
+                      -
                     </button>
                   )}
                 </div>
@@ -301,6 +333,13 @@ function Usermanagement() {
             </div>
           </div>
         </div>
+      )}
+
+      {showPopup && (
+        <Popup
+          message={successMessage}
+          onClose={() => setShowPopup(false)} // Close popup on click
+        />
       )}
     </div>
   );

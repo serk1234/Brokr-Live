@@ -171,8 +171,22 @@ function HeaderLive({ email }) {
           {profileOpen && (
             <div className="absolute right-0 mt-2 w-[220px] bg-black/95 backdrop-blur-xl border border-gray-800 rounded-xl shadow-2xl p-2 transition-all duration-200 ease-in-out">
               <div className="px-4 py-3 border-b border-gray-800">
-                <p className="text-sm text-gray-400 truncate">{email}</p>
+                <div
+                  className="text-sm text-gray-400"
+                  style={{
+                    maxWidth: '220px', // Adjust this width to fit your dropdown
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                  }}
+                  title={email} // Tooltip to show the full email on hover
+                >
+                  {email}
+                </div>
               </div>
+
+
+
               <button
                 onClick={handleSettings}
                 className="w-full px-4 py-3 rounded-lg text-white font-medium hover:bg-white/10 transition-all duration-150 group flex items-center justify-between"

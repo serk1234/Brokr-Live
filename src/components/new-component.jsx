@@ -6,6 +6,8 @@ import { supabase } from "../../src/app/supabaseClient";
 import StylizedButton from "../components/stylized-button";
 import SubscribeView from "../pages/subscription/index";
 import ModernButton from "./modern-button";
+import Popup from "./Popup";
+
 
 function NewComponent({ email }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -14,6 +16,8 @@ function NewComponent({ email }) {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showPricingTable, setShowPricingTable] = useState(false);
   const router = useRouter();
+  const [showPopup, setShowPopup] = useState(false); // State to manage popup visibility
+  const [popupMessage, setPopupMessage] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [showSubscribeTable, setshowSubscribeTable] = useState(false);
   const handleRedirectToPortal = async () => {
@@ -127,7 +131,9 @@ function NewComponent({ email }) {
         return;
       }
 
-      alert("Profile updated successfully!");
+      // Show popup instead of alert
+      setPopupMessage("Profile updated successfully!");
+      setShowPopup(true);
       setIsEditing(false);
     } catch (err) {
       console.error("Error during profile update:", err.message);
@@ -266,6 +272,10 @@ function NewComponent({ email }) {
           </div>
         </div>
       </div>
+
+      {showPopup && (
+        <Popup message={popupMessage} onClose={() => setShowPopup(false)} />
+      )}
     </div>
   );
 }

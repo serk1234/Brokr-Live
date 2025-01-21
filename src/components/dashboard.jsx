@@ -63,7 +63,7 @@ function Dashboard({
           ).length;
 
           return {
-            name: file.name,
+            name: file.new_name || file.name, // Fallback to original name if new_name is empty
             downloads,
             dateAdded: new Date(file.upload_at).toLocaleDateString(),
           };

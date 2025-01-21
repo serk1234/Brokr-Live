@@ -120,21 +120,27 @@ function MainComponent() {
             </div>
 
             {/* Datarooms */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {userDatarooms.map((room) => (
                 <div
                   key={room.id}
-                  className="bg-[#121212] border border-gray-200 hover:bg-black/80 transition rounded-xl p-4 flex justify-between items-center"
+                  className="bg-[#121212] border border-gray-200 hover:bg-black/80 transition rounded-xl p-4 flex items-center justify-between space-x-4"
                 >
-                  <div>
-                    <h3 className="text-white font-semibold">{room.name}</h3>
+                  <div className="min-w-0 flex-grow">
+                    {/* Room Name */}
+                    <h3 className="text-white font-semibold overflow-hidden text-ellipsis whitespace-nowrap">
+                      {room.name}
+                    </h3>
+                    {/* Organization Name */}
                     {room.organization && (
-                      <p className="text-sm text-gray-400">{room.organization}</p>
+                      <p className="text-sm text-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">
+                        {room.organization}
+                      </p>
                     )}
                   </div>
                   <StylizedButton
                     text={<i className="fas fa-arrow-right"></i>}
-                    className="ml-4 px-3 py-2 bg-[#A3E636] text-black text-sm rounded shadow-lg"
+                    className="shrink-0 px-3 py-2 bg-[#A3E636] text-black text-sm rounded shadow-lg"
                     onClick={() => handleRedirect(room.id)}
                   />
                 </div>
@@ -147,7 +153,7 @@ function MainComponent() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-900">User</h2>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {invitedDatarooms.length > 0 ? (
                 invitedDatarooms.map((room) => (
                   <div
@@ -155,9 +161,12 @@ function MainComponent() {
                     className="bg-gray-100 border border-gray-200 hover:bg-gray-200 transition rounded-xl p-4 flex justify-between items-center"
                   >
                     <div>
-                      <h3 className="text-gray-800 font-semibold">{room.name}</h3>
+                      <h3 className="text-gray-800 font-semibold overflow-hidden text-ellipsis whitespace-nowrap">
+                        {room.name}
+                      </h3>
                       {room.organization && (
-                        <p className="text-sm text-gray-600">{room.organization}</p>
+                        <p className="text-sm text-gray-600 overflow-hidden text-ellipsis whitespace-nowrap">
+                          {room.organization}{room.organization}</p>
                       )}
                     </div>
                     <StylizedButton

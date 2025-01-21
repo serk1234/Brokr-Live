@@ -616,7 +616,7 @@ function Contentmanager({ items = [], dataroomId }) {
   }
 
   return (
-    <div className="w-full bg-transparent rounded-2xl  p-6 ">
+    <div className="w-full bg-transparent rounded-2xl  p-6 ]">
       {selectedFile ? (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl border border-black/10 shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
@@ -935,7 +935,7 @@ function Contentmanager({ items = [], dataroomId }) {
           </div>
 
           {/* Table Header - Hidden on mobile */}
-          <div className="hidden md:grid md:grid-cols-[2fr_1fr_1fr_auto] gap-6 py-3 px-4 ">
+          <div className="hidden md:grid md:grid-cols-[2fr_1fr_1fr_auto] gap-6 py-3 px-4 border-b border-black/10">
             <div className="text-black/40 text-sm font-medium">Name</div>
             <div className="text-black/40 text-sm font-medium">Uploaded By</div>
             <div className="text-black/40 text-sm font-medium">Uploaded</div>
@@ -1045,6 +1045,7 @@ function Contentmanager({ items = [], dataroomId }) {
                 </button>
               </div>
             </div>
+
           ))}
           <h1></h1>
           <h1></h1>
