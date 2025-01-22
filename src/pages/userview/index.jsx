@@ -1,17 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import Modal from "react-modal";
 import { supabase } from "../../../src/app/supabaseClient";
-import HeaderLive from "../../components/header-live";
+import "../../app/globals.css";
 import Footer from "../../components/footer";
+import HeaderLive from "../../components/header-live";
 import Title from "../../components/title";
 import Viewer from "../../components/viewer";
-import "../../app/globals.css";
-import ReactDOM from 'react-dom';
-import Modal from 'react-modal';
 import Onboarding from "../onboarding";
-
 
 function UserView() {
   const [userEmail, setUserEmail] = useState("");
@@ -31,16 +29,16 @@ function UserView() {
   const router = useRouter();
   const customStyles = {
     content: {
-      top: '0', // Align to the top of the viewport
-      left: '0', // Align to the left of the viewport
-      right: '0', // Stretch to the right
-      bottom: '0', // Stretch to the bottom
+      top: "0", // Align to the top of the viewport
+      left: "0", // Align to the left of the viewport
+      right: "0", // Stretch to the right
+      bottom: "0", // Stretch to the bottom
       padding: 0, // Remove internal spacing
       margin: 0, // Remove external spacing
-      border: 'none', // Optional: remove border for a cleaner look
+      border: "none", // Optional: remove border for a cleaner look
     },
     overlay: {
-      backgroundColor: 'rgba(0, 0, 0, 0.5)', // Optional: semi-transparent overlay
+      backgroundColor: "rgba(0, 0, 0, 0.5)", // Optional: semi-transparent overlay
     },
   };
 
@@ -89,9 +87,11 @@ function UserView() {
             setIsLocked(dataroomData.files_locked);
 
             // Check if NDA needs to be signed
-            if (!hasCheckedNDA && (dataroomData.nda_status === "first" || dataroomData.nda_status === "every")) {
-
-
+            if (
+              !hasCheckedNDA &&
+              (dataroomData.nda_status === "first" ||
+                dataroomData.nda_status === "every")
+            ) {
               console.log("checking nda", dataroomData.id, session.user.email);
               const { data: ndaSignatures, error: ndaError } = await supabase
                 .from("nda_signatures")
@@ -100,14 +100,18 @@ function UserView() {
                 .eq("user_email", session.user.email);
 
               if (ndaError) {
-                console.error("Error checking NDA signatures:", ndaError.message);
+                console.error(
+                  "Error checking NDA signatures:",
+                  ndaError.message
+                );
                 return;
               }
               console.log("ndaSignatures", ndaSignatures);
 
               if (
                 dataroomData.nda_status === "every" ||
-                (dataroomData.nda_status === "first") && (!ndaSignatures || ndaSignatures.length === 0)
+                (dataroomData.nda_status === "first" &&
+                  (!ndaSignatures || ndaSignatures.length === 0))
               ) {
                 setHasCheckedNDA(true); // Avoid multiple redirects
                 //router.push(`/onboarding?dataroomId=${dataroomId}`);
@@ -117,11 +121,12 @@ function UserView() {
               }
             }
 
-            const { data: fileData,
-              error: fileError } = await supabase
-                .from("file_uploads")
-                .select("name, new_name, uploaded_by, upload_at")
-                .eq("dataroom_id", dataroomId);
+            const { data: fileData, error: fileError } = await supabase
+              .from("file_uploads")
+              .select(
+                "name, new_name, uploaded_by, upload_at, locked, file_path"
+              )
+              .eq("dataroom_id", dataroomId);
 
             if (fileError) {
               console.error("Error fetching files:", fileError.message);
@@ -144,7 +149,7 @@ function UserView() {
   }, [router.query.id, hasCheckedNDA]);
 
   const handleFileClick = async (file) => {
-    if (isLocked) {
+    if (file.locked) {
       alert("This file is locked and cannot be accessed.");
       return;
     }
@@ -155,13 +160,13 @@ function UserView() {
     try {
       const { data, error } = await supabase.storage
         .from("file_uploads")
-        .getPublicUrl(`files/${file.name}`);
+        .getPublicUrl(file.file_path); // Fetch public URL for viewing
 
       if (error) {
         console.error("Error fetching file URL:", error.message);
         setFileURL("");
       } else {
-        setFileURL(data.publicUrl);
+        setFileURL(data.publicUrl); // Set URL for preview
       }
     } catch (err) {
       console.error("Unexpected error fetching file URL:", err.message);
@@ -175,14 +180,26 @@ function UserView() {
       try {
         const { data, error } = await supabase.storage
           .from("file_uploads")
-          .download(`files/${selectedFile.name}`);
+          .download(selectedFile.file_path);
 
         if (error) {
           console.error("Error downloading file:", error.message);
           return;
         }
+        supabase.from("file_downloads").insert({
+          dataroom_id: router.query.id,
+          file_id: selectedFile.id,
+        });
 
-        const blob = new Blob([data], { type: data.type || "application/octet-stream" });
+
+
+        // Insert a download record
+
+
+        // Trigger file download in the browser
+        const blob = new Blob([data], {
+          type: data.type || "application/octet-stream",
+        });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -198,6 +215,9 @@ function UserView() {
       console.error("No file selected or file URL is missing.");
     }
   };
+
+
+
 
   const getDisplayName = (file) => file.new_name || file.name;
 
@@ -216,8 +236,7 @@ function UserView() {
         <hr className="border-gray-300 w-full" />
       </div>
 
-
-      {showNDA &&
+      {showNDA && (
         <Modal
           isOpen={showNDA}
           onAfterOpen={() => { }}
@@ -225,10 +244,14 @@ function UserView() {
           style={customStyles}
           contentLabel="Example Modal"
         >
-          <Onboarding roomId={router.query.id} onClosed={() => {
-            setShowNDA(false);
-          }} />
-        </Modal>}
+          <Onboarding
+            roomId={router.query.id}
+            onClosed={() => {
+              setShowNDA(false);
+            }}
+          />
+        </Modal>
+      )}
 
       <div className="flex flex-1">
         <div className="w-1/4 bg-gray-50 border-r border-gray-200 p-4">
@@ -237,11 +260,14 @@ function UserView() {
             {files.map((file, index) => (
               <li
                 key={index}
-                className={`flex items-center p-2 rounded-lg cursor-pointer ${isLocked ? "bg-red-100" : "hover:bg-green-50"
+                className={`flex items-center p-2 rounded-lg cursor-pointer ${file.locked ? "bg-red-100" : "hover:bg-green-50"
                   }`}
                 onClick={() => handleFileClick(file)}
               >
-                <i className={`fas ${isLocked ? "fa-lock" : "fa-file"} text-gray-500 mr-2`}></i>
+                <i
+                  className={`fas ${file.locked ? "fa-lock" : "fa-file"
+                    } text-gray-500 mr-2`}
+                ></i>
                 <span className="flex-1 truncate">{getDisplayName(file)}</span>
               </li>
             ))}
@@ -273,5 +299,3 @@ function UserView() {
 }
 
 export default UserView;
-
-

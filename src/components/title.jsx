@@ -18,7 +18,7 @@ function Title({ title, organization, status }) {
   return (
     <div className="mb-6">
       {/* Top Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4">
         {/* Title and Status */}
         <div className="flex items-center gap-3">
           <h1 className="text-2xl md:text-4xl font-semibold tracking-tight text-[#1F2937] font-open-sans">
@@ -32,13 +32,11 @@ function Title({ title, organization, status }) {
         </div>
 
         {/* Organization */}
-        <div className="text-right">
-          {organization && (
-            <span className="text-lg text-[#6B7280] font-open-sans">
-              {organization}
-            </span>
-          )}
-        </div>
+        {organization && (
+          <div className="text-lg text-[#6B7280] font-open-sans">
+            {organization}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -2,10 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
 import { useRouter } from "next/navigation";
+import Popup from "../components/Popup"; // Adjust the path based on your file structure
 
 function MainComponent() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
+  const [popupMessage, setPopupMessage] = useState(null);
   const router = useRouter(); // For redirecting the user
 
   // Listen for auth state changes and redirect to dashboard
@@ -31,23 +33,11 @@ function MainComponent() {
     try {
       const { error } = await supabase.auth.signInWithOtp({ email });
       if (error) throw error;
-      alert("Check your email for the magic link!");
+      setPopupMessage("Check your email for the magic link!");
     } catch (error) {
       console.error("Error:", error.message);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Google Login
-  const handleGoogleLogin = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-      });
-      if (error) throw error;
-    } catch (error) {
-      console.error("Error:", error.message);
     }
   };
 
@@ -80,20 +70,13 @@ function MainComponent() {
           >
             {loading ? "Loading..." : "Continue with Email"}
           </button>
-
-          {/* Or Separator */}
-          <div className="separator">Or</div>
-
-          {/* Continue with Google Button */}
-          <button
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            className={`btn btn-google ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
-          >
-            Continue with Google
-          </button>
         </div>
       </div>
+
+      {/* Popup */}
+      {popupMessage && (
+        <Popup message={popupMessage} onClose={() => setPopupMessage(null)} />
+      )}
     </div>
   );
 }

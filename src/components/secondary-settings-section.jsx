@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { supabase } from "../../src/app/supabaseClient";
+import ModernButton from "./modern-button";
 
 function SecondarySettingsSection({ dataroomId }) {
   const [ndaText, setNdaText] = useState(""); // Store NDA template content
@@ -13,7 +14,7 @@ function SecondarySettingsSection({ dataroomId }) {
   const ndaOptions = {
     never: "Never",
     first: "First Access",
-    every: "Every Access",
+    // every: "Every Access",//every access for later 
   };
 
   useEffect(() => {
@@ -86,33 +87,35 @@ function SecondarySettingsSection({ dataroomId }) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg border border-black shadow-md space-y-6">
+    <div className="bg-[#f5f5f5] p-6 rounded-2xl border border-[#ddd] shadow-md space-y-6 hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
       {/* NDA Status Dropdown */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
         <div>
-          <h3 className="text-lg font-semibold">Require NDA</h3>
-          <p className="text-sm text-gray-500">
+          <h3 className="font-medium mb-2">Require NDA</h3>
+          <p className="text-sm text-gray-700">
             Users must sign an NDA before accessing content
           </p>
         </div>
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="px-4 py-2 bg-white border border-black rounded shadow cursor-pointer focus:outline-none"
+            className="w-full sm:w-auto px-4 py-2 bg-white border border-black rounded shadow cursor-pointer focus:outline-none"
           >
             {ndaOptions[ndaOption]}
-            <i className={`fas fa-chevron-down ml-2 ${isOpen ? "rotate-180" : ""}`}></i>
+            <i
+              className={`fas fa-chevron-down ml-2 ${isOpen ? "rotate-180" : ""
+                }`}
+            ></i>
           </button>
           {isOpen && (
-            <div className="absolute right-0 mt-2 w-full bg-white border border-black rounded shadow z-10">
+            <div className="absolute right-0 mt-2 w-full sm:w-auto bg-white border border-black rounded shadow z-10">
               {Object.entries(ndaOptions).map(([value, label]) => (
                 <div
                   key={value}
-                  className={`px-4 py-2 cursor-pointer hover:bg-gray-50 ${
-                    ndaOption === value ? "bg-[#A3E636]" : ""
-                  }`}
+                  className={`px-4 py-2 cursor-pointer hover:bg-gray-50 ${ndaOption === value ? "bg-[#A3E636]" : ""
+                    }`}
                   onClick={() => {
-                    handleNdaStatusChange(value);
+                    setNdaOption(value);
                     setIsOpen(false);
                   }}
                 >
@@ -125,48 +128,56 @@ function SecondarySettingsSection({ dataroomId }) {
       </div>
 
       {/* Custom NDA Template Section */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
         <div>
-          <h3 className="text-lg font-semibold">Custom NDA</h3>
-          <p className="text-sm text-gray-500">Modify the NDA template for this dataroom</p>
+          <h3 className="font-medium mb-2">Custom NDA</h3>
+          <p className="text-sm text-gray-700">
+            Modify the NDA for this dataroom
+          </p>
         </div>
-        <div className="flex items-center space-x-4">
-          <button
+        <div>
+          <ModernButton
+            className="w-full sm:w-auto px-4 py-2 bg-gray-200 border border-black rounded shadow"
             onClick={() => setShowNdaModal(true)}
-            className="px-4 py-2 bg-gray-200 border border-black rounded shadow"
           >
             Edit
-          </button>
+          </ModernButton>
         </div>
       </div>
 
+
       {/* Custom NDA Template Modal */}
       {showNdaModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-lg w-full">
-            <h3 className="text-xl font-semibold mb-4">Edit NDA Template</h3>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+        >
+          <div className="bg-gray-300 p-4 rounded-lg w-11/12 max-w-md shadow-lg">
+            <h3 className="text-lg font-semibold mb-3">Edit NDA</h3>
             <textarea
               value={ndaText}
               onChange={(e) => setNdaText(e.target.value)}
-              className="w-full h-64 p-4 border border-black rounded font-mono text-sm"
+              className="w-full h-40 p-3 border border-black rounded font-mono text-sm"
             />
-            <div className="flex justify-end space-x-4 mt-4">
-              <button
+            <div className="flex justify-end space-x-3 mt-3">
+              <ModernButton
                 onClick={() => setShowNdaModal(false)}
-                className="px-4 py-2 bg-gray-300 rounded"
+                className="px-3 py-1.5 bg-red-500 text-white rounded hover:bg-red-600 transition"
               >
                 Cancel
-              </button>
-              <button
+              </ModernButton>
+              <ModernButton
                 onClick={handleSaveNdaTemplate}
-                className="px-4 py-2 bg-green-500 text-white rounded"
+                className="px-3 py-1.5 bg-[#A3E636] rounded border border-black shadow-lg flex items-center gap-2 hover:bg-[#93d626] transition-color"
               >
-                Save Changes
-              </button>
+                Save
+              </ModernButton>
             </div>
           </div>
         </div>
       )}
+
+
+
     </div>
   );
 }

@@ -1,5 +1,3 @@
-import React from "react";
-
 function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
   return (
     <div className="flex flex-col h-full w-full">
@@ -80,5 +78,3 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
 }
 
 export default Viewer;
-
-

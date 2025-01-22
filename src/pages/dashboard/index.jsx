@@ -120,7 +120,7 @@ function MainComponent() {
             </div>
 
             {/* Datarooms */}
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               {userDatarooms.map((room) => (
                 <div
                   key={room.id}
@@ -147,7 +147,7 @@ function MainComponent() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-900">User</h2>
             </div>
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               {invitedDatarooms.length > 0 ? (
                 invitedDatarooms.map((room) => (
                   <div
@@ -178,7 +178,7 @@ function MainComponent() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-black rounded-xl p-6 shadow-md border border-[#A3E636] max-w-md w-full">
+          < div className="bg-black rounded-xl p-6 shadow-md border border-[#A3E636] w-11/12 max-w-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-white">New Dataroom</h2>
               <StylizedButton
@@ -194,13 +194,7 @@ function MainComponent() {
                 placeholder="Enter dataroom name"
                 className="w-full px-4 py-2 bg-[#121212] text-white border border-[#A3E636] rounded-lg focus:ring-2 focus:ring-[#A3E636]"
               />
-              <input
-                type="text"
-                value={newOrganizationName}
-                onChange={(e) => setNewOrganizationName(e.target.value)}
-                placeholder="Enter organization name (optional)"
-                className="w-full px-4 py-2 bg-[#121212] text-white border border-[#A3E636] rounded-lg focus:ring-2 focus:ring-[#A3E636]"
-              />
+
               <StylizedButton text="Create" onClick={handleCreateDataroom} />
             </div>
           </div>

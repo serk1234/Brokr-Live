@@ -1,17 +1,22 @@
-import React, { useState, useEffect } from "react";
-import { supabase } from "../../src/app/supabaseClient";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { supabase } from "../../src/app/supabaseClient";
 
 function Teamsecteam({ dataroomName }) {
   const [showPopup, setShowPopup] = useState(false);
   const [users, setUsers] = useState([]);
-  const [newUser, setNewUser] = useState({ name: "", email: "", permission: "view", isAdmin: false });
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    permission: "view",
+    isAdmin: false,
+  });
   const [loading, setLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const router = useRouter();
   const [currentDataroom, setCurrentDataroom] = useState(dataroomName || "");
 
-  useEffect(() => {
+  /*   useEffect(() => {
     const fetchInvitedUsers = async () => {
       setIsFetching(true);
       try {
@@ -33,13 +38,41 @@ function Teamsecteam({ dataroomName }) {
     if (currentDataroom) {
       fetchInvitedUsers();
     }
-  }, [currentDataroom]);
+  }, []); */
 
   useEffect(() => {
+    /*  console.log(dataroomName, router.query.name, router.query);
     if (!dataroomName && router.query.name) {
       setCurrentDataroom(router.query.name.trim());
-    }
-  }, [router.query.name, dataroomName]);
+    } */
+    const fetchInvitedUsers = async () => {
+      setIsFetching(true);
+      try {
+        const { data, error } = await supabase
+          .from("dataroom_teams")
+          .select("*")
+          .eq("dataroom_id", router.query.id)
+          .order("created_at", { ascending: true }); /* await supabase
+          .from("datarooms")
+          .select("email, invited_by, invited_at")
+          .eq("dataroom_id", router.query.id)
+          .order("invited_at", { ascending: true }) */
+
+        if (error) throw error;
+        console.log(data);
+        setUsers(data || []);
+      } catch (err) {
+        console.error("Error fetching invited users:", err.message);
+      } finally {
+        setIsFetching(false);
+      }
+    };
+
+    /* if (router.query.id) {
+      fetchInvitedUsers();
+    } */
+    fetchInvitedUsers();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,19 +82,23 @@ function Teamsecteam({ dataroomName }) {
       const inviterEmail = (await supabase.auth.getUser()).data.user.email;
       const { error: magicLinkError } = await supabase.auth.signInWithOtp({
         email: newUser.email,
-        options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard?id=${router.query.id}`,
+        },
       });
 
       if (magicLinkError) throw magicLinkError;
 
       const { error: insertError } = await supabase
-        .from("datarooms")
+        .from("dataroom_teams")
         .insert([
           {
-            name: currentDataroom,
-            user_email: newUser.email,
+            dataroom_id: router.query.id,
+            email: newUser.email,
             invited_by: inviterEmail,
             created_at: new Date(),
+            invited_at: new Date(),
+            permission: newUser.permission,
           },
         ]);
 
@@ -70,8 +107,8 @@ function Teamsecteam({ dataroomName }) {
       setUsers((prevUsers) => [
         ...prevUsers,
         {
-          name: newUser.name,
-          user_email: newUser.email,
+          // name: newUser.name,
+          email: newUser.email,
           invited_by: inviterEmail,
           created_at: new Date().toISOString(),
           permission: newUser.permission,
@@ -89,7 +126,12 @@ function Teamsecteam({ dataroomName }) {
     }
   };
 
-  const handleRemove = (index) => {
+  const handleRemove = async (team, index) => {
+    var result = await supabase
+      .from("dataroom_teams")
+      .delete()
+      .eq("id", team.id);
+
     if (!users[index].isAdmin) {
       setUsers(users.filter((_, i) => i !== index));
     }
@@ -124,23 +166,17 @@ function Teamsecteam({ dataroomName }) {
           <div className="bg-white p-6 rounded-lg w-[90%] max-w-md">
             <h3 className="text-lg font-semibold mb-4">Add Team Member</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
-             
               <input
                 type="email"
                 placeholder="Email"
                 value={newUser.email}
-                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, email: e.target.value })
+                }
                 className="w-full p-2 border rounded"
                 required
               />
-              <select
-                value={newUser.permission}
-                onChange={(e) => setNewUser({ ...newUser, permission: e.target.value })}
-                className="w-full p-2 border rounded"
-              >
-                <option value="view">View Only</option>
-                <option value="full">Full Access</option>
-              </select>
+
               <button
                 type="submit"
                 disabled={loading}
@@ -161,20 +197,23 @@ function Teamsecteam({ dataroomName }) {
           >
             <div className="flex justify-between items-start mb-4">
               <div>
-               
-                <div className="text-gray-600">{user.user_email}</div>
+                <div className="text-gray-600">{user.email}</div>
               </div>
               <button
                 className="w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded"
-                onClick={() => handleRemove(index)}
+                onClick={() => handleRemove(user, index)}
               >
                 <i className="fas fa-trash-alt"></i>
               </button>
             </div>
             <div>
-              <div className="text-gray-600">Permissions: {user.permission}</div>
-              <div className="text-gray-600">Invited By: {user.invited_by || "N/A"}</div>
-              <div className="text-gray-600">Created At: {new Date(user.created_at).toLocaleString()}</div>
+              <div className="text-gray-600"></div>
+              <div className="text-gray-600">
+                Invited By: {user.invited_by || "N/A"}
+              </div>
+              <div className="text-gray-600">
+                Created At: {new Date(user.created_at).toLocaleString()}
+              </div>
             </div>
           </div>
         ))}

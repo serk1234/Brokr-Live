@@ -1,7 +1,7 @@
 "use client";
-import React from "react";
-import StylizedButton from "../components/stylized-button";
 
+import { supabase } from "@/app/supabaseClient";
+import { useEffect, useState } from "react";
 
 function Dashboard({
   stats = {},
@@ -9,16 +9,77 @@ function Dashboard({
   activities = [],
   documents = [],
   teamMembers = [],
+  dataroomId,
+  setActiveTab,
 }) {
+  const [totalUser, setTotalUser] = useState("Loading...");
+  const [totalActiveUser, setTotalActiveUser] = useState("Loading...");
+  const [totalDownloads, setTotalDownloads] = useState("Loading...");
+  const [timeSpent, setTimeSpend] = useState("Loading...");
+  const [documentList, setDocumentList] = useState([]);
+  const [fetchedTeamMembers, setFetchedTeamMembers] = useState([]);
+  const [fetchedActiveUsers, setFetchedActiveUsers] = useState([]);
+
   const handleViewClick = (section) => {
-    const routes = {
-      team: "/9998",
-      users: "/1",
-      activity: "/9998",
-      contents: "/X957X859",
-    };
-    window.location.href = routes[section];
+    setActiveTab(section);
   };
+
+  useEffect(() => {
+    const fetchUserSessionAndData = async () => {
+      try {
+        const result = await supabase
+          .from("datarooms")
+          .select("*, file_uploads(*), invited_users(*), file_downloads(*)")
+          .eq("id", dataroomId)
+          .single();
+
+        if (result.error) {
+          console.error(result.error);
+          return;
+        }
+
+        const dataroomData = result.data;
+
+        // Set total users and active users
+        setTotalUser(dataroomData.invited_users.length.toString());
+        setTotalActiveUser(
+          dataroomData.invited_users
+            .filter((user) => user.status === "active")
+            .length.toString()
+        );
+
+        // Set total downloads
+        const totalDownloadCount = dataroomData.file_downloads.length;
+        setTotalDownloads(totalDownloadCount.toString());
+
+        // Set team members and active users
+        setFetchedTeamMembers(dataroomData.invited_users.filter((user) => user.role === "team"));
+        setFetchedActiveUsers(dataroomData.invited_users.filter((user) => user.status === "active"));
+
+        // Process document data
+        const formattedDocuments = dataroomData.file_uploads.map((file) => {
+          const downloads = dataroomData.file_downloads.filter(
+            (download) => download.file_id === file.id
+          ).length;
+
+          return {
+            name: file.name,
+            downloads,
+            dateAdded: new Date(file.upload_at).toLocaleDateString(),
+          };
+        });
+
+        setDocumentList(formattedDocuments);
+      } catch (err) {
+        console.error("Error fetching data:", err.message);
+      }
+    };
+
+    fetchUserSessionAndData();
+  }, [dataroomId]);
+
+
+
 
   return (
     <div className="bg-white text-black p-8 rounded-2xl">
@@ -28,51 +89,28 @@ function Dashboard({
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {[
-          {
-            label: "Total Users",
-            value: stats.totalUsers,
-            growth: stats.userGrowth,
-          },
-          {
-            label: "Active Users",
-            value: stats.activeUsers,
-            growth: stats.activeGrowth,
-          },
-          {
-            label: "Downloads",
-            value: stats.downloads,
-            growth: stats.downloadGrowth,
-          },
-          {
-            label: "Time Spent",
-            value: stats.timeSpent,
-            growth: stats.timeGrowth,
-          },
-        ].map((stat, index) => (
-          <div
-            key={index}
-            className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300"
-          >
-            <div className="flex flex-col h-full">
-              <div className="text-4xl font-light mb-4 group-hover:text-[#A3E636] text-gray-800">
-                {stat.value || 0}
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="text-gray-700 text-sm group-hover:text-black">
-                  {stat.label}
-                </div>
-                <div className="px-3 py-1 bg-[#eee] rounded-full text-[#A3E636] text-sm hover:bg-[#A3E636] hover:text-white">
-                  +{stat.growth || 0}%
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
+          <div className="text-4xl font-light mb-4 text-gray-800">{totalUser}</div>
+          <div className="text-gray-700 text-sm">Total Users</div>
+        </div>
+        <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
+          <div className="text-4xl font-light mb-4 text-gray-800">{totalActiveUser}</div>
+          <div className="text-gray-700 text-sm">Active Users</div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      {/* Downloads Section */}
+      <div className="mb-6">
+        <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
+          <div className="text-4xl font-light mb-4 text-gray-800">{totalDownloads}</div>
+          <div className="text-gray-700 text-sm">Downloads</div>
+        </div>
+      </div>
+
+
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] transition-all duration-300">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-light hover:text-[#A3E636]">Team</h3>
@@ -84,33 +122,23 @@ function Dashboard({
             </button>
           </div>
           <div className="space-y-4">
-            {teamMembers.map((member, index) => (
+            {fetchedTeamMembers.map((member, index) => (
               <div
                 key={index}
                 className="flex items-center justify-between p-3 hover:bg-[#eee] rounded-lg"
               >
                 <div className="flex items-center">
                   <div className="w-8 h-8 bg-[#A3E636] text-white rounded-lg flex items-center justify-center mr-3">
-                    {member.name.charAt(0)}
+                    {member.email.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <div className="font-light">{member.name}</div>
-                    <div className="text-xs text-gray-700">{member.role}</div>
+                    <div className="font-light">{member.email}</div>
                   </div>
-                </div>
-                <div
-                  className={`px-2 py-1 rounded text-xs ${member.role === "Admin"
-                      ? "bg-[#A3E636] text-white"
-                      : "bg-[#ddd] text-gray-700"
-                    }`}
-                >
-                  {member.role === "Admin" ? "Full Access" : "View Only"}
                 </div>
               </div>
             ))}
           </div>
         </div>
-
         <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] transition-all duration-300">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-light hover:text-[#A3E636]">Users</h3>
@@ -121,62 +149,9 @@ function Dashboard({
               <i className="fas fa-arrow-right"></i>
             </button>
           </div>
-          <div className="space-y-4">
-            {activeUsers.map((user, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 hover:bg-[#eee] rounded-lg"
-              >
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-[#eee] rounded-lg flex items-center justify-center mr-3">
-                    <i className="fas fa-eye"></i>
-                  </div>
-                  <div>
-                    <div className="font-light">{user.name}</div>
-                    <div className="text-xs text-gray-700">
-                      {user.timeSpent}
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right text-xs text-gray-700">
-                  {user.downloads} downloads
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] transition-all duration-300">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-light hover:text-[#A3E636]">
-              Activity
-            </h3>
-            <button
-              onClick={() => handleViewClick("activity")}
-              className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#eee] hover:bg-[#A3E636] hover:text-white transition-all duration-300"
-            >
-              <i className="fas fa-arrow-right"></i>
-            </button>
-          </div>
-          <div className="space-y-4">
-            {activities.map((activity, index) => (
-              <div
-                key={index}
-                className="flex items-center p-3 hover:bg-[#eee] rounded-lg"
-              >
-                <div className="w-8 h-8 bg-[#eee] rounded-lg flex items-center justify-center mr-3">
-                  <i className="fas fa-eye"></i>
-                </div>
-                <div className="flex-grow">
-                  <div className="font-light text-sm">{activity.user}</div>
-                  <div className="text-xs text-gray-700">{activity.action}</div>
-                </div>
-                <div className="text-xs text-gray-700">{activity.time}</div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
+
 
       <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] transition-all duration-300">
         <div className="flex justify-between items-center mb-6">
@@ -189,14 +164,14 @@ function Dashboard({
           </button>
         </div>
         <div className="space-y-4">
-          {documents.map((doc, index) => (
+          {documentList.map((doc, index) => (
             <div
               key={index}
               className="flex items-center justify-between p-4 bg-[#eee] rounded-xl hover:bg-[#e2e2e2] transition-all duration-300 group"
             >
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-[#ddd] rounded-xl flex items-center justify-center mr-4 group-hover:bg-[#A3E636] group-hover:text-white transition-all duration-300">
-                  <i className="fas fa-eye"></i>
+                  <i className="fas fa-file-lines"></i>
                 </div>
                 <div>
                   <div className="font-light group-hover:text-[#A3E636]">
@@ -209,14 +184,14 @@ function Dashboard({
               </div>
               <div className="flex space-x-8">
                 <div className="text-center">
-                  <div className="font-light group-hover:text-[#A3E636]">
+                  {/* <div className="font-light group-hover:text-[#A3E636]">
                     {doc.views}
                   </div>
                   <div className="text-xs text-gray-700 group-hover:text-black">
                     Views
-                  </div>
+                  </div> 
                 </div>
-                <div className="text-center">
+                <div className="text-center"> */}
                   <div className="font-light group-hover:text-[#A3E636]">
                     {doc.downloads}
                   </div>
@@ -233,94 +208,6 @@ function Dashboard({
   );
 }
 
-function StoryComponent() {
-  const mockData = {
-    stats: {
-      totalUsers: 342,
-      userGrowth: 12,
-      activeUsers: 156,
-      activeGrowth: 8,
-      downloads: 1234,
-      downloadGrowth: 15,
-      timeSpent: "456h",
-      timeGrowth: 10,
-    },
-    teamMembers: [
-      { name: "John Doe", role: "Admin", status: "Full Access" },
-      { name: "Jane Smith", role: "Editor", status: "View Only" },
-      { name: "Bob Wilson", role: "Viewer", status: "View Only" },
-      { name: "Alice Brown", role: "Editor", status: "View Only" },
-    ],
-    activeUsers: [
-      {
-        name: "Sarah Johnson",
-        timeSpent: "12h 30m",
-        views: 145,
-        downloads: 23,
-      },
-      { name: "Michael Chen", timeSpent: "10h 15m", views: 98, downloads: 15 },
-      { name: "Emily Davis", timeSpent: "8h 45m", views: 76, downloads: 12 },
-      { name: "James Wilson", timeSpent: "7h 20m", views: 65, downloads: 8 },
-    ],
-    activities: [
-      {
-        type: "view",
-        user: "Sarah Johnson",
-        action: "Viewed Financial Report.pdf",
-        time: "2m ago",
-      },
-      {
-        type: "view",
-        user: "Michael Chen",
-        action: "Viewed Term Sheet.docx",
-        time: "5m ago",
-      },
-      {
-        type: "view",
-        user: "Emily Davis",
-        action: "Viewed Pitch Deck.pptx",
-        time: "10m ago",
-      },
-      {
-        type: "view",
-        user: "James Wilson",
-        action: "Viewed Due Diligence.pdf",
-        time: "15m ago",
-      },
-    ],
-    documents: [
-      {
-        name: "Financial Report.pdf",
-        dateAdded: "2d ago",
-        views: 234,
-        downloads: 45,
-      },
-      {
-        name: "Term Sheet.docx",
-        dateAdded: "3d ago",
-        views: 187,
-        downloads: 32,
-      },
-      {
-        name: "Pitch Deck.pptx",
-        dateAdded: "4d ago",
-        views: 156,
-        downloads: 28,
-      },
-      {
-        name: "Due Diligence.pdf",
-        dateAdded: "5d ago",
-        views: 134,
-        downloads: 23,
-      },
-    ],
-  };
 
-  return (
-    <div className="p-8 bg-white min-h-screen">
-      <MainComponent {...mockData} />
-    </div>
-  );
-}
 
 export default Dashboard;

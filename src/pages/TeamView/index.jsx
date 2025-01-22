@@ -6,7 +6,6 @@ import { supabase } from "../../../src/app/supabaseClient";
 import "../../app/globals.css";
 import Contentmanager from "../../components/contentmanager";
 import Dashboard from "../../components/dashboard";
-import Dashcompteam from "../../components/dashcompteam";
 import Footer from "../../components/footer";
 import HeaderLive from "../../components/header-live";
 import Menu from "../../components/menu";
@@ -18,7 +17,7 @@ import Usermanagement from "../../components/usermanagement";
 
 function MainComponent() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("contents");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [displayName, setDisplayName] = useState("Loading...");
   const [teamCount, setTeamCount] = useState(0);
   const [newMessages, setNewMessages] = useState(0);
@@ -88,7 +87,7 @@ function MainComponent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100 font-open-sans">
+    <div className=" team-view min-h-screen flex flex-col bg-gray-100 font-open-sans">
       {/* Header */}
       <HeaderLive email={userEmail} />
 
@@ -106,7 +105,7 @@ function MainComponent() {
       {/* Main Content */}
       <div className="flex flex-col sm:flex-row flex-1">
         {/* Sidebar */}
-        <div className="w-full sm:w-[240px] bg-gray-100 text-black flex flex-col border-r border-gray-300 sidebar">
+        <div className="w-full sm:w-[240px] bg-gray-100 text-black flex flex-col border-r border-gray-300 sidebars">
           <Menu
             activeTab={activeTab}
             setActiveTab={setActiveTab}
@@ -128,9 +127,12 @@ function MainComponent() {
               setOrganization={setOrganization}
             />
           )}
-          {activeTab === "dashboard" && <Dashboard />}
+
+          {activeTab === "dashboard" && dataroomId && (
+            <Dashboard dataroomId={dataroomId} setActiveTab={setActiveTab} />
+          )}
           {activeTab === "users" && <Usermanagement />}
-          {activeTab === "dashboard" && <Dashcompteam />}
+
           {activeTab === "activity" && <Teamactivity activities={[]} />}
           {activeTab === "contents" && dataroomId && (
             <Contentmanager items={[]} dataroomId={dataroomId} />
@@ -140,7 +142,10 @@ function MainComponent() {
       </div>
 
       {/* Footer */}
-      <Footer />
+      {/* Footer */}
+      <div className="team-view-footer">
+        <Footer />
+      </div>
     </div>
   );
 }

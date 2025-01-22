@@ -65,10 +65,21 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
     if (file) {
       try {
         const sanitizedFileName = sanitizeFileName(file.name);
+        console.log(sanitizeFileName);
+        const date = new Date();
+
+        const timestamp = `${date.getFullYear()}-${
+          date.getMonth() + 1
+        }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
+
+        var fileName = timestamp + "_" + sanitizedFileName;
+
+        var filePath = `files/${dataroomId}/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from("file_uploads")
-          .upload(`files/${sanitizedFileName}`, file);
+          // .upload(`files/${sanitizedFileName}`, file);
+          .upload(filePath, file);
 
         if (uploadError) throw uploadError;
 
@@ -83,6 +94,7 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
           .insert([
             {
               name: sanitizedFileName,
+              file_path: filePath,
               uploaded_by: user.email,
               upload_at: new Date().toISOString(),
               dataroom_id: dataroomId,
@@ -94,6 +106,8 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         onUpload({
           name: sanitizedFileName,
           uploaded_by: user.email,
+          file_path: filePath,
+
           upload_at: new Date().toISOString(),
         });
 
@@ -239,7 +253,7 @@ function Contentmanager({ items = [], dataroomId }) {
 
       const { data, error } = await supabase
         .from("file_uploads")
-        .select("name, new_name, uploaded_by, upload_at, locked, id") // Fetch necessary fields
+        .select("name, new_name, uploaded_by, upload_at, locked, id, file_path") // Fetch necessary fields
         .eq("dataroom_id", dataroomId);
       console.log("upload data", data);
 
@@ -260,24 +274,32 @@ function Contentmanager({ items = [], dataroomId }) {
   };
 
   const handleFileView = async (file) => {
-    setSelectedFile(file);
-    setLoadingContent(true); // Show loader while fetching file URL
+    const displayName = getDisplayName(file); // Use new_name if available
+    setSelectedFile({
+      ...file,
+      name: displayName, // Updated to use the display name
+      uploadedBy: file.uploaded_by,
+      uploadDate: file.upload_at,
+    });
+    setLoadingContent(true);
 
     try {
+      console.log(file);
       const { data, error } = await supabase.storage
         .from("file_uploads")
-        .getPublicUrl(`files/${file.name}`);
+        // .getPublicUrl(`files/${dataroomId}/${displayName}`);
+        .getPublicUrl(file.file_path);
 
       if (error) {
         console.error("Error fetching file URL:", error.message);
         setFileURL("");
       } else {
-        setFileURL(data.publicUrl); // Set the file's public URL
+        setFileURL(data.publicUrl);
       }
     } catch (err) {
       console.error("Unexpected error fetching file URL:", err.message);
     } finally {
-      setLoadingContent(false); // Hide loader
+      setLoadingContent(false);
     }
   };
 
@@ -331,9 +353,9 @@ function Contentmanager({ items = [], dataroomId }) {
   const getDisplayName = (file) => file.new_name || file.name;
 
   const toggleLock = async (file) => {
-    console.log(file);
+    console.log("toggleLock", file);
     try {
-      lockUploadFiles(dataroomId);
+      // lockUploadFiles(dataroomId);
 
       const { data, error } = await supabase
         .from("file_uploads")
@@ -385,13 +407,13 @@ function Contentmanager({ items = [], dataroomId }) {
         .eq("id", dataroomId);
 
       if (error1) throw error1;
-      setIsLocked(!isLocked);
       setFiles(
         files.map((e) => {
-          e.locked = !e.locked;
+          e.locked = !isLocked;
           return e;
         })
       );
+      setIsLocked(!isLocked);
 
       // Update local state
       // setFiles([]);
@@ -401,13 +423,19 @@ function Contentmanager({ items = [], dataroomId }) {
     }
   };
 
-  const downloadFile = async (fileName) => {
+  const downloadFile = async (fileName, filePath, id) => {
     try {
       // Fetch the file from Supabase storage
       const { data, error } = await supabase.storage
         .from("file_uploads")
-        .download(`files/${fileName}`);
+        // .download(`files/${fileName}`);
+        .download(filePath);
       if (error) throw error;
+
+      await supabase.from("file_downloads").insert({
+        dataroom_id: dataroomId,
+        file_id: id,
+      });
 
       // Convert ReadableStream to Blob
       const blob = new Blob([data], {
@@ -438,15 +466,22 @@ function Contentmanager({ items = [], dataroomId }) {
       for (const file of files) {
         const { data, error } = await supabase.storage
           .from("file_uploads")
-          .download(`files/${file.name}`);
-        if (error)
-          throw new Error(`Failed to download ${file.name}: ${error.message}`);
-
-        // Add file content to ZIP
-        const blob = new Blob([data], {
-          type: data.type || "application/octet-stream",
+          // .download(`files/${file.name}`);
+          .download(file.file_path);
+        if (!error) {
+          // Add file content to ZIP
+          const blob = new Blob([data], {
+            type: data.type || "application/octet-stream",
+          });
+          zip.file(file.name, blob);
+        } else {
+          console.log(`Failed to download ${file.name}: ${error.message}`);
+          // throw new Error(`Failed to download ${file.name}: ${error.message}`);
+        }
+        await supabase.from("file_downloads").insert({
+          dataroom_id: dataroomId,
+          file_id: file.id,
         });
-        zip.file(file.name, blob);
       }
 
       // Generate the ZIP and trigger the download
@@ -553,6 +588,36 @@ function Contentmanager({ items = [], dataroomId }) {
   const gridTemplateColumns =
     "minmax(300px, 2fr) minmax(150px, 1fr) minmax(100px, 0.7fr) minmax(160px, 1fr)";
 
+  function ConfirmModal({ onClose, onConfirm }) {
+    console.log("ConfirmModal rendered"); // Debugging log
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
+        <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+          <h2 className="text-lg font-semibold mb-4">
+            Are you sure you want to remove the file "{fileToRemove?.name}"?
+          </h2>
+          <p className="text-sm text-gray-600 mb-6">
+            This action cannot be undone.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-black rounded-lg"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+              onClick={onConfirm}
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full bg-transparent rounded-2xl border border-black p-6 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
       {selectedFile ? (
@@ -642,7 +707,8 @@ function Contentmanager({ items = [], dataroomId }) {
                 icon="fa-trash"
                 onClick={() => {
                   console.log("Opening confirmation modal"); // Debugging log
-                  setFileToRemove(selectedFile); // Set the file to remove
+                  setFileToRemove(selectedFile);
+                  setShowConfirmModal(true); // Set the file to remove
                   // Open the confirmation modal
                 }}
                 variant="danger"
@@ -651,15 +717,26 @@ function Contentmanager({ items = [], dataroomId }) {
               <ModernButton
                 text="Download"
                 icon="fa-download"
-                onClick={() => downloadFile(selectedFile.name)}
+                onClick={() =>
+                  downloadFile(
+                    selectedFile.name,
+                    selectedFile.file_path,
+                    selectedFile.id
+                  )
+                }
                 variant="secondary"
               />
-              <ModernButton
-                text={selectedFile.locked ? "Unlock" : "Lock"}
-                icon={selectedFile.locked ? "fa-lock-open" : "fa-lock"}
-                onClick={() => toggleLock(selectedFile)}
-                variant="primary"
-              />
+
+              {showConfirmModal && (
+                <ConfirmModal
+                  onClose={() => setShowConfirmModal(false)}
+                  onConfirm={() => {
+                    handleRemove(fileToRemove); // Remove the file
+                    setSelectedFile(null); // Clear selected file
+                    setShowConfirmModal(false); // Close the modal
+                  }}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -686,7 +763,7 @@ function Contentmanager({ items = [], dataroomId }) {
             </div>
           )}
 
-          <div className="flex justify-between items-center mb-6">
+          {/*  <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-semibold">Contents</h1>
             <div className="flex gap-3">
               <ModernButton
@@ -797,7 +874,9 @@ function Contentmanager({ items = [], dataroomId }) {
                   <i className="fas fa-eye"></i>
                 </button>
                 <button
-                  onClick={() => downloadFile(file.name)}
+                  onClick={() =>
+                    downloadFile(file.name, file.file_path, file.id)
+                  }
                   className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
                 >
                   <i className="fas fa-download"></i>
@@ -813,14 +892,169 @@ function Contentmanager({ items = [], dataroomId }) {
                   )}
                 </button>
                 <button
-                  onClick={() => handleRemove(file)}
+                  onClick={() => {
+                    console.log("Opening confirmation modal for:", file.name); // Debugging log
+                    setFileToRemove(file); // Set the file to be removed
+                    setShowConfirmModal(true); // Show confirmation modal
+                  }}
                   className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-red-50 text-red-500 transition-colors"
                 >
                   <i className="fas fa-trash"></i>
                 </button>
               </div>
             </div>
+          ))} */}
+          {/* Header Section */}
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+            <h1 className="text-xl md:text-2xl font-semibold">Contents</h1>
+            <div className="flex flex-wrap gap-2 md:gap-3">
+              <ModernButton
+                text={window.innerWidth > 768 ? "Upload" : ""}
+                icon="fa-cloud-upload-alt"
+                onClick={() => setShowUploadModal(true)}
+                variant="primary"
+                className="w-10 md:w-auto"
+              />
+              <ModernButton
+                text={window.innerWidth > 768 ? "Download All" : ""}
+                icon="fa-download"
+                onClick={downloadAllFiles}
+                variant="secondary"
+                className="w-10 md:w-auto"
+              />
+              <ModernButton
+                text={
+                  window.innerWidth > 768
+                    ? isLocked
+                      ? "Unlock All"
+                      : "Lock All"
+                    : ""
+                }
+                icon={isLocked ? "fa-lock-open" : "fa-lock"}
+                onClick={toggleLockAll}
+                variant="danger"
+                className="w-10 md:w-auto"
+              />
+            </div>
+          </div>
+
+          {/* Table Header - Hidden on mobile */}
+          <div className="hidden md:grid md:grid-cols-[2fr_1fr_1fr_auto] gap-6 py-3 px-4 border-b border-black/10">
+            <div className="text-black/40 text-sm font-medium">Name</div>
+            <div className="text-black/40 text-sm font-medium">Uploaded By</div>
+            <div className="text-black/40 text-sm font-medium">Uploaded</div>
+            <div className="text-right text-black/40 text-sm font-medium">
+              Actions
+            </div>
+          </div>
+
+          {/* File List */}
+          {files.map((file, index) => (
+            <div
+              key={index}
+              className={`grid grid-cols-[1fr_auto] md:grid-cols-[2fr_1fr_1fr_auto] gap-2 md:gap-6 
+    items-center py-3 px-3 md:px-4 hover:bg-black/5 transition-colors ${
+      file.locked ? "bg-amber-50" : ""
+    }`}
+            >
+              {/* File Name and Icon Section */}
+              <div className="flex items-center gap-2 md:gap-3 min-w-0 col-span-2 md:col-span-1">
+                <span className="shrink-0 w-8 md:w-10 h-8 md:h-10 flex items-center justify-center bg-[#A3E636]/10 rounded-xl">
+                  <i className="fas fa-file text-[#A3E636]"></i>
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {editingName === file ? (
+                      <input
+                        type="text"
+                        value={newName}
+                        onChange={(e) => setNewName(e.target.value)}
+                        className="w-full px-2 md:px-3 py-1 md:py-1.5 border border-black/10 rounded-lg text-sm md:text-base font-medium focus:outline-none focus:ring-2 focus:ring-[#A3E636]"
+                        autoFocus
+                        onBlur={() => handleNameChange(file)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleNameChange(file);
+                          if (e.key === "Escape") setEditingName(null);
+                        }}
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="truncate font-medium text-sm md:text-base">
+                          {getDisplayName(file)}
+                        </span>
+                        <button
+                          onClick={() => {
+                            setNewName(file.new_name || file.name);
+                            setEditingName(file);
+                          }}
+                          className="shrink-0 w-8 h-8 flex items-center justify-center text-sm hover:bg-black/10 rounded-full transition-all"
+                        >
+                          <i className="fas fa-pencil-alt"></i>
+                        </button>
+                        {file.locked && (
+                          <i className="shrink-0 fas fa-lock text-black/40 text-sm"></i>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {/* Mobile-only metadata */}
+                  <div className="flex md:hidden text-xs text-black/40 mt-1">
+                    <span>{file.uploaded_by}</span>
+                    <span className="mx-2">•</span>
+                    <span>{formatDate(file.upload_at)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Desktop-only columns */}
+              <div className="hidden md:block truncate text-black/60 text-sm">
+                {file.uploaded_by}
+              </div>
+              <div className="hidden md:block text-black/60 text-sm">
+                {formatDate(file.upload_at)}
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-1 md:gap-2">
+                <button
+                  onClick={() => handleFileView(file)}
+                  className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
+                >
+                  <i className="fas fa-eye text-sm md:text-base"></i>
+                </button>
+                <button
+                  onClick={() =>
+                    downloadFile(file.name, file.file_path, file.id)
+                  }
+                  className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
+                >
+                  <i className="fas fa-download text-sm md:text-base"></i>
+                </button>
+                <button
+                  onClick={() => toggleLock(file)}
+                  className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
+                >
+                  <i
+                    className={`fas fa-${
+                      file.locked ? "lock" : "lock-open"
+                    } text-sm md:text-base`}
+                  ></i>
+                </button>
+                <button
+                  onClick={() => {
+                    setFileToRemove(file);
+                    setShowConfirmModal(true);
+                  }}
+                  className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-red-50 text-red-500 transition-colors"
+                >
+                  <i className="fas fa-trash text-sm md:text-base"></i>
+                </button>
+              </div>
+            </div>
           ))}
+          <h1></h1>
+          <h1></h1>
+          <h1></h1>
         </div>
       )}
       {showUploadModal && (
@@ -828,6 +1062,15 @@ function Contentmanager({ items = [], dataroomId }) {
           onClose={() => setShowUploadModal(false)}
           onUpload={handleUpload}
           dataroomId={dataroomId}
+        />
+      )}
+      {showConfirmModal && (
+        <ConfirmModal
+          onClose={() => setShowConfirmModal(false)}
+          onConfirm={() => {
+            handleRemove(fileToRemove); // Remove the selected file
+            setShowConfirmModal(false); // Close the modal
+          }}
         />
       )}
     </div>

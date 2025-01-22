@@ -10,6 +10,7 @@ function HeaderLive({ email }) {
   const [dataroomOpen, setDataroomOpen] = useState(false);
   const [teamDatarooms, setTeamDatarooms] = useState([]);
   const [userDatarooms, setUserDatarooms] = useState([]);
+  const [name, setname] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -74,7 +75,7 @@ function HeaderLive({ email }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      window.location.href = "https://brokr.live";
+      window.location.href = "https://brokr.app";
     } catch (error) {
       console.error("Error logging out:", error.message);
     }
@@ -102,6 +103,10 @@ function HeaderLive({ email }) {
               }
             />
             {dataroomOpen && (
+
+
+
+
               <div className="absolute left-0 mt-2 w-[320px] bg-black/95 backdrop-blur-xl border border-gray-800 rounded-xl shadow-2xl p-2 transition-all duration-200 ease-in-out">
                 {/* Team Datarooms */}
                 <div className="mb-2">
@@ -160,6 +165,7 @@ function HeaderLive({ email }) {
             className="group w-full px-4 py-2 rounded-lg text-gray-800 font-medium bg-gray-200 hover:bg-gray-300 transition-all duration-200 flex items-center gap-2"
           >
             <i className="fas fa-user"></i>
+            <span className="text-white font-medium">{name || ""}</span>
             <i className="fas fa-chevron-down transition-transform duration-200 ease-in-out"></i>
           </button>
           {profileOpen && (
@@ -190,3 +196,4 @@ function HeaderLive({ email }) {
 }
 
 export default HeaderLive;
+
