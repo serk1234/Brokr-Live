@@ -125,7 +125,7 @@ function SubscribeView() {
         /> */
         <stripe-pricing-table
           pricing-table-id="prctbl_1QfSw5E43xWZCXH3onBilnVu"
-          publishable-key="pk_live_51QX5gGE43xWZCXH3ivdyoCspjeEUT2TVUCeNyAvwykKpSw95ZayoUndnephVBzkySNaqtjvJ0JVjTU4KEW7GLdN100uKErd8KG"
+          publishable-key={process.env.STRIPE_PK_KEY}
         ></stripe-pricing-table>
       )}
     </div>
