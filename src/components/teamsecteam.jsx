@@ -2,8 +2,8 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
 import ModernButton from "./modern-button";
-
 import Popup from "./Popup";
+
 function Teamsecteam({ dataroomName }) {
   const [showPopup, setShowPopup] = useState(false);
   const [users, setUsers] = useState([]);
@@ -15,67 +15,56 @@ function Teamsecteam({ dataroomName }) {
   });
   const [loading, setLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
-  const router = useRouter();
   const [emails, setEmails] = useState([""]);
   const [currentDataroom, setCurrentDataroom] = useState(dataroomName || "");
-  const [showSuccessPopup, setShowSuccessPopup] = useState(false); // For success message popup
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
-
-  /*   useEffect(() => {
-    const fetchInvitedUsers = async () => {
-      setIsFetching(true);
-      try {
-        const { data, error } = await supabase
-          .from("datarooms")
-          .select("name, user_email, invited_by, created_at")
-          .eq("name", currentDataroom)
-          .order("created_at", { ascending: true });
-
-        if (error) throw error;
-        setUsers(data || []);
-      } catch (err) {
-        console.error("Error fetching invited users:", err.message);
-      } finally {
-        setIsFetching(false);
-      }
-    };
-
-    if (currentDataroom) {
-      fetchInvitedUsers();
-    }
-  }, []); */
+  const [creatorEmail, setCreatorEmail] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
-    /*  console.log(dataroomName, router.query.name, router.query);
-    if (!dataroomName && router.query.name) {
-      setCurrentDataroom(router.query.name.trim());
-    } */
-
-    const fetchInvitedUsers = async () => {
-      setIsFetching(true);
+    const fetchCreatorAndUsers = async () => {
       try {
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser();
+
+        if (authError) {
+          console.error("Error fetching authenticated user:", authError.message);
+          return;
+        }
+
+        // Set the creator's email
+        setCreatorEmail(user.email);
+
+        // Fetch all users in the dataroom
         const { data, error } = await supabase
           .from("dataroom_teams")
           .select("*")
           .eq("dataroom_id", router.query.id)
-          .order("isadmin", { ascending: false }) // Admins first
           .order("created_at", { ascending: true });
 
         if (error) throw error;
 
-        setUsers(data || []);
+        // Prioritize creator by placing their entry first
+        const sortedUsers = [
+          ...data.filter((u) => u.email === user.email),
+          ...data.filter((u) => u.email !== user.email),
+        ];
+
+        setUsers(sortedUsers || []);
       } catch (err) {
-        console.error("Error fetching invited users:", err.message);
+        console.error("Error fetching dataroom users:", err.message);
       } finally {
         setIsFetching(false);
       }
     };
 
     if (router.query.id) {
-      fetchInvitedUsers();
+      fetchCreatorAndUsers();
     }
   }, [router.query.id]);
-
 
   const handleAddEmailField = () => setEmails([...emails, ""]);
 
@@ -91,8 +80,6 @@ function Teamsecteam({ dataroomName }) {
 
   const handleSubmit = async () => {
     setLoading(true);
-    const inviterEmail = (await supabase.auth.getUser()).data.user.email;
-
     try {
       for (const email of emails) {
         if (!email.trim()) {
@@ -108,7 +95,6 @@ function Teamsecteam({ dataroomName }) {
           continue;
         }
 
-        // Send Magic Link
         const { error: magicLinkError } = await supabase.auth.signInWithOtp({
           email,
           options: {
@@ -120,7 +106,8 @@ function Teamsecteam({ dataroomName }) {
           throw new Error(`Failed to send magic link to ${email}: ${magicLinkError.message}`);
         }
 
-        // Insert into "dataroom_teams"
+        const inviterEmail = creatorEmail;
+
         const newUser = {
           dataroom_id: router.query.id,
           email,
@@ -136,17 +123,16 @@ function Teamsecteam({ dataroomName }) {
           throw new Error(`Error inviting user "${email}": ${insertError.message}`);
         }
 
-        // Update the local users state
         setUsers((prevUsers) => [
           ...prevUsers,
-          { ...newUser, created_at: newUser.created_at.toISOString() }, // Ensure consistent date format
+          { ...newUser, created_at: newUser.created_at.toISOString() },
         ]);
       }
 
       setSuccessMessage("Invitations sent successfully!");
       setShowSuccessPopup(true);
-      setEmails([""]); // Reset email fields
-      setShowPopup(false); // Close the popup
+      setEmails([""]);
+      setShowPopup(false);
     } catch (err) {
       console.error("Error sending invites:", err.message);
       setSuccessMessage(`Error: ${err.message}`);
@@ -156,18 +142,13 @@ function Teamsecteam({ dataroomName }) {
     }
   };
 
-
-
-
-
-
   const handleRemove = async (team) => {
-    setLoading(true); // Optional: Show a loading indicator
+    setLoading(true);
     try {
       const { error } = await supabase
         .from("dataroom_teams")
         .delete()
-        .eq("id", team.id); // Use the ID to delete the team member
+        .eq("id", team.id);
 
       if (error) {
         console.error("Error removing team member:", error.message);
@@ -176,10 +157,8 @@ function Teamsecteam({ dataroomName }) {
         return;
       }
 
-      // Remove the user from the local state
       setUsers((prevUsers) => prevUsers.filter((user) => user.id !== team.id));
 
-      // Show success popup
       setSuccessMessage("Team member removed successfully!");
       setShowSuccessPopup(true);
     } catch (err) {
@@ -187,16 +166,8 @@ function Teamsecteam({ dataroomName }) {
       setSuccessMessage("An error occurred while removing the team member.");
       setShowSuccessPopup(true);
     } finally {
-      setLoading(false); // Hide the loading indicator
+      setLoading(false);
     }
-  };
-
-
-  const handleEditRole = (index) => {
-    const updatedUsers = [...users];
-    updatedUsers[index].permission =
-      updatedUsers[index].permission === "full" ? "view" : "full";
-    setUsers(updatedUsers);
   };
 
   return (
@@ -204,7 +175,6 @@ function Teamsecteam({ dataroomName }) {
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
           <div className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">Team</div>
-
         </div>
         <ModernButton onClick={() => setShowPopup(true)} className="px-4 py-2 bg-[#A3E636]">
           <i className="fas fa-user-plus mr-2"></i>Add Team
@@ -262,40 +232,49 @@ function Teamsecteam({ dataroomName }) {
       {showSuccessPopup && (
         <Popup
           message={successMessage}
-          onClose={() => setShowSuccessPopup(false)} // Close popup
+          onClose={() => setShowSuccessPopup(false)}
         />
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {users.map((user, index) => (
-          <div key={index} className="bg-gray-100 p-6 rounded-lg shadow-sm border border-[#ddd]">
+          <div
+            key={index}
+            className={`p-6 rounded-lg shadow-sm transition-all duration-200 ${user.email === creatorEmail
+                ? "bg-black text-white hover:border-[#A3E636]" // Admin box style with hover
+                : "bg-gray-100 border border-[#ddd] hover:border-[#A3E636]" // Regular box style with hover
+              }`}
+          >
             <div className="flex justify-between items-center">
               <div>
-                <div className="text-gray-800 font-semibold">{user.email}</div>
-                {user.isAdmin && <div className="text-green-600 text-sm">Admin</div>}
+                <div className="font-semibold">{user.email}</div>
+                {user.email === creatorEmail && (
+                  <div className="text-sm">Admin</div>
+                )}
               </div>
-
-              <button
-                className="w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full"
-                onClick={() => handleRemove(user)}
-              >
-                <i className="fas fa-trash-alt"></i>
-              </button>
+              {user.email !== creatorEmail && (
+                <button
+                  className="w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full"
+                  onClick={() => handleRemove(user)}
+                >
+                  <i className="fas fa-trash-alt"></i>
+                </button>
+              )}
             </div>
             <div>
-              <div className="text-gray-600">
-                Invited By: {user.invited_by || "N/A"}
-              </div>
-              <div className="text-gray-600">
+              {user.email !== creatorEmail && ( // Hide "Invited By" for Admin
+                <div className="text-gray-600">Invited By: {user.invited_by || "N/A"}</div>
+              )}
+              <div
+                className={`${user.email === creatorEmail ? "text-white" : "text-gray-600"
+                  }`}
+              >
                 Created At: {new Date(user.created_at).toLocaleString()}
               </div>
             </div>
           </div>
         ))}
       </div>
-
-
-
     </div>
   );
 }
