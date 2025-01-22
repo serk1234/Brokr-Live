@@ -124,8 +124,9 @@ function SubscribeView() {
           publishable-key="pk_test_51QX5gGE43xWZCXH3LJ2HhFEboXxnv9Xas2Nnwm2vCmvyijbxXIV17UrkpTRgVELKcAsFUNYakl1nGFaItc0oC51N00jOTphvFi"
         /> */
         <stripe-pricing-table
-          pricing-table-id={process.env.PRICING_TABLE}
-          publishable-key={process.env.STRIPE_PK_KEY}
+          customer-session-client-secret={customerSecret}
+          pricing-table-id="prctbl_1QfSw5E43xWZCXH3onBilnVu"
+          publishable-key="pk_live_51QX5gGE43xWZCXH3ivdyoCspjeEUT2TVUCeNyAvwykKpSw95ZayoUndnephVBzkySNaqtjvJ0JVjTU4KEW7GLdN100uKErd8KG"
         ></stripe-pricing-table>
       )}
     </div>
