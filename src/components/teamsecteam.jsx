@@ -50,6 +50,7 @@ function Teamsecteam({ dataroomName }) {
     if (!dataroomName && router.query.name) {
       setCurrentDataroom(router.query.name.trim());
     } */
+
     const fetchInvitedUsers = async () => {
       setIsFetching(true);
       try {
@@ -57,14 +58,11 @@ function Teamsecteam({ dataroomName }) {
           .from("dataroom_teams")
           .select("*")
           .eq("dataroom_id", router.query.id)
-          .order("created_at", { ascending: true }); /* await supabase
-          .from("datarooms")
-          .select("email, invited_by, invited_at")
-          .eq("dataroom_id", router.query.id)
-          .order("invited_at", { ascending: true }) */
+          .order("isadmin", { ascending: false }) // Admins first
+          .order("created_at", { ascending: true });
 
         if (error) throw error;
-        console.log(data);
+
         setUsers(data || []);
       } catch (err) {
         console.error("Error fetching invited users:", err.message);
@@ -73,11 +71,11 @@ function Teamsecteam({ dataroomName }) {
       }
     };
 
-    /* if (router.query.id) {
+    if (router.query.id) {
       fetchInvitedUsers();
-    } */
-    fetchInvitedUsers();
-  }, []);
+    }
+  }, [router.query.id]);
+
 
   const handleAddEmailField = () => setEmails([...emails, ""]);
 
@@ -206,9 +204,7 @@ function Teamsecteam({ dataroomName }) {
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
           <div className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">Team</div>
-          <div className="w-8 h-8 flex items-center justify-center bg-[#A3E636] rounded-full border border-black text-sm font-bold">
-            {users.length}
-          </div>
+
         </div>
         <ModernButton onClick={() => setShowPopup(true)} className="px-4 py-2 bg-[#A3E636]">
           <i className="fas fa-user-plus mr-2"></i>Add Team
@@ -272,14 +268,13 @@ function Teamsecteam({ dataroomName }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {users.map((user, index) => (
-          <div
-            key={index}
-            className="bg-gray-100 p-6 rounded-lg shadow-sm bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300"
-          >
-            <div className="flex justify-between items-start mb-4">
+          <div key={index} className="bg-gray-100 p-6 rounded-lg shadow-sm border border-[#ddd]">
+            <div className="flex justify-between items-center">
               <div>
                 <div className="text-gray-800 font-semibold">{user.email}</div>
+                {user.isAdmin && <div className="text-green-600 text-sm">Admin</div>}
               </div>
+
               <button
                 className="w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full"
                 onClick={() => handleRemove(user)}

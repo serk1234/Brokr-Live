@@ -8,18 +8,21 @@ function SecondarySettingsSection({ dataroomId }) {
   const [ndaText, setNdaText] = useState(""); // Store NDA template content
   const [ndaOption, setNdaOption] = useState("first"); // Default to "First Access"
   const [isOpen, setIsOpen] = useState(false); // Dropdown open state
-  const [loading, setLoading] = useState(false); // Loading state for dropdown
+  const [loading, setLoading] = useState(false); // Loading state
   const [showNdaModal, setShowNdaModal] = useState(false); // Modal open state
 
   const ndaOptions = {
     never: "Never",
     first: "First Access",
-    // every: "Every Access",//every access for later 
   };
 
+  // Fetch NDA details on component load
   useEffect(() => {
     const fetchNdaDetails = async () => {
-      if (!dataroomId) return;
+      if (!dataroomId) {
+        console.warn("No dataroomId provided.");
+        return;
+      }
 
       try {
         const { data, error } = await supabase
@@ -31,8 +34,8 @@ function SecondarySettingsSection({ dataroomId }) {
         if (error) {
           console.error("Error fetching NDA details:", error.message);
         } else {
-          setNdaOption(data?.nda_status || "first");
-          setNdaText(data?.nda_template || "Default NDA Template");
+          setNdaOption(data?.nda_status || "first"); // Set the fetched NDA status
+          setNdaText(data?.nda_template || "Default NDA Template"); // Set the fetched NDA template
         }
       } catch (err) {
         console.error("Unexpected error fetching NDA details:", err.message);
@@ -42,47 +45,56 @@ function SecondarySettingsSection({ dataroomId }) {
     fetchNdaDetails();
   }, [dataroomId]);
 
+  // Handle dropdown selection change (update database immediately)
   const handleNdaStatusChange = async (newStatus) => {
-    if (!dataroomId) return;
+    setNdaOption(newStatus); // Update local state
+    setIsOpen(false); // Close the dropdown
 
-    setLoading(true);
+    if (!dataroomId) {
+      console.warn("Cannot update NDA status without dataroomId.");
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from("datarooms")
-        .update({ nda_status: newStatus })
+        .update({ nda_status: newStatus }) // Save the updated NDA status to the database
         .eq("id", dataroomId);
 
       if (error) {
         console.error("Error updating NDA status:", error.message);
         alert("Failed to update NDA status. Please try again.");
-      } else {
-        setNdaOption(newStatus);
       }
     } catch (err) {
       console.error("Unexpected error updating NDA status:", err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
+  // Save the NDA template when "Save" is clicked
   const handleSaveNdaTemplate = async () => {
-    if (!dataroomId) return;
+    if (!dataroomId) {
+      console.warn("Cannot save NDA template without dataroomId.");
+      return;
+    }
 
+    setLoading(true);
     try {
       const { error } = await supabase
         .from("datarooms")
-        .update({ nda_template: ndaText })
+        .update({ nda_template: ndaText }) // Save the updated NDA template
         .eq("id", dataroomId);
 
       if (error) {
         console.error("Error saving NDA template:", error.message);
         alert("Failed to save changes. Please try again.");
       } else {
-        alert("NDA template updated successfully!");
-        setShowNdaModal(false);
+        alert("Template updated successfully!"); // Show success message
+        setShowNdaModal(false); // Close the modal
       }
     } catch (err) {
-      console.error("Unexpected error:", err.message);
+      console.error("Unexpected error saving NDA template:", err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -96,11 +108,11 @@ function SecondarySettingsSection({ dataroomId }) {
             Users must sign an NDA before accessing content
           </p>
         </div>
-
         <div className="relative w-full sm:w-auto">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="w-full sm:w-auto px-4 py-2 bg-white border border-black rounded shadow cursor-pointer focus:outline-none min-w-[150px]"
+            className="w-full sm:w-auto px-4 py-2 bg-white border border-black rounded shadow cursor-pointer focus:outline-none"
+            style={{ minWidth: "150px" }} // Ensure consistent width
           >
             {ndaOptions[ndaOption]}
             <i
@@ -108,16 +120,16 @@ function SecondarySettingsSection({ dataroomId }) {
             ></i>
           </button>
           {isOpen && (
-            <div className="absolute right-0 mt-2 min-w-[150px] bg-white border border-black rounded shadow z-10">
+            <div
+              className="absolute right-0 mt-2 bg-white border border-black rounded shadow z-10"
+              style={{ minWidth: "150px" }} // Match the width of the dropdown button
+            >
               {Object.entries(ndaOptions).map(([value, label]) => (
                 <div
                   key={value}
                   className={`px-4 py-2 cursor-pointer hover:bg-gray-50 ${ndaOption === value ? "bg-[#A3E636]" : ""
                     }`}
-                  onClick={() => {
-                    setNdaOption(value);
-                    setIsOpen(false);
-                  }}
+                  onClick={() => handleNdaStatusChange(value)} // Update local state and database
                 >
                   {label}
                 </div>
@@ -125,7 +137,6 @@ function SecondarySettingsSection({ dataroomId }) {
             </div>
           )}
         </div>
-
       </div>
 
       {/* Custom NDA Template Section */}
@@ -138,7 +149,7 @@ function SecondarySettingsSection({ dataroomId }) {
         </div>
         <div>
           <ModernButton
-            className="w-full sm:w-auto px-4 py-2 bg-gray-200  rounded shadow"
+            className="w-full sm:w-auto px-4 py-2 bg-gray-200 border border-black rounded shadow"
             onClick={() => setShowNdaModal(true)}
           >
             Edit
@@ -146,12 +157,9 @@ function SecondarySettingsSection({ dataroomId }) {
         </div>
       </div>
 
-
       {/* Custom NDA Template Modal */}
       {showNdaModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="bg-gray-300 p-4 rounded-lg w-11/12 max-w-md shadow-lg">
             <h3 className="text-lg font-semibold mb-3">Edit NDA</h3>
             <textarea
@@ -176,9 +184,6 @@ function SecondarySettingsSection({ dataroomId }) {
           </div>
         </div>
       )}
-
-
-
     </div>
   );
 }

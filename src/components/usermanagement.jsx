@@ -31,6 +31,7 @@ function Usermanagement() {
         return;
       }
 
+      console.log("Fetching users for dataroom ID:", dataroomId); // Debug log
       const { data, error } = await supabase
         .from("invited_users")
         .select("*")
@@ -38,9 +39,9 @@ function Usermanagement() {
 
       if (error) throw error;
 
+      console.log("Fetched users:", data); // Debug log
       setInvitedUsers(data.filter((user) => user.status === "invited"));
       setActiveUsers(data.filter((user) => user.status === "active"));
-
     } catch (err) {
       console.error("Error fetching users:", err.message);
     }

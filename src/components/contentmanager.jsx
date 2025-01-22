@@ -37,14 +37,57 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
     }
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setFile(e.dataTransfer.files[0]);
+      const droppedFile = e.dataTransfer.files[0];
+
+      try {
+        // Get authenticated user info
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw authError;
+        const userEmail = authData.user.email;
+
+        // Sanitize file name and generate timestamp
+        const sanitizedFileName = sanitizeFileName(droppedFile.name);
+        const timestamp = new Date().toISOString();
+        const filePath = `files/${dataroomId}/${timestamp}_${sanitizedFileName}`;
+
+        // Upload file to Supabase storage
+        const { error: uploadError } = await supabase.storage
+          .from("file_uploads")
+          .upload(filePath, droppedFile);
+        if (uploadError) throw uploadError;
+
+        // Save metadata to Supabase database
+        const { error: dbError } = await supabase.from("file_uploads").insert([
+          {
+            name: sanitizedFileName,
+            file_path: filePath,
+            uploaded_by: userEmail,
+            upload_at: timestamp,
+            dataroom_id: dataroomId,
+          },
+        ]);
+        if (dbError) throw dbError;
+
+        // Update local state with the new file
+        handleUpload({
+          name: sanitizedFileName,
+          file_path: filePath,
+          uploaded_by: userEmail,
+          upload_at: timestamp,
+          locked: false,
+        });
+      } catch (err) {
+        console.error("Error processing dropped file:", err.message);
+      }
     }
   };
+
 
   const handleChange = (e) => {
     e.preventDefault();
@@ -226,49 +269,39 @@ function Contentmanager({ items = [], dataroomId }) {
 
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+
+
   useEffect(() => {
+    const fetchFiles = async () => {
+      if (!dataroomId) {
+        console.error("Dataroom ID is missing");
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("file_uploads")
+          .select("name, file_path, uploaded_by, upload_at, locked")
+          .eq("dataroom_id", dataroomId);
+
+        if (error) {
+          console.error("Error fetching files:", error.message);
+        } else {
+          setFiles(
+            (data || []).map((file) => ({
+              ...file,
+              upload_at: file.upload_at ? new Date(file.upload_at).toISOString() : null,
+            }))
+          );
+        }
+      } catch (err) {
+        console.error("Unexpected error fetching files:", err.message);
+      }
+    };
+
     fetchFiles();
   }, [dataroomId]);
 
-  const fetchFiles = async () => {
-    if (!dataroomId) {
-      console.error("Dataroom ID is missing");
-      return;
-    }
-
-    try {
-      console.log(`dataroomid data->${dataroomId}`);
-
-      var dataRoomDetail = await supabase
-        .from("datarooms")
-        //.select("files_locked, status")
-        .select("*")
-        .eq("id", dataroomId)
-        .single();
-      console.log("dataroomid data ", dataRoomDetail);
-      setIsLocked(dataRoomDetail.data.files_locked || false);
-
-      const { data, error } = await supabase
-        .from("file_uploads")
-        .select("name, new_name, uploaded_by, upload_at, locked, id, file_path") // Fetch necessary fields
-        .eq("dataroom_id", dataroomId);
-      console.log("upload data", data);
-
-      if (error) {
-        console.error("Error fetching files:", error.message);
-      } else {
-        const formattedData = data.map((file) => ({
-          ...file,
-          upload_at: file.upload_at
-            ? new Date(file.upload_at).toISOString()
-            : null,
-        }));
-        setFiles(formattedData || []);
-      }
-    } catch (err) {
-      console.error("Unexpected error fetching files:", err.message);
-    }
-  };
 
   const handleFileView = async (file) => {
     const displayName = getDisplayName(file); // Use new_name if available

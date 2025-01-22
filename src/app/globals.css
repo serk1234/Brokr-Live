@@ -53,6 +53,24 @@ header {
     /* Ensure the header is above other elements */
 }
 
+.file-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    /* Prevent text wrapping */
+    display: block;
+    /* Ensure block-level behavior */
+}
+
+/* Apply truncation specifically on mobile devices */
+@media (max-width: 768px) {
+    .file-name {
+        max-width: 200px;
+        /* Adjust to the desired width */
+    }
+}
+
+
 .dropdown-overlay {
     z-index: 40;
     /* Ensures overlay is below dropdown but above content */

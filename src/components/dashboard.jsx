@@ -90,29 +90,32 @@ function Dashboard({
       </div>
 
       {/* 3-2-1 Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 mb-6">
         {/* Total Users */}
         <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
           <div className="text-4xl font-light mb-4 text-gray-800">{totalUser}</div>
           <div className="text-gray-700 text-sm">Total Users</div>
         </div>
+
         {/* Active Users */}
         <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
           <div className="text-4xl font-light mb-4 text-gray-800">{totalActiveUser}</div>
           <div className="text-gray-700 text-sm">Active Users</div>
         </div>
+      </div>
+
+      {/* Downloads, Team, Users Section */}
+      <div className="grid grid-cols-3 gap-4 md:grid-cols-3 md:gap-6 mb-6">
         {/* Downloads */}
         <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
           <div className="text-4xl font-light mb-4 text-gray-800">{totalDownloads}</div>
           <div className="text-gray-700 text-sm">Downloads</div>
         </div>
-      </div>
 
-      {/* Team and Users */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Team */}
-        <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] transition-all duration-300">
-          <div className="flex justify-between items-center mb-4">
+        {/* Team */}
+        <div className="bg-[#f5f5f5] p-4 rounded-xl border border-[#ddd] hover:border-[#A3E636] transition-all duration-300">
+          <div className="flex justify-between items-center">
             <h3 className="text-xl font-light hover:text-[#A3E636]">Team</h3>
             <button
               onClick={() => handleViewClick("team")}
@@ -122,9 +125,10 @@ function Dashboard({
             </button>
           </div>
         </div>
+
         {/* Users */}
-        <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] transition-all duration-300">
-          <div className="flex justify-between items-center mb-4">
+        <div className="bg-[#f5f5f5] p-4 rounded-xl border border-[#ddd] hover:border-[#A3E636] transition-all duration-300">
+          <div className="flex justify-between items-center">
             <h3 className="text-xl font-light hover:text-[#A3E636]">Users</h3>
             <button
               onClick={() => handleViewClick("users")}
@@ -135,6 +139,7 @@ function Dashboard({
           </div>
         </div>
       </div>
+
 
       <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] transition-all duration-300">
         <div className="flex justify-between items-center mb-6">
@@ -157,7 +162,7 @@ function Dashboard({
                   <i className="fas fa-file-lines"></i>
                 </div>
                 <div>
-                  <div className="font-light group-hover:text-[#A3E636]">
+                  <div className="file-name font-light group-hover:text-[#A3E636]">
                     {doc.name}
                   </div>
                   <div className="text-xs text-gray-700 group-hover:text-black">

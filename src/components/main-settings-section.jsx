@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
-import StylizedButton from "./stylized-button";
+import React from "react";
 
 function MainSettingsSection({
   displayName,
@@ -42,8 +41,8 @@ function MainSettingsSection({
           <input
             type="text"
             name="organization"
-            value={organization}
-            onChange={(e) => setOrganization(e.target.value)}
+            value={organization} // Show organization in the input box
+            onChange={(e) => setOrganization(e.target.value)} // Update the organization state
             className="w-full px-3 py-2 border border-black rounded shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
           />
         </div>
@@ -52,6 +51,4 @@ function MainSettingsSection({
   );
 }
 
-
 export default MainSettingsSection;
-

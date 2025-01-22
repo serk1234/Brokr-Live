@@ -31,86 +31,50 @@ function SettingsTab({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [dataroomId, setDataroomId] = useState(null); // Modal state
   const [filesLocked, setFilesLocked] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
-  const [popupMessage, setPopupMessage] = useState("");// Lock status
+  const [popupMessage, setPopupMessage] = useState(null); // Lock status
   const router = useRouter();
 
-  const handleToggleLockStatus = async () => {
-    setLoading(true);
-    try {
-      if (!dataroomId) throw new Error("Dataroom ID is missing.");
-
-      const newLockStatus = !filesLocked;
-      const { error } = await supabase
-        .from("datarooms")
-        .update({ files_locked: newLockStatus })
-        .eq("id", dataroomId);
-
-      if (error) throw error;
-
-      setFilesLocked(newLockStatus);
-      setPopupMessage(`Files ${newLockStatus ? "locked" : "unlocked"} successfully.`);
-      setShowPopup(true);
-    } catch (err) {
-      console.error("Error toggling lock status:", err.message);
-      setPopupMessage(`Error: ${err.message}`);
-      setShowPopup(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
   // Fetch the dataroom details
-  const fetchDataroomDetails = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("datarooms")
-        .select("id, status, organization, files_locked")
-        .eq("name", dataroomName) // Ensure this is unique or modify as needed
-        .maybeSingle();
+  // Popup message
 
-      if (error) {
-        console.error("Error fetching dataroom details:", error.message);
-        setPopupMessage("Error loading dataroom details. Please check your inputs.");
-        setShowPopup(true);
-        return;
-      }
 
-      if (data) {
-        setDataroomId(data.id);
-        setLocalStatus(data.status || "Live");
-        setDisplayStatus(data.status || "Live");
-        setOrganizationName(data.organization || "");
-        setFilesLocked(data.files_locked || false);
-      } else {
-        console.warn("No matching dataroom found for the provided name.");
-        setPopupMessage("No matching dataroom found. Please check your input.");
-        setShowPopup(true);
+  useEffect(() => {
+    const fetchDataroomDetails = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("datarooms")
+          .select("id, status, organization, files_locked")
+          .eq("name", dataroomName)
+          .single();
+
+        if (error) {
+
+          console.error("Error fetching dataroom details:", error.message);
+        } else if (data) {
+          setLocalStatus(data.status || "Live");
+          setDataroomId(data.id);
+          setDisplayStatus(data.status || "Live");
+          setOrganizationName(data.organization || ""); // Pre-fill organization name
+          setFilesLocked(data.files_locked || false); // Set the initial lock status
+        }
+      } catch (err) {
+        setPopupMessage("Unexpected error fetching dataroom details.");
+        console.error("Unexpected error fetching dataroom details:", err.message);
       }
-    } catch (err) {
-      console.error("Unexpected error fetching dataroom details:", err.message);
-      setPopupMessage("Unexpected error occurred. Please try again later.");
-      setShowPopup(true);
+    };
+
+    if (dataroomName) {
+      fetchDataroomDetails();
+    } else {
+      setPopupMessage("No dataroom name provided.");
     }
-  };
+  }, [dataroomName, setDisplayStatus]);
 
-
-
-  // Handle saving changes
   const handleSave = async () => {
-    if (!dataroomId) {
-      console.error("Dataroom ID is missing. Cannot save changes.");
-      setPopupMessage("Error: Dataroom ID is missing. Please try again.");
-      setShowPopup(true);
-      return;
-    }
-
     setLoading(true);
     try {
-      if (!newName || !localStatus) {
+      if (!dataroomName || !localStatus) {
         setPopupMessage("Please ensure all fields are filled before saving.");
-        setShowPopup(true);
         return;
       }
 
@@ -118,28 +82,30 @@ function SettingsTab({
         .from("datarooms")
         .update({
           status: localStatus,
-          name: newName,
+          name: dataroomName,
           organization: organizationName,
+          files_locked: filesLocked, // Save the updated lock status
         })
-        .eq("id", dataroomId); // Use `id` for unique filtering
+        .eq("name", dataroomName);
 
       if (error) throw error;
 
-      // Update local state and show success message
       setDisplayStatus(localStatus);
-      setDataroomName(newName);
+      setDataroomName(dataroomName);
       setPopupMessage("Settings updated successfully!");
-      setShowPopup(true);
     } catch (err) {
+      setPopupMessage("Error saving changes.");
       console.error("Error saving changes:", err.message);
-      setPopupMessage(`Error: ${err.message}`);
-      setShowPopup(true);
     } finally {
       setLoading(false);
     }
   };
 
 
+  // Handle toggling lock status (local state only)
+  const handleToggleLockStatus = () => {
+    setFilesLocked(!filesLocked); // Only update local state
+  };
 
   // Handle dataroom deletion
   const handleDelete = async () => {
@@ -149,10 +115,26 @@ function SettingsTab({
         return;
       }
 
+      setLoading(true);
+
+      // Delete related records in other tables (if needed)
+      const { error: fileError } = await supabase
+        .from("file_uploads")
+        .delete()
+        .eq("dataroom_id", dataroomId);
+
+      if (fileError) {
+        alert("Error deleting associated files. Please try again.");
+        console.error("Error deleting related records:", fileError.message);
+        return;
+      }
+
+      // Delete the dataroom itself
       const { error } = await supabase
         .from("datarooms")
         .delete()
         .eq("name", dataroomName);
+
       if (error) throw error;
 
       alert("Dataroom deleted successfully!");
@@ -160,16 +142,24 @@ function SettingsTab({
       router.push("/dashboard"); // Redirect to the dashboard
     } catch (err) {
       console.error("Error deleting dataroom:", err.message);
+      alert("Error deleting dataroom. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="w-full    p-6  space-y-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between items-center">
-        <h1 className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">Settings</h1>
+    <div className="w-full p-6 space-y-6">
+      {popupMessage && (
+        <Popup message={popupMessage} onClose={() => setPopupMessage(null)} />
+      )}
+      <div className="flex items-center justify-between w-full mb-6">
+        <h1 className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">
+          Settings
+        </h1>
         <ModernButton
           onClick={handleSave}
-          className="px-4 py-2 bg-[#A3E636] rounded shadow-lg flex items-center gap-2 hover:bg-[#93d626] transition-colors"
+          className="px-4 py-2 bg-[#A3E636] shadow-lg flex items-center gap-2 hover:bg-[#93d626] transition-colors"
           disabled={loading}
         >
           {loading ? (
@@ -179,8 +169,6 @@ function SettingsTab({
           )}
           <span>{loading ? "Saving..." : "Save"}</span>
         </ModernButton>
-
-
       </div>
 
       <div className="space-y-6">
@@ -221,9 +209,8 @@ function SettingsTab({
           toggleStates={toggleStates}
         />
 
-        {/* Archive and Delete Section */}
+        {/* Lock All Files Section */}
         <div className="bg-[#f5f5f5] p-6 rounded-2xl border border-[#ddd] shadow-md space-y-6 hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
-          {/* Lock All Files Section */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
             <div>
               <div className="font-medium mb-2">
@@ -237,19 +224,19 @@ function SettingsTab({
             </div>
             <ModernButton
               onClick={handleToggleLockStatus}
-              className={`w-[150px] h-[50px] bg-amber-400 rounded flex items-center justify-center hover:bg-amber-500 transition`}
+              className={`w-full sm:w-auto px-4 py-2 ${filesLocked ? "bg-green-500" : "bg-amber-400"
+                } rounded hover:${filesLocked ? "bg-green-600" : "bg-amber-500"
+                } transition`}
               disabled={loading}
             >
-              <div className="flex items-center">
-                <span className="w-5 flex items-center justify-center leading-none">
-                  <i className={`fas ${filesLocked ? "fa-unlock" : "fa-lock"}`}></i>
-                </span>
-                <span className="ml-2">{filesLocked ? "Unlock All" : "Lock All"}</span>
-              </div>
+              <i className={`fas ${filesLocked ? "fa-unlock" : "fa-lock"}`}></i>{" "}
+              {filesLocked ? "Unlock All" : "Lock All"}
             </ModernButton>
           </div>
+        </div>
 
-          {/* Delete Dataroom Section */}
+        {/* Delete Dataroom Section */}
+        <div className="bg-[#f5f5f5] p-6 rounded-2xl border border-[#ddd] shadow-md space-y-6 hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
             <div>
               <div className="font-medium mb-2">Delete Dataroom</div>
@@ -258,15 +245,10 @@ function SettingsTab({
               </div>
             </div>
             <ModernButton
-              className="w-[150px] h-[50px] bg-red-500 text-white rounded flex items-center justify-center hover:bg-red-600 transition"
+              className="w-full sm:w-auto px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
               onClick={() => setShowDeleteModal(true)}
             >
-              <div className="flex items-center">
-                <span className="w-5 flex items-center justify-center leading-none">
-                  <i className="fas fa-trash"></i>
-                </span>
-                <span className="ml-2">Delete</span>
-              </div>
+              <i className="fas fa-trash"></i> Delete
             </ModernButton>
           </div>
         </div>
