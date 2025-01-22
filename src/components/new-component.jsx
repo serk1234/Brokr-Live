@@ -53,6 +53,12 @@ function NewComponent({ email }) {
     }
   };
   useEffect(() => {
+    console.log(
+      "pricing-table-id",
+      process.env.PRICING_TABLE,
+      "publishable-key",
+      process.env.STRIPE_PK_KEY
+    );
     // Fetch the latest profile data on component mount
     const fetchProfileData = async () => {
       try {
@@ -241,8 +247,8 @@ function NewComponent({ email }) {
               ></script>
 
               <stripe-pricing-table
-                pricing-table-id={process.env.PRICING_TABLE}
-                publishable-key={process.env.STRIPE_PK_KEY}
+                pricing-table-id="prctbl_1QfSw5E43xWZCXH3onBilnVu"
+                publishable-key="pk_live_51QX5gGE43xWZCXH3ivdyoCspjeEUT2TVUCeNyAvwykKpSw95ZayoUndnephVBzkySNaqtjvJ0JVjTU4KEW7GLdN100uKErd8KG"
               ></stripe-pricing-table>
             </div>
           )}
