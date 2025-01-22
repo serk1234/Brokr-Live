@@ -241,7 +241,7 @@ function NewComponent({ email }) {
               ></script>
 
               <stripe-pricing-table
-                pricing-table-id="prctbl_1QfSw5E43xWZCXH3onBilnVu"
+                pricing-table-id={process.env.STRIPE_PK_KEY}
                 publishable-key={process.env.STRIPE_PK_KEY}
               ></stripe-pricing-table>
             </div>
