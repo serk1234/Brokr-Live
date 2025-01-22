@@ -47,7 +47,8 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
 
       try {
         // Get authenticated user info
-        const { data: authData, error: authError } = await supabase.auth.getUser();
+        const { data: authData, error: authError } =
+          await supabase.auth.getUser();
         if (authError) throw authError;
         const userEmail = authData.user.email;
 
@@ -88,7 +89,6 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
     }
   };
 
-
   const handleChange = (e) => {
     e.preventDefault();
     if (e.target.files && e.target.files[0]) {
@@ -111,8 +111,9 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         console.log(sanitizeFileName);
         const date = new Date();
 
-        const timestamp = `${date.getFullYear()}-${date.getMonth() + 1
-          }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
+        const timestamp = `${date.getFullYear()}-${
+          date.getMonth() + 1
+        }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
 
         var fileName = timestamp + "_" + sanitizedFileName;
 
@@ -176,8 +177,9 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         </div>
 
         <div
-          className={`relative border-2 border-dashed rounded-xl p-8 text-center ${dragActive ? "border-[#A3E636] bg-[#A3E636]/5" : "border-black/10"
-            }`}
+          className={`relative border-2 border-dashed rounded-xl p-8 text-center ${
+            dragActive ? "border-[#A3E636] bg-[#A3E636]/5" : "border-black/10"
+          }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -232,10 +234,11 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
           <button
             onClick={handleSubmit}
             disabled={!file}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${file
-              ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
-              : "bg-black/5 text-black/40 cursor-not-allowed"
-              }`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              file
+                ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
+                : "bg-black/5 text-black/40 cursor-not-allowed"
+            }`}
           >
             Upload
           </button>
@@ -247,6 +250,8 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
 
 function Contentmanager({ items = [], dataroomId }) {
   const [files, setFiles] = useState(items);
+  const [expandedRow, setExpandedRow] = useState(null);
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [editingName, setEditingName] = useState(null);
   const [newName, setNewName] = useState("");
@@ -270,7 +275,6 @@ function Contentmanager({ items = [], dataroomId }) {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
 
-
   useEffect(() => {
     const fetchFiles = async () => {
       if (!dataroomId) {
@@ -281,7 +285,7 @@ function Contentmanager({ items = [], dataroomId }) {
       try {
         const { data, error } = await supabase
           .from("file_uploads")
-          .select("name, file_path, uploaded_by, upload_at, locked")
+          .select("name, file_path, uploaded_by, upload_at, locked, id")
           .eq("dataroom_id", dataroomId);
 
         if (error) {
@@ -290,7 +294,9 @@ function Contentmanager({ items = [], dataroomId }) {
           setFiles(
             (data || []).map((file) => ({
               ...file,
-              upload_at: file.upload_at ? new Date(file.upload_at).toISOString() : null,
+              upload_at: file.upload_at
+                ? new Date(file.upload_at).toISOString()
+                : null,
             }))
           );
         }
@@ -301,7 +307,6 @@ function Contentmanager({ items = [], dataroomId }) {
 
     fetchFiles();
   }, [dataroomId]);
-
 
   const handleFileView = async (file) => {
     const displayName = getDisplayName(file); // Use new_name if available
@@ -648,6 +653,12 @@ function Contentmanager({ items = [], dataroomId }) {
     );
   }
 
+  const toggleRow = (id, e) => {
+    console.log(id);
+    e.stopPropagation();
+    setExpandedRow(expandedRow === id ? null : id);
+  };
+
   return (
     <div className="w-full bg-transparent rounded-2xl  p-6 ]">
       {selectedFile ? (
@@ -774,10 +785,11 @@ function Contentmanager({ items = [], dataroomId }) {
         // Existing code for the default view
 
         <div
-          className={`flex flex-col relative ${dragActive
-            ? "after:absolute after:inset-0 after:bg-[#A3E636]/5 after:border-2 after:border-dashed after:border-[#A3E636] after:rounded-2xl after:pointer-events-none"
-            : ""
-            }`}
+          className={`flex flex-col relative ${
+            dragActive
+              ? "after:absolute after:inset-0 after:bg-[#A3E636]/5 after:border-2 after:border-dashed after:border-[#A3E636] after:rounded-2xl after:pointer-events-none"
+              : ""
+          }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -935,7 +947,9 @@ function Contentmanager({ items = [], dataroomId }) {
           ))} */}
           {/* Header Section */}
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
-            <h1 className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">Contents</h1>
+            <h1 className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">
+              Contents
+            </h1>
             <div className="flex flex-wrap gap-2 md:gap-3">
               <ModernButton
                 text={window.innerWidth > 768 ? "Upload" : ""}
@@ -968,118 +982,251 @@ function Contentmanager({ items = [], dataroomId }) {
           </div>
 
           {/* Table Header - Hidden on mobile */}
-          <div className="hidden md:grid md:grid-cols-[2fr_1fr_1fr_auto] gap-6 py-3 px-4 border-b border-black/10">
+          {/*   <div className="hidden md:grid md:grid-cols-[2fr_1fr_1fr_auto] gap-6 py-3 px-4 border-b border-black/10">
             <div className="text-black/40 text-sm font-medium">Name</div>
             <div className="text-black/40 text-sm font-medium">Uploaded By</div>
             <div className="text-black/40 text-sm font-medium">Uploaded</div>
             <div className="text-right text-black/40 text-sm font-medium">
               Actions
             </div>
-          </div>
+          </div> */}
 
-          {/* File List */}
-          {files.map((file, index) => (
-            <div
-              key={index}
-              className={`grid grid-cols-[1fr_auto] md:grid-cols-[2fr_1fr_1fr_auto] gap-2 md:gap-6 
-    items-center py-3 px-3 md:px-4 hover:bg-black/5 transition-colors ${file.locked ? "bg-amber-50" : ""
-                }`}
-            >
-              {/* File Name and Icon Section */}
-              <div className="flex items-center gap-2 md:gap-3 min-w-0 col-span-2 md:col-span-1">
-                <span className="shrink-0 w-8 md:w-10 h-8 md:h-10 flex items-center justify-center bg-[#A3E636]/10 rounded-xl">
-                  <i className="fas fa-file text-[#A3E636]"></i>
-                </span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 min-w-0">
-                    {editingName === file ? (
-                      <input
-                        type="text"
-                        value={newName}
-                        onChange={(e) => setNewName(e.target.value)}
-                        className="w-full px-2 md:px-3 py-1 md:py-1.5 border border-black/10 rounded-lg text-sm md:text-base font-medium focus:outline-none focus:ring-2 focus:ring-[#A3E636]"
-                        autoFocus
-                        onBlur={() => handleNameChange(file)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleNameChange(file);
-                          if (e.key === "Escape") setEditingName(null);
-                        }}
-                      />
-                    ) : (
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="truncate font-medium text-sm md:text-base">
-                          {getDisplayName(file)}
-                        </span>
-                        <button
-                          onClick={() => {
-                            setNewName(file.new_name || file.name);
-                            setEditingName(file);
-                          }}
-                          className="shrink-0 w-8 h-8 flex items-center justify-center text-sm hover:bg-black/10 rounded-full transition-all"
-                        >
-                          <i className="fas fa-pencil-alt"></i>
-                        </button>
-                        {file.locked && (
-                          <i className="shrink-0 fas fa-lock text-black/40 text-sm"></i>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  {/* Mobile-only metadata */}
-                  <div className="flex md:hidden text-xs text-black/40 mt-1">
-                    <span>{file.uploaded_by}</span>
-                    <span className="mx-2">•</span>
-                    <span>{formatDate(file.upload_at)}</span>
-                  </div>
+          <div
+            className={`hidden md:grid md:grid-cols-[2fr_1fr_1fr_auto] gap-6 py-3 px-4 border-b border-black/10 grid grid-cols-[1fr_auto] md:grid-cols-[2fr_1fr_1fr_auto] gap-2 md:gap-6 
+    items-center py-3 px-3 md:px-4 hover:bg-black/5 transition-colors`}
+          >
+            {/* File Name and Icon Section */}
+            <div className="flex items-center gap-2 md:gap-3 min-w-0 col-span-2 md:col-span-1">
+              {/* <span className="shrink-0 w-8 md:w-10 h-8 md:h-10 flex items-center justify-center bg-[#A3E636]/10 rounded-xl">
+                <i className="fas fa-file text-[#A3E636]"></i>
+              </span> */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">Name</div>
+                {/* Mobile-only metadata */}
+                <div className="flex md:hidden text-xs text-black/40 mt-1">
+                  <span>Uploaded By</span>
+                  <span className="mx-2">•</span>
+                  <span>Uploaded</span>
                 </div>
-              </div>
-
-              {/* Desktop-only columns */}
-              <div className="hidden md:block truncate text-black/60 text-sm">
-                {file.uploaded_by}
-              </div>
-              <div className="hidden md:block text-black/60 text-sm">
-                {formatDate(file.upload_at)}
-              </div>
-
-              {/* Actions */}
-              <div className="flex justify-end gap-1 md:gap-2">
-                <button
-                  onClick={() => handleFileView(file)}
-                  className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
-                >
-                  <i className="fas fa-eye text-sm md:text-base"></i>
-                </button>
-                <button
-                  onClick={() =>
-                    downloadFile(file.name, file.file_path, file.id)
-                  }
-                  className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
-                >
-                  <i className="fas fa-download text-sm md:text-base"></i>
-                </button>
-                <button
-                  onClick={() => toggleLock(file)}
-                  className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
-                >
-                  <i
-                    className={`fas fa-${file.locked ? "lock" : "lock-open"
-                      } text-sm md:text-base`}
-                  ></i>
-                </button>
-                <button
-                  onClick={() => {
-                    setFileToRemove(file);
-                    setShowConfirmModal(true);
-                  }}
-                  className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-red-50 text-red-500 transition-colors"
-                >
-                  <i className="fas fa-trash text-sm md:text-base"></i>
-                </button>
               </div>
             </div>
 
-          ))}
+            {/* Desktop-only columns */}
+            <div className="hidden md:block truncate text-black/60 text-sm">
+              Uploaded By
+            </div>
+            <div className="hidden md:block text-black/60 text-sm">
+              Uploaded
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-1 md:gap-2">
+              <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors">
+                <div className="ml-6 hidden md:block text-black/60 text-sm">
+                  Actions
+                </div>
+                {/* <i className="fas fa-eye text-sm md:text-base"></i> */}
+              </div>
+              <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"></div>
+              <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"></div>
+              <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-red-50 text-red-500 transition-colors"></div>
+            </div>
+          </div>
+          {/* {<ContentMobileView></ContentMobileView>} */}
+          {/*Mobile View file */}
+          <div className="block md:hidden w-full p-4 font-roboto">
+            <div className="bg-white rounded-lg shadow">
+              {files.map((file, index) => (
+                <div
+                  key={file.id}
+                  className="border-b last:border-b-0 relative"
+                >
+                  {expandedRow === file.id ? (
+                    <div className="flex items-center justify-between p-4 bg-gray-50">
+                      <button
+                        onClick={() => handleFileView(file)}
+                        className="flex items-center justify-center text-gray-600 hover:text-blue-600 flex-1"
+                      >
+                        <i className="fas fa-eye text-lg"></i>
+                        <span className="ml-2 text-sm">View</span>
+                      </button>
+                      <button
+                        onClick={() =>
+                          downloadFile(file.name, file.file_path, file.id)
+                        }
+                        className="flex items-center justify-center text-gray-600 hover:text-green-600 flex-1"
+                      >
+                        <i className="fas fa-download text-lg"></i>
+                        <span className="ml-2 text-sm">Download</span>
+                      </button>
+                      <button
+                        onClick={() => toggleLock(file)}
+                        className="flex items-center justify-center text-gray-600 hover:text-yellow-600 flex-1"
+                      >
+                        <i
+                          className={`fas fa-${
+                            file.locked ? "lock" : "lock-open"
+                          } text-sm md:text-base`}
+                        ></i>
+                        <span className="ml-2 text-sm">
+                          {file.locked ? "Unlock" : "Lock"}
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setFileToRemove(file);
+                          setShowConfirmModal(true);
+                        }}
+                        className="flex items-center justify-center text-gray-600 hover:text-red-600 flex-1"
+                      >
+                        <i className="fas fa-trash text-lg"></i>
+                        <span className="ml-2 text-sm">Delete</span>
+                      </button>
+                      <button
+                        className="flex items-center justify-center text-gray-600 hover:text-gray-800 ml-4"
+                        onClick={(e) => toggleRow(file.id, e)}
+                      >
+                        <i className="fas fa-ellipsis-h text-lg"></i>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center p-4 hover:bg-gray-50">
+                      <i className="{⁠ fas ${doc.icon} text-gray-500 text-xl w-8 ⁠}"></i>
+                      <div className="flex-1 min-w-0 px-4">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {getDisplayName(file)}
+                        </p>
+                      </div>
+                      <div className="hidden md:block px-4">
+                        <p className="text-sm text-gray-500">
+                          {file.uploaded_by}
+                        </p>
+                      </div>
+                      <div className="hidden md:block px-4 w-32">
+                        <p className="text-sm text-gray-500">
+                          {file.uploaded_at}
+                        </p>
+                      </div>
+                      <button
+                        className="p-2 hover:bg-gray-100 rounded"
+                        onClick={(e) => toggleRow(file.id, e)}
+                      >
+                        <i className="fas fa-ellipsis-v text-gray-400"></i>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* File List */}
+
+          <div className="hidden md:block">
+            {files.map((file, index) => (
+              <div
+                key={index}
+                className={`grid grid-cols-[1fr_auto] md:grid-cols-[2fr_1fr_1fr_auto] gap-2 md:gap-6 
+    items-center py-3 px-3 md:px-4 hover:bg-black/5 transition-colors ${
+      file.locked ? "bg-amber-50" : ""
+    }`}
+              >
+                {/* File Name and Icon Section */}
+                <div className="flex items-center gap-2 md:gap-3 min-w-0 col-span-2 md:col-span-1">
+                  <span className="shrink-0 w-8 md:w-10 h-8 md:h-10 flex items-center justify-center bg-[#A3E636]/10 rounded-xl">
+                    <i className="fas fa-file text-[#A3E636]"></i>
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {editingName === file ? (
+                        <input
+                          type="text"
+                          value={newName}
+                          onChange={(e) => setNewName(e.target.value)}
+                          className="w-full px-2 md:px-3 py-1 md:py-1.5 border border-black/10 rounded-lg text-sm md:text-base font-medium focus:outline-none focus:ring-2 focus:ring-[#A3E636]"
+                          autoFocus
+                          onBlur={() => handleNameChange(file)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleNameChange(file);
+                            if (e.key === "Escape") setEditingName(null);
+                          }}
+                        />
+                      ) : (
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="truncate font-medium text-sm md:text-base">
+                            {getDisplayName(file)}
+                          </span>
+                          <button
+                            onClick={() => {
+                              setNewName(file.new_name || file.name);
+                              setEditingName(file);
+                            }}
+                            className="shrink-0 w-8 h-8 flex items-center justify-center text-sm hover:bg-black/10 rounded-full transition-all"
+                          >
+                            <i className="fas fa-pencil-alt"></i>
+                          </button>
+                          {file.locked && (
+                            <i className="shrink-0 fas fa-lock text-black/40 text-sm"></i>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {/* Mobile-only metadata */}
+                    <div className="flex md:hidden text-xs text-black/40 mt-1">
+                      <span>{file.uploaded_by}</span>
+                      <span className="mx-2">•</span>
+                      <span>{formatDate(file.upload_at)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Desktop-only columns */}
+                <div className="hidden md:block truncate text-black/60 text-sm">
+                  {file.uploaded_by}
+                </div>
+                <div className="hidden md:block text-black/60 text-sm">
+                  {formatDate(file.upload_at)}
+                </div>
+
+                {/* Actions */}
+                <div className="flex justify-end gap-1 md:gap-2">
+                  <button
+                    onClick={() => handleFileView(file)}
+                    className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
+                  >
+                    <i className="fas fa-eye text-sm md:text-base"></i>
+                  </button>
+                  <button
+                    onClick={() =>
+                      downloadFile(file.name, file.file_path, file.id)
+                    }
+                    className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
+                  >
+                    <i className="fas fa-download text-sm md:text-base"></i>
+                  </button>
+                  <button
+                    onClick={() => toggleLock(file)}
+                    className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
+                  >
+                    <i
+                      className={`fas fa-${
+                        file.locked ? "lock" : "lock-open"
+                      } text-sm md:text-base`}
+                    ></i>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFileToRemove(file);
+                      setShowConfirmModal(true);
+                    }}
+                    className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-red-50 text-red-500 transition-colors"
+                  >
+                    <i className="fas fa-trash text-sm md:text-base"></i>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
           <h1></h1>
           <h1></h1>
           <h1></h1>
@@ -1134,4 +1281,94 @@ function ContentmanagerStory() {
   );
 }
 
+function ContentMobileView({ files: [] }) {
+  const [expandedRow, setExpandedRow] = useState(null);
+
+  const files = [
+    {
+      id: 1,
+      name: "Project Proposal.pdf",
+      icon: "fa-file-pdf",
+      uploader: "John Smith",
+      date: "2025-01-15",
+    },
+    {
+      id: 2,
+      name: "Meeting Notes.docx",
+      icon: "fa-file-word",
+      uploader: "Sarah Johnson",
+      date: "2025-01-14",
+    },
+    {
+      id: 3,
+      name: "Budget Report.xlsx",
+      icon: "fa-file-excel",
+      uploader: "Mike Brown",
+      date: "2025-01-13",
+    },
+  ];
+
+  const toggleRow = (id, e) => {
+    e.stopPropagation();
+    setExpandedRow(expandedRow === id ? null : id);
+  };
+
+  return (
+    <div className="block md:hidden w-full p-4 font-roboto">
+      <div className="bg-white rounded-lg shadow">
+        {files.map((doc) => (
+          <div key={doc.id} className="border-b last:border-b-0 relative">
+            {expandedRow === doc.id ? (
+              <div className="flex items-center justify-between p-4 bg-gray-50">
+                <button className="flex items-center justify-center text-gray-600 hover:text-blue-600 flex-1">
+                  <i className="fas fa-eye text-lg"></i>
+                  <span className="ml-2 text-sm">View</span>
+                </button>
+                <button className="flex items-center justify-center text-gray-600 hover:text-green-600 flex-1">
+                  <i className="fas fa-download text-lg"></i>
+                  <span className="ml-2 text-sm">Download</span>
+                </button>
+                <button className="flex items-center justify-center text-gray-600 hover:text-yellow-600 flex-1">
+                  <i className="fas fa-lock text-lg"></i>
+                  <span className="ml-2 text-sm">Lock</span>
+                </button>
+                <button className="flex items-center justify-center text-gray-600 hover:text-red-600 flex-1">
+                  <i className="fas fa-trash text-lg"></i>
+                  <span className="ml-2 text-sm">Delete</span>
+                </button>
+                <button
+                  className="flex items-center justify-center text-gray-600 hover:text-gray-800 ml-4"
+                  onClick={(e) => toggleRow(doc.id, e)}
+                >
+                  <i className="fas fa-ellipsis-h text-lg"></i>
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center p-4 hover:bg-gray-50">
+                <i className="{⁠ fas ${doc.icon} text-gray-500 text-xl w-8 ⁠}"></i>
+                <div className="flex-1 min-w-0 px-4">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {doc.name}
+                  </p>
+                </div>
+                <div className="hidden md:block px-4">
+                  <p className="text-sm text-gray-500">{doc.uploader}</p>
+                </div>
+                <div className="hidden md:block px-4 w-32">
+                  <p className="text-sm text-gray-500">{doc.date}</p>
+                </div>
+                <button
+                  className="p-2 hover:bg-gray-100 rounded"
+                  onClick={(e) => toggleRow(doc.id, e)}
+                >
+                  <i className="fas fa-ellipsis-v text-gray-400"></i>
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 export default Contentmanager;
