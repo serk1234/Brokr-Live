@@ -62,6 +62,19 @@ header {
     /* Ensure block-level behavior */
 }
 
+@media (max-width: 640px) {
+    .truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .flex-col {
+        flex-direction: column;
+    }
+}
+
+
 /* Apply truncation specifically on mobile devices */
 @media (max-width: 768px) {
     .file-name {

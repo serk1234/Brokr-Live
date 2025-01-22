@@ -241,8 +241,8 @@ function Teamsecteam({ dataroomName }) {
           <div
             key={index}
             className={`p-6 rounded-lg shadow-sm transition-all duration-200 ${user.email === creatorEmail
-                ? "bg-black text-white hover:border-[#A3E636]" // Admin box style with hover
-                : "bg-gray-100 border border-[#ddd] hover:border-[#A3E636]" // Regular box style with hover
+              ? "bg-black text-white hover:border-[#A3E636]" // Admin box style with hover
+              : "bg-gray-100 border border-[#ddd] hover:border-[#A3E636]" // Regular box style with hover
               }`}
           >
             <div className="flex justify-between items-center">
@@ -269,7 +269,8 @@ function Teamsecteam({ dataroomName }) {
                 className={`${user.email === creatorEmail ? "text-white" : "text-gray-600"
                   }`}
               >
-                Created At: {new Date(user.created_at).toLocaleString()}
+                Created At: {`${new Date(user.created_at).toLocaleDateString("en-US")} ${new Date(user.created_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric", second: "numeric", hour12: true })}`}
+
               </div>
             </div>
           </div>

@@ -10,8 +10,8 @@ import "../../app/globals.css";
 function Onboarding({ roomId, onClosed }) {
   const [name, setName] = useState("");
   const [userEmail, setUserEmail] = useState("");
-  const [dataroomId, setDataroomId] = useState(null); // Store dataroom ID
-  const [ndaTemplate, setNdaTemplate] = useState("Loading NDA template..."); // Store NDA template
+  const [dataroomId, setDataroomId] = useState(null);
+  const [ndaTemplate, setNdaTemplate] = useState("Loading NDA template...");
   const router = useRouter();
 
   useEffect(() => {
@@ -19,54 +19,32 @@ function Onboarding({ roomId, onClosed }) {
       try {
         const {
           data: { session },
-          error: sessionError,
         } = await supabase.auth.getSession();
 
-        if (sessionError) {
-          console.error("Error fetching session:", sessionError.message);
+        if (!session || !session.user.email) {
           setUserEmail("No User Found");
           return;
         }
 
-        if (session?.user?.email) {
-          setUserEmail(session.user.email);
-        } else {
-          console.error("User session not found");
-          return;
-        }
+        setUserEmail(session.user.email);
 
-        const dataroomIdFromQuery = roomId;// router.query.dataroomId;
+        const dataroomIdFromQuery = roomId;
         if (!dataroomIdFromQuery) {
-          console.error("No dataroom ID in query params.");
           alert("No dataroom ID provided. Please contact support.");
           return;
         }
 
         setDataroomId(dataroomIdFromQuery);
 
-        const navigationEntries = window.performance.getEntriesByType('navigation');
-        console.log(navigationEntries);
-
-
-        if (navigationEntries.length > 0 && navigationEntries[0].type === 'reload') {
-          console.log("Page was reloaded");
-          // router.push(`/userview?id=${dataroomId}`);
-
-          return;
-        }
-        // Fetch the NDA template from the database
         const { data, error } = await supabase
           .from("datarooms")
-          //.select("nda_template")
           .select("*")
           .eq("id", dataroomIdFromQuery)
           .single();
 
         if (error) {
-          console.error("Error fetching NDA template:", error.message);
           setNdaTemplate("Default NDA template.");
         } else {
-          console.log(data);
           setNdaTemplate(data?.nda_template || "Default NDA template.");
         }
       } catch (err) {
@@ -74,13 +52,8 @@ function Onboarding({ roomId, onClosed }) {
       }
     };
 
-    if (roomId || router.query.dataroomId) {
-      fetchSessionAndParams();
-    }
-  }, [
-    //router.query.dataroomId
-    roomId
-  ]);
+    if (roomId) fetchSessionAndParams();
+  }, [roomId]);
 
   const handleSignClick = async () => {
     if (!userEmail || !dataroomId) {
@@ -89,39 +62,24 @@ function Onboarding({ roomId, onClosed }) {
     }
 
     try {
-      // Check if a record exists and when it was last accessed
-      const { data: existingSignature, error: checkError } = await supabase
+      const { data: existingSignature } = await supabase
         .from("nda_signatures")
         .select("id, last_accessed_at")
         .eq("user_email", userEmail)
         .eq("dataroom_id", dataroomId)
         .single();
 
-      if (checkError && checkError.code !== "PGRST116") {
-        console.error("Error checking NDA signatures:", checkError.message);
-        alert("An error occurred while verifying your NDA status. Please try again.");
-        return;
-      }
-
       if (existingSignature) {
-
-        console.log("exising");
-        // Update `last_accessed_at` and redirect
-
         await supabase
           .from("nda_signatures")
           .update({ last_accessed_at: new Date().toISOString() })
           .eq("id", existingSignature.id);
 
         onClosed();
-        //  router.push(`/userview?id=${dataroomId}`);
         return;
       }
 
-      console.log("new");
-
-      // Insert a new NDA signature
-      const { error: insertError } = await supabase.from("nda_signatures").insert([
+      await supabase.from("nda_signatures").insert([
         {
           user_email: userEmail,
           dataroom_id: dataroomId,
@@ -130,16 +88,7 @@ function Onboarding({ roomId, onClosed }) {
         },
       ]);
 
-      if (insertError) {
-        console.error("Error saving NDA signature:", insertError.message);
-        alert("An error occurred while signing the NDA. Please try again.");
-        return;
-      }
-
-      // Redirect to the User View of the Dataroom
-      // router.push(`/userview?id=${dataroomId}`);
       onClosed();
-
     } catch (err) {
       console.error("Unexpected error:", err.message);
       alert("Unexpected error. Please try again.");
@@ -149,7 +98,7 @@ function Onboarding({ roomId, onClosed }) {
   return (
     <div className="min-h-screen bg-[#121212] text-white font-opensans flex flex-col">
       <div className="bg-black p-4 mb-8">
-        <div className="max-w-4xl mx-auto flex items-center justify-center gap-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
           <span className="text-white text-2xl font-semibold">brokr</span>
           <button className="bg-black text-white px-4 py-2 rounded border border-[#A3E636] shadow-[2px_2px_0px_0px_#A3E636] hover:bg-[#1A1A1A]">
             Onboarding
@@ -162,8 +111,8 @@ function Onboarding({ roomId, onClosed }) {
           Non-Disclosure Agreement
         </h1>
 
-        <div className="bg-[#1A1A1A] rounded-lg border border-[#333] p-8">
-          <div className="overflow-y-auto max-h-[400px] mb-8 scrollbar-thin scrollbar-thumb-[#8BC34A] scrollbar-track-[#1A1A1A] scrollbar-w-[2px] pr-4">
+        <div className="bg-[#1A1A1A] rounded-lg border border-[#333] p-6 md:p-8">
+          <div className="overflow-y-auto max-h-[50vh] mb-8 scrollbar-thin scrollbar-thumb-[#8BC34A] scrollbar-track-[#1A1A1A] scrollbar-w-[2px] pr-4">
             <h2 className="text-[#A3E636] text-2xl font-semibold mb-4">
               NON-DISCLOSURE AGREEMENT
             </h2>
@@ -180,20 +129,14 @@ function Onboarding({ roomId, onClosed }) {
           </div>
         </div>
 
-        <div className="border-t border-[#333] pt-8">
-          <div className="flex items-center mb-4">
-            <div className="w-4 h-4 rounded-full bg-[#A3E636] flex items-center justify-center mr-2">
-              <i className="fas fa-check text-black text-xs"></i>
-            </div>
-            <span className="text-[#A3E636]">{userEmail}</span>
-          </div>
-          <div className="mb-8">
+        <div className="border-t border-[#333] pt-6">
+          <div className="mb-4">
             <h3 className="text-[#A3E636] text-xl font-semibold mb-2">
               By clicking "Sign Agreement," you agree to the terms above.
             </h3>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col gap-4 md:flex-row">
             <input
               type="text"
               name="fullName"

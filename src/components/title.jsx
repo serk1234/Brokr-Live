@@ -18,10 +18,11 @@ function Title({ title, organization, status }) {
   return (
     <div className="mb-6">
       {/* Top Section */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
         {/* Title and Status */}
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl md:text-4xl font-semibold tracking-tight text-[#1F2937] font-open-sans">
+        <div className="flex items-center gap-3 min-w-0">
+          {/* Title: Truncate on mobile, show full on desktop */}
+          <h1 className="text-2xl md:text-4xl font-semibold tracking-tight text-[#1F2937] font-open-sans truncate sm:whitespace-normal">
             {title}
           </h1>
           <div
@@ -31,9 +32,9 @@ function Title({ title, organization, status }) {
           </div>
         </div>
 
-        {/* Organization */}
+        {/* Organization: Truncate on mobile, show full on desktop */}
         {organization && (
-          <div className="text-lg text-[#6B7280] font-open-sans">
+          <div className="text-lg text-[#6B7280] font-open-sans truncate sm:whitespace-normal sm:max-w-none">
             {organization}
           </div>
         )}
@@ -43,3 +44,4 @@ function Title({ title, organization, status }) {
 }
 
 export default Title;
+

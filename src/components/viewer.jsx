@@ -6,11 +6,10 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
   return (
     <div className="flex flex-col h-full w-full">
       {/* Header for document details and actions */}
-      <div className="flex flex-wrap justify-between items-start mb-4 gap-4 sm:gap-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-4 sm:gap-6">
+        {/* File Information */}
         <div className="flex-1 min-w-[200px]">
-          <h2 className="text-lg font-semibold truncate">
-            {selectedDocument.name}
-          </h2>
+          <h2 className="text-lg font-semibold truncate">{selectedDocument.name}</h2>
           <p className="text-sm text-gray-600">
             Uploaded by {selectedDocument.uploadedBy || "Unknown"} on{" "}
             {new Date(selectedDocument.uploadAt).toLocaleDateString("en-US", {
@@ -21,6 +20,7 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
           </p>
         </div>
 
+        {/* Zoom Controls and Download */}
         <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
           {/* Zoom controls */}
           <div className="flex items-center gap-3">
@@ -50,7 +50,7 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
         </div>
       </div>
 
-      {/* Content Viewer */}
+      {/* File Content Viewer */}
       <div className="flex-grow bg-gray-50 rounded-lg border border-gray-200 overflow-hidden flex items-center justify-center">
         {selectedDocument.src ? (
           selectedDocument.name.match(/\.(jpg|jpeg|png|gif)$/i) ? (
@@ -86,24 +86,3 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
 }
 
 export default Viewer;
-
-/* CSS for mobile optimizations */
-<style jsx>{`
-  @media (max-width: 640px) {
-    .flex-wrap {
-      flex-direction: column;
-    }
-    .truncate {
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-    .flex-1 {
-      width: 100%;
-    }
-    .min-w-[200px] {
-      min-width: unset;
-    }
-  }
-`}</style>
-
