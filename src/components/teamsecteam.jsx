@@ -1,6 +1,8 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
+import ModernButton from "./modern-button";
+import Popup from "./Popup";
 
 function Teamsecteam({ dataroomName }) {
   const [showPopup, setShowPopup] = useState(false);
@@ -13,205 +15,260 @@ function Teamsecteam({ dataroomName }) {
   });
   const [loading, setLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
-  const router = useRouter();
+  const [emails, setEmails] = useState([""]);
   const [currentDataroom, setCurrentDataroom] = useState(dataroomName || "");
-
-  /*   useEffect(() => {
-    const fetchInvitedUsers = async () => {
-      setIsFetching(true);
-      try {
-        const { data, error } = await supabase
-          .from("datarooms")
-          .select("name, user_email, invited_by, created_at")
-          .eq("name", currentDataroom)
-          .order("created_at", { ascending: true });
-
-        if (error) throw error;
-        setUsers(data || []);
-      } catch (err) {
-        console.error("Error fetching invited users:", err.message);
-      } finally {
-        setIsFetching(false);
-      }
-    };
-
-    if (currentDataroom) {
-      fetchInvitedUsers();
-    }
-  }, []); */
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [creatorEmail, setCreatorEmail] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
-    /*  console.log(dataroomName, router.query.name, router.query);
-    if (!dataroomName && router.query.name) {
-      setCurrentDataroom(router.query.name.trim());
-    } */
-    const fetchInvitedUsers = async () => {
-      setIsFetching(true);
+    const fetchCreatorAndUsers = async () => {
       try {
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser();
+
+        if (authError) {
+          console.error("Error fetching authenticated user:", authError.message);
+          return;
+        }
+
+        // Set the creator's email
+        setCreatorEmail(user.email);
+
+        // Fetch all users in the dataroom
         const { data, error } = await supabase
           .from("dataroom_teams")
           .select("*")
           .eq("dataroom_id", router.query.id)
-          .order("created_at", { ascending: true }); /* await supabase
-          .from("datarooms")
-          .select("email, invited_by, invited_at")
-          .eq("dataroom_id", router.query.id)
-          .order("invited_at", { ascending: true }) */
+          .order("created_at", { ascending: true });
 
         if (error) throw error;
-        console.log(data);
-        setUsers(data || []);
+
+        // Prioritize creator by placing their entry first
+        const sortedUsers = [
+          ...data.filter((u) => u.email === user.email),
+          ...data.filter((u) => u.email !== user.email),
+        ];
+
+        setUsers(sortedUsers || []);
       } catch (err) {
-        console.error("Error fetching invited users:", err.message);
+        console.error("Error fetching dataroom users:", err.message);
       } finally {
         setIsFetching(false);
       }
     };
 
-    /* if (router.query.id) {
-      fetchInvitedUsers();
-    } */
-    fetchInvitedUsers();
-  }, []);
+    if (router.query.id) {
+      fetchCreatorAndUsers();
+    }
+  }, [router.query.id]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleAddEmailField = () => setEmails([...emails, ""]);
+
+  const handleEmailChange = (index, value) => {
+    const updatedEmails = [...emails];
+    updatedEmails[index] = value;
+    setEmails(updatedEmails);
+  };
+
+  const handleRemoveEmailField = (index) => {
+    setEmails(emails.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async () => {
     setLoading(true);
-
     try {
-      const inviterEmail = (await supabase.auth.getUser()).data.user.email;
-      const { error: magicLinkError } = await supabase.auth.signInWithOtp({
-        email: newUser.email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard?id=${router.query.id}`,
-        },
-      });
+      for (const email of emails) {
+        if (!email.trim()) {
+          setSuccessMessage("Error: Email field cannot be empty.");
+          setShowSuccessPopup(true);
+          continue;
+        }
 
-      if (magicLinkError) throw magicLinkError;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          setSuccessMessage(`Error: "${email}" is not a valid email address.`);
+          setShowSuccessPopup(true);
+          continue;
+        }
 
-      const { error: insertError } = await supabase
-        .from("dataroom_teams")
-        .insert([
-          {
-            dataroom_id: router.query.id,
-            email: newUser.email,
-            invited_by: inviterEmail,
-            created_at: new Date(),
-            invited_at: new Date(),
-            permission: newUser.permission,
+        const { error: magicLinkError } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/dashboard?id=${router.query.id}`,
           },
-        ]);
+        });
 
-      if (insertError) throw insertError;
+        if (magicLinkError) {
+          throw new Error(`Failed to send magic link to ${email}: ${magicLinkError.message}`);
+        }
 
-      setUsers((prevUsers) => [
-        ...prevUsers,
-        {
-          // name: newUser.name,
-          email: newUser.email,
+        const inviterEmail = creatorEmail;
+
+        const newUser = {
+          dataroom_id: router.query.id,
+          email,
           invited_by: inviterEmail,
-          created_at: new Date().toISOString(),
-          permission: newUser.permission,
-        },
-      ]);
+          created_at: new Date(),
+          invited_at: new Date(),
+          permission: "view",
+        };
 
-      alert("Invite sent successfully!");
+        const { error: insertError } = await supabase.from("dataroom_teams").insert(newUser);
+
+        if (insertError) {
+          throw new Error(`Error inviting user "${email}": ${insertError.message}`);
+        }
+
+        setUsers((prevUsers) => [
+          ...prevUsers,
+          { ...newUser, created_at: newUser.created_at.toISOString() },
+        ]);
+      }
+
+      setSuccessMessage("Invitations sent successfully!");
+      setShowSuccessPopup(true);
+      setEmails([""]);
       setShowPopup(false);
     } catch (err) {
-      console.error("Error sending invite:", err.message);
-      alert(`Error: ${err.message}`);
+      console.error("Error sending invites:", err.message);
+      setSuccessMessage(`Error: ${err.message}`);
+      setShowSuccessPopup(true);
     } finally {
       setLoading(false);
-      setNewUser({ name: "", email: "", permission: "view", isAdmin: false });
     }
   };
 
-  const handleRemove = async (team, index) => {
-    var result = await supabase
-      .from("dataroom_teams")
-      .delete()
-      .eq("id", team.id);
+  const handleRemove = async (team) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("dataroom_teams")
+        .delete()
+        .eq("id", team.id);
 
-    if (!users[index].isAdmin) {
-      setUsers(users.filter((_, i) => i !== index));
+      if (error) {
+        console.error("Error removing team member:", error.message);
+        setSuccessMessage("Failed to remove the team member.");
+        setShowSuccessPopup(true);
+        return;
+      }
+
+      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== team.id));
+
+      setSuccessMessage("Team member removed successfully!");
+      setShowSuccessPopup(true);
+    } catch (err) {
+      console.error("Unexpected error:", err.message);
+      setSuccessMessage("An error occurred while removing the team member.");
+      setShowSuccessPopup(true);
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleEditRole = (index) => {
-    const updatedUsers = [...users];
-    updatedUsers[index].permission =
-      updatedUsers[index].permission === "full" ? "view" : "full";
-    setUsers(updatedUsers);
   };
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
-          <div className="text-xl font-semibold">Team</div>
-          <div className="w-8 h-8 flex items-center justify-center bg-[#A3E636] rounded-full border border-black text-sm font-bold">
-            {users.length}
-          </div>
+          <div className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">Team</div>
         </div>
-        <button
-          onClick={() => setShowPopup(true)}
-          className="px-4 py-2 bg-[#A3E636] rounded border border-black"
-        >
-          <i className="fas fa-user-plus mr-2"></i>Add Team Member
-        </button>
+        <ModernButton onClick={() => setShowPopup(true)} className="px-4 py-2 bg-[#A3E636]">
+          <i className="fas fa-user-plus mr-2"></i>Add Team
+        </ModernButton>
       </div>
 
       {showPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg w-[90%] max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Add Team Member</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <input
-                type="email"
-                placeholder="Email"
-                value={newUser.email}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, email: e.target.value })
-                }
-                className="w-full p-2 border rounded"
-                required
-              />
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full px-4 py-2 bg-[#A3E636] rounded"
-              >
-                {loading ? "Sending Invite..." : "Add Member"}
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Invite Team</h3>
+              <button onClick={() => setShowPopup(false)}>
+                <i className="fas fa-times text-gray-500"></i>
               </button>
-            </form>
+            </div>
+            <div>
+              {emails.map((email, index) => (
+                <div key={index} className="flex gap-2 mb-2">
+                  <input
+                    type="email"
+                    placeholder="Enter email address"
+                    value={email}
+                    onChange={(e) => handleEmailChange(index, e.target.value)}
+                    className="w-full p-2 border rounded"
+                  />
+                  {index === emails.length - 1 ? (
+                    <button
+                      onClick={handleAddEmailField}
+                      className="bg-[#A3E636] text-black p-2 rounded"
+                    >
+                      +
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleRemoveEmailField(index)}
+                      className="bg-red-500 text-white p-2 rounded"
+                    >
+                      -
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="w-full bg-[#A3E636] text-black p-2 rounded mt-4"
+              >
+                {loading ? "Sending..." : "Send Invites"}
+              </button>
+            </div>
           </div>
         </div>
+      )}
+
+      {showSuccessPopup && (
+        <Popup
+          message={successMessage}
+          onClose={() => setShowSuccessPopup(false)}
+        />
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {users.map((user, index) => (
           <div
             key={index}
-            className="bg-white p-4 rounded-lg border border-black"
+            className={`p-6 rounded-lg shadow-sm transition-all duration-200 ${user.email === creatorEmail
+                ? "bg-black text-white hover:border-[#A3E636]" // Admin box style with hover
+                : "bg-gray-100 border border-[#ddd] hover:border-[#A3E636]" // Regular box style with hover
+              }`}
           >
-            <div className="flex justify-between items-start mb-4">
+            <div className="flex justify-between items-center">
               <div>
-                <div className="text-gray-600">{user.email}</div>
+                <div className="font-semibold">{user.email}</div>
+                {user.email === creatorEmail && (
+                  <div className="text-sm">Admin</div>
+                )}
               </div>
-              <button
-                className="w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded"
-                onClick={() => handleRemove(user, index)}
-              >
-                <i className="fas fa-trash-alt"></i>
-              </button>
+              {user.email !== creatorEmail && (
+                <button
+                  className="w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full"
+                  onClick={() => handleRemove(user)}
+                >
+                  <i className="fas fa-trash-alt"></i>
+                </button>
+              )}
             </div>
             <div>
-              <div className="text-gray-600"></div>
-              <div className="text-gray-600">
-                Invited By: {user.invited_by || "N/A"}
-              </div>
-              <div className="text-gray-600">
+              {user.email !== creatorEmail && ( // Hide "Invited By" for Admin
+                <div className="text-gray-600">Invited By: {user.invited_by || "N/A"}</div>
+              )}
+              <div
+                className={`${user.email === creatorEmail ? "text-white" : "text-gray-600"
+                  }`}
+              >
                 Created At: {new Date(user.created_at).toLocaleString()}
               </div>
             </div>
@@ -223,3 +280,4 @@ function Teamsecteam({ dataroomName }) {
 }
 
 export default Teamsecteam;
+

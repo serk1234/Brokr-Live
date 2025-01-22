@@ -4,9 +4,10 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
 import MainSettingsSection from "./main-settings-section";
+import ModernButton from "./modern-button";
+import Popup from "./Popup";
 import PrivacyPolicyModal from "./privacypolicy";
 import SecondarySettingsSection from "./secondary-settings-section";
-import ModernButton from "./modern-button";
 
 function SettingsTab({
   dataroomName,
@@ -29,10 +30,13 @@ function SettingsTab({
   const [organizationName, setOrganizationName] = useState(""); // Organization name state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [dataroomId, setDataroomId] = useState(null); // Modal state
-  const [filesLocked, setFilesLocked] = useState(false); // Lock status
+  const [filesLocked, setFilesLocked] = useState(false);
+  const [popupMessage, setPopupMessage] = useState(null); // Lock status
   const router = useRouter();
 
   // Fetch the dataroom details
+  // Popup message
+
   useEffect(() => {
     const fetchDataroomDetails = async () => {
       try {
@@ -48,28 +52,30 @@ function SettingsTab({
           setLocalStatus(data.status || "Live");
           setDataroomId(data.id);
           setDisplayStatus(data.status || "Live");
-          setOrganizationName(data.organization || "");
-          setFilesLocked(data.files_locked || false); // Initialize lock state
+          setOrganizationName(data.organization || ""); // Pre-fill organization name
+          setFilesLocked(data.files_locked || false); // Set the initial lock status
         }
       } catch (err) {
-        console.error("Unexpected error:", err.message);
+        setPopupMessage("Unexpected error fetching dataroom details.");
+        console.error(
+          "Unexpected error fetching dataroom details:",
+          err.message
+        );
       }
     };
 
-    // Ensure `dataroomName` is valid before fetching
     if (dataroomName) {
       fetchDataroomDetails();
     } else {
-      console.error("No dataroom name provided");
+      setPopupMessage("No dataroom name provided.");
     }
   }, [dataroomName, setDisplayStatus]);
 
-  // Handle saving changes
   const handleSave = async () => {
     setLoading(true);
     try {
-      if (!newName || !localStatus) {
-        alert("Please ensure all fields are filled before saving.");
+      if (!dataroomName || !localStatus) {
+        setPopupMessage("Please ensure all fields are filled before saving.");
         return;
       }
 
@@ -77,57 +83,28 @@ function SettingsTab({
         .from("datarooms")
         .update({
           status: localStatus,
-          name: newName,
+          name: dataroomName,
           organization: organizationName,
+          files_locked: filesLocked, // Save the updated lock status
         })
         .eq("name", dataroomName);
 
       if (error) throw error;
 
-      // Update global and local states
       setDisplayStatus(localStatus);
-      setDataroomName(newName);
-
-      alert("Settings updated successfully!");
+      setDataroomName(dataroomName);
+      setPopupMessage("Settings updated successfully!");
     } catch (err) {
+      setPopupMessage("Error saving changes.");
       console.error("Error saving changes:", err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle toggling lock status
-  const handleToggleLockStatus = async () => {
-    setLoading(true);
-    try {
-      console.log(`dataroom id ${dataroomId}`);
-      const newLockStatus = !filesLocked;
-      const { error } = await supabase
-        .from("datarooms")
-        .update({ files_locked: newLockStatus })
-        .eq("id", dataroomId);
-
-      if (error) throw error;
-
-      setFilesLocked(newLockStatus);
-
-      const { error1 } = await supabase
-        .from("file_uploads")
-        .update({
-          locked: newLockStatus,
-        })
-        .eq("dataroom_id", dataroomId);
-      if (error1) {
-        alert(error);
-      }
-      alert(
-        `Files have been ${newLockStatus ? "locked" : "unlocked"} successfully!`
-      );
-    } catch (err) {
-      console.error("Error toggling lock status:", err.message);
-    } finally {
-      setLoading(false);
-    }
+  // Handle toggling lock status (local state only)
+  const handleToggleLockStatus = () => {
+    setFilesLocked(!filesLocked); // Only update local state
   };
 
   // Handle dataroom deletion
@@ -138,10 +115,26 @@ function SettingsTab({
         return;
       }
 
+      setLoading(true);
+
+      // Delete related records in other tables (if needed)
+      const { error: fileError } = await supabase
+        .from("file_uploads")
+        .delete()
+        .eq("dataroom_id", dataroomId);
+
+      if (fileError) {
+        alert("Error deleting associated files. Please try again.");
+        console.error("Error deleting related records:", fileError.message);
+        return;
+      }
+
+      // Delete the dataroom itself
       const { error } = await supabase
         .from("datarooms")
         .delete()
         .eq("name", dataroomName);
+
       if (error) throw error;
 
       alert("Dataroom deleted successfully!");
@@ -149,16 +142,24 @@ function SettingsTab({
       router.push("/dashboard"); // Redirect to the dashboard
     } catch (err) {
       console.error("Error deleting dataroom:", err.message);
+      alert("Error deleting dataroom. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="w-full bg-transparent rounded-2xl border border-black p-6 shadow-lg space-y-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between items-center">
-        <h1 className="text-2xl font-semibold mb-4 sm:mb-0">Settings</h1>
+    <div className="w-full p-6 space-y-6">
+      {popupMessage && (
+        <Popup message={popupMessage} onClose={() => setPopupMessage(null)} />
+      )}
+      <div className="flex items-center justify-between w-full mb-6">
+        <h1 className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">
+          Settings
+        </h1>
         <ModernButton
           onClick={handleSave}
-          className="px-4 py-2 bg-[#A3E636] rounded border border-black shadow-lg flex items-center gap-2 hover:bg-[#93d626] transition-colors"
+          className="px-4 py-2 bg-[#A3E636] shadow-lg flex items-center gap-2 hover:bg-[#93d626] transition-colors"
           disabled={loading}
         >
           {loading ? (
@@ -166,10 +167,8 @@ function SettingsTab({
           ) : (
             <i className="fas fa-save"></i>
           )}
-          <span>{loading ? "Saving..." : "Save Changes"}</span>
+          <span>{loading ? "Saving..." : "Save"}</span>
         </ModernButton>
-
-
       </div>
 
       <div className="space-y-6">
@@ -210,9 +209,8 @@ function SettingsTab({
           toggleStates={toggleStates}
         />
 
-        {/* Archive and Delete Section */}
+        {/* Lock All Files Section */}
         <div className="bg-[#f5f5f5] p-6 rounded-2xl border border-[#ddd] shadow-md space-y-6 hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
-          {/* Lock All Files Section */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
             <div>
               <div className="font-medium mb-2">
@@ -226,17 +224,21 @@ function SettingsTab({
             </div>
             <ModernButton
               onClick={handleToggleLockStatus}
-              className={`w-full sm:w-auto px-4 py-2 ${filesLocked ? "bg-green-500" : "bg-amber-400"
-                } rounded border border-black hover:${filesLocked ? "bg-green-600" : "bg-amber-500"
-                } transition`}
+              className={`w-full sm:w-auto px-4 py-2 ${
+                filesLocked ? "bg-green-500" : "bg-amber-400"
+              } rounded hover:${
+                filesLocked ? "bg-green-600" : "bg-amber-500"
+              } transition`}
               disabled={loading}
             >
               <i className={`fas ${filesLocked ? "fa-unlock" : "fa-lock"}`}></i>{" "}
               {filesLocked ? "Unlock All" : "Lock All"}
             </ModernButton>
           </div>
+        </div>
 
-          {/* Delete Dataroom Section */}
+        {/* Delete Dataroom Section */}
+        <div className="bg-[#f5f5f5] p-6 rounded-2xl border border-[#ddd] shadow-md space-y-6 hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
             <div>
               <div className="font-medium mb-2">Delete Dataroom</div>
@@ -245,7 +247,7 @@ function SettingsTab({
               </div>
             </div>
             <ModernButton
-              className="w-full sm:w-auto px-4 py-2 bg-red-500 text-white rounded border border-black hover:bg-red-600 transition"
+              className="w-full sm:w-auto px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
               onClick={() => setShowDeleteModal(true)}
             >
               <i className="fas fa-trash"></i> Delete

@@ -118,11 +118,15 @@ function SubscribeView() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
       {stripeLoaded && customerID && customerSecret && (
-        <stripe-pricing-table
+        /*     <stripe-pricing-table
           customer-session-client-secret={customerSecret}
           pricing-table-id="prctbl_1QfokrE43xWZCXH3U7IfKTYf"
           publishable-key="pk_test_51QX5gGE43xWZCXH3LJ2HhFEboXxnv9Xas2Nnwm2vCmvyijbxXIV17UrkpTRgVELKcAsFUNYakl1nGFaItc0oC51N00jOTphvFi"
-        />
+        /> */
+        <stripe-pricing-table
+          pricing-table-id={process.env.PRICING_TABLE}
+          publishable-key={process.env.STRIPE_PK_KEY}
+        ></stripe-pricing-table>
       )}
     </div>
   );

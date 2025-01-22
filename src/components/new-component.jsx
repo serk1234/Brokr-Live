@@ -3,9 +3,9 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
-import StylizedButton from "../components/stylized-button";
 import SubscribeView from "../pages/subscription/index";
 import ModernButton from "./modern-button";
+import Popup from "./Popup";
 
 function NewComponent({ email }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -14,6 +14,8 @@ function NewComponent({ email }) {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showPricingTable, setShowPricingTable] = useState(false);
   const router = useRouter();
+  const [showPopup, setShowPopup] = useState(false); // State to manage popup visibility
+  const [popupMessage, setPopupMessage] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [showSubscribeTable, setshowSubscribeTable] = useState(false);
   const handleRedirectToPortal = async () => {
@@ -127,7 +129,9 @@ function NewComponent({ email }) {
         return;
       }
 
-      alert("Profile updated successfully!");
+      // Show popup instead of alert
+      setPopupMessage("Profile updated successfully!");
+      setShowPopup(true);
       setIsEditing(false);
     } catch (err) {
       console.error("Error during profile update:", err.message);
@@ -235,18 +239,10 @@ function NewComponent({ email }) {
                 async
                 src="https://js.stripe.com/v3/pricing-table.js"
               ></script>
-              {/*  <stripe-pricing-table
-                pricing-table-id="prctbl_1QfSw5E43xWZCXH3onBilnVu"
-                publishable-key="pk_live_51QX5gGE43xWZCXH3ivdyoCspjeEUT2TVUCeNyAvwykKpSw95ZayoUndnephVBzkySNaqtjvJ0JVjTU4KEW7GLdN100uKErd8KG"
-              ></stripe-pricing-table>
 
-              <script
-                async
-                src="https://js.stripe.com/v3/pricing-table.js"
-              ></script> */}
               <stripe-pricing-table
-                pricing-table-id="prctbl_1QfokrE43xWZCXH3U7IfKTYf"
-                publishable-key="pk_test_51QX5gGE43xWZCXH3LJ2HhFEboXxnv9Xas2Nnwm2vCmvyijbxXIV17UrkpTRgVELKcAsFUNYakl1nGFaItc0oC51N00jOTphvFi"
+                pricing-table-id={process.env.STRIPE_PK_KEY}
+                publishable-key={process.env.STRIPE_PK_KEY}
               ></stripe-pricing-table>
             </div>
           )}
@@ -266,6 +262,10 @@ function NewComponent({ email }) {
           </div>
         </div>
       </div>
+
+      {showPopup && (
+        <Popup message={popupMessage} onClose={() => setShowPopup(false)} />
+      )}
     </div>
   );
 }

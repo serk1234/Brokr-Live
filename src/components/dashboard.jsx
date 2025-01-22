@@ -63,7 +63,7 @@ function Dashboard({
           ).length;
 
           return {
-            name: file.name,
+            name: file.new_name || file.name, // Fallback to original name if new_name is empty
             downloads,
             dateAdded: new Date(file.upload_at).toLocaleDateString(),
           };
@@ -89,30 +89,33 @@ function Dashboard({
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      {/* 3-2-1 Layout */}
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 mb-6">
+        {/* Total Users */}
         <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
           <div className="text-4xl font-light mb-4 text-gray-800">{totalUser}</div>
           <div className="text-gray-700 text-sm">Total Users</div>
         </div>
+
+        {/* Active Users */}
         <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
           <div className="text-4xl font-light mb-4 text-gray-800">{totalActiveUser}</div>
           <div className="text-gray-700 text-sm">Active Users</div>
         </div>
       </div>
 
-      {/* Downloads Section */}
-      <div className="mb-6">
+      {/* Downloads, Team, Users Section */}
+      <div className="grid grid-cols-3 gap-4 md:grid-cols-3 md:gap-6 mb-6">
+        {/* Downloads */}
         <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
           <div className="text-4xl font-light mb-4 text-gray-800">{totalDownloads}</div>
           <div className="text-gray-700 text-sm">Downloads</div>
         </div>
-      </div>
 
-
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] transition-all duration-300">
-          <div className="flex justify-between items-center mb-4">
+        {/* Team */}
+        {/* Team */}
+        <div className="bg-[#f5f5f5] p-4 rounded-xl border border-[#ddd] hover:border-[#A3E636] transition-all duration-300">
+          <div className="flex justify-between items-center">
             <h3 className="text-xl font-light hover:text-[#A3E636]">Team</h3>
             <button
               onClick={() => handleViewClick("team")}
@@ -121,26 +124,11 @@ function Dashboard({
               <i className="fas fa-arrow-right"></i>
             </button>
           </div>
-          <div className="space-y-4">
-            {fetchedTeamMembers.map((member, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 hover:bg-[#eee] rounded-lg"
-              >
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-[#A3E636] text-white rounded-lg flex items-center justify-center mr-3">
-                    {member.email.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="font-light">{member.email}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
-        <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] transition-all duration-300">
-          <div className="flex justify-between items-center mb-4">
+
+        {/* Users */}
+        <div className="bg-[#f5f5f5] p-4 rounded-xl border border-[#ddd] hover:border-[#A3E636] transition-all duration-300">
+          <div className="flex justify-between items-center">
             <h3 className="text-xl font-light hover:text-[#A3E636]">Users</h3>
             <button
               onClick={() => handleViewClick("users")}
@@ -174,7 +162,7 @@ function Dashboard({
                   <i className="fas fa-file-lines"></i>
                 </div>
                 <div>
-                  <div className="font-light group-hover:text-[#A3E636]">
+                  <div className="file-name font-light group-hover:text-[#A3E636]">
                     {doc.name}
                   </div>
                   <div className="text-xs text-gray-700 group-hover:text-black">
