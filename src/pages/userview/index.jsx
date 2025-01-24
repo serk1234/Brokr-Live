@@ -236,7 +236,7 @@ function UserView() {
           onAfterOpen={() => {}}
           onRequestClose={() => {}}
           style={customStyles}
-          contentLabel="Example Modal"
+          contentLabel="NDA Modal"
         >
           <Onboarding
             roomId={router.query.id}
@@ -247,8 +247,10 @@ function UserView() {
         </Modal>
       )}
 
-      <div className="flex flex-1">
-        <div className="w-1/4 bg-gray-50 border-r border-gray-200 p-4">
+      {/* Responsive Layout */}
+      <div className="flex flex-1 flex-col sm:flex-row">
+        {/* Sidebar for Contents */}
+        <div className="w-full sm:w-1/4 bg-gray-50 border-r border-gray-200 p-4">
           <h2 className="text-lg font-medium mb-4">Contents</h2>
           <ul className="space-y-2">
             {files.map((file, index) => (
@@ -270,6 +272,7 @@ function UserView() {
           </ul>
         </div>
 
+        {/* File Viewer */}
         <div className="flex-1 bg-white p-6">
           {selectedFile ? (
             <Viewer
@@ -291,6 +294,7 @@ function UserView() {
 
       <Footer />
     </div>
+
   );
 }
 

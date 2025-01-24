@@ -149,7 +149,7 @@ function Onboarding({ roomId, onClosed }) {
   return (
     <div className="min-h-screen bg-[#121212] text-white font-opensans flex flex-col">
       <div className="bg-black p-4 mb-8">
-        <div className="max-w-4xl mx-auto flex items-center justify-center gap-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
           <span className="text-white text-2xl font-semibold">brokr</span>
           <button className="bg-black text-white px-4 py-2 rounded border border-[#A3E636] shadow-[2px_2px_0px_0px_#A3E636] hover:bg-[#1A1A1A]">
             Onboarding
@@ -157,12 +157,13 @@ function Onboarding({ roomId, onClosed }) {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8 flex-grow">
+      <div className="max-w-4xl mx-auto px-4 py-8 flex-grow w-full">
         <h1 className="text-4xl font-semibold text-center mb-8">
           Non-Disclosure Agreement
         </h1>
 
-        <div className="bg-[#1A1A1A] rounded-lg border border-[#333] p-8">
+        {/* NDA Content Section */}
+        <div className="bg-[#1A1A1A] rounded-lg border border-[#333] p-6 sm:p-8">
           <div className="overflow-y-auto max-h-[400px] mb-8 scrollbar-thin scrollbar-thumb-[#8BC34A] scrollbar-track-[#1A1A1A] scrollbar-w-[2px] pr-4">
             <h2 className="text-[#A3E636] text-2xl font-semibold mb-4">
               NON-DISCLOSURE AGREEMENT
@@ -180,6 +181,7 @@ function Onboarding({ roomId, onClosed }) {
           </div>
         </div>
 
+        {/* Sign Agreement Section */}
         <div className="border-t border-[#333] pt-8">
           <div className="flex items-center mb-4">
             <div className="w-4 h-4 rounded-full bg-[#A3E636] flex items-center justify-center mr-2">
@@ -193,7 +195,7 @@ function Onboarding({ roomId, onClosed }) {
             </h3>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <input
               type="text"
               name="fullName"
@@ -204,11 +206,12 @@ function Onboarding({ roomId, onClosed }) {
             />
             <StylizedButton
               text={
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 justify-center">
                   <i className="fas fa-signature"></i>Sign Agreement
                 </div>
               }
               onClick={handleSignClick}
+              className="w-full sm:w-auto bg-black border border-[#333] rounded px-4 py-2 text-white text-center"
             />
           </div>
         </div>
@@ -217,6 +220,7 @@ function Onboarding({ roomId, onClosed }) {
       <Footer />
     </div>
   );
+
 }
 
 export default Onboarding;

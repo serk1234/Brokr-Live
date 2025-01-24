@@ -100,12 +100,10 @@ function MainComponent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 flex flex-col">
-      {/* Header */}
       <div className="relative z-50">
         <HeaderLive email={userEmail || "Loading..."} />
       </div>
 
-      {/* Main Content */}
       <div className="container mx-auto px-4 py-8 flex-grow">
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Team Section */}
@@ -118,18 +116,20 @@ function MainComponent() {
                 onClick={() => setShowModal(true)}
               />
             </div>
-
-            {/* Datarooms */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {userDatarooms.map((room) => (
                 <div
                   key={room.id}
                   className="bg-[#121212] border border-gray-200 hover:bg-black/80 transition rounded-xl p-4 flex justify-between items-center"
                 >
-                  <div>
-                    <h3 className="text-white font-semibold">{room.name}</h3>
+                  <div className="w-3/4">
+                    <h3 className="text-white font-semibold truncate" style={{ maxWidth: '100%' }}>
+                      {room.name}
+                    </h3>
                     {room.organization && (
-                      <p className="text-sm text-gray-400">{room.organization}</p>
+                      <p className="text-sm text-gray-400 truncate" style={{ maxWidth: '100%' }}>
+                        {room.organization}
+                      </p>
                     )}
                   </div>
                   <StylizedButton
@@ -142,22 +142,26 @@ function MainComponent() {
             </div>
           </div>
 
-          {/* User Section */}
+          {/* Users Section */}
           <div className="bg-white rounded-xl p-4 shadow-md">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">User</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Users</h2>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {invitedDatarooms.length > 0 ? (
                 invitedDatarooms.map((room) => (
                   <div
                     key={room.id}
                     className="bg-gray-100 border border-gray-200 hover:bg-gray-200 transition rounded-xl p-4 flex justify-between items-center"
                   >
-                    <div>
-                      <h3 className="text-gray-800 font-semibold">{room.name}</h3>
+                    <div className="w-3/4">
+                      <h3 className="text-gray-800 font-semibold truncate" style={{ maxWidth: '100%' }}>
+                        {room.name}
+                      </h3>
                       {room.organization && (
-                        <p className="text-sm text-gray-600">{room.organization}</p>
+                        <p className="text-sm text-gray-600 truncate" style={{ maxWidth: '100%' }}>
+                          {room.organization}
+                        </p>
                       )}
                     </div>
                     <StylizedButton
@@ -175,7 +179,6 @@ function MainComponent() {
         </div>
       </div>
 
-      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           < div className="bg-black rounded-xl p-6 shadow-md border border-[#A3E636] w-11/12 max-w-sm">
@@ -201,7 +204,6 @@ function MainComponent() {
         </div>
       )}
 
-      {/* Footer */}
       <Footer title="Create" logoSrc="/logo.png" />
     </div>
   );

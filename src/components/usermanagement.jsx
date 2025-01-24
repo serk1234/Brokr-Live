@@ -4,11 +4,15 @@ import { supabase } from "../../src/app/supabaseClient";
 import ModernButton from "./modern-button";
 import { useRouter } from "next/router";
 import Popup from "./Popup";
+import { format, utcToZonedTime } from "date-fns-tz";
+
 
 function Usermanagement() {
   const [activeTab, setActiveTab] = useState("active");
   const [activeUsers, setActiveUsers] = useState([]);
   const [invitedUsers, setInvitedUsers] = useState([]);
+  // Save the local time as a string
+
 
   const [loading, setLoading] = useState(false);
   const [inviteEmails, setInviteEmails] = useState([""]);
@@ -243,8 +247,19 @@ function Usermanagement() {
                   {/* Active Since Section */}
                   <div className="text-gray-500 text-sm w-full md:w-auto md:text-right">
                     Active Since:{" "}
-                    {new Date(user.invited_at).toLocaleDateString()}{" "}
-                    {new Date(user.invited_at).toLocaleTimeString("en-US")}
+                    {`${new Date(user.invited_at).toLocaleDateString(
+                      "en-US"
+                    )} ${new Date(user.invited_at).toLocaleTimeString(
+                      "en-US",
+                      {
+                        hour: "numeric",
+                        minute: "numeric",
+                        second: "numeric",
+                        hour12: true,
+                      }
+
+
+                    )}`}
                   </div>
                 </div>
               </div>
@@ -262,8 +277,17 @@ function Usermanagement() {
                   {/* Invited At Section */}
                   <div className="text-gray-500 text-sm w-full md:w-auto md:text-right">
                     Invited At:{" "}
-                    {new Date(user.invited_at).toLocaleDateString()}{" "}
-                    {new Date(user.invited_at).toLocaleTimeString("en-US")}
+                    {`${new Date(user.invited_at).toLocaleDateString(
+                      "en-US"
+                    )} ${new Date(user.invited_at).toLocaleTimeString(
+                      "en-US",
+                      {
+                        hour: "numeric",
+                        minute: "numeric",
+                        second: "numeric",
+                        hour12: true,
+                      }
+                    )}`}
                   </div>
                 </div>
               </div>

@@ -37,55 +37,12 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
     }
   };
 
-  const handleDrop = async (e) => {
+  const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const droppedFile = e.dataTransfer.files[0];
-
-      try {
-        // Get authenticated user info
-        const { data: authData, error: authError } =
-          await supabase.auth.getUser();
-        if (authError) throw authError;
-        const userEmail = authData.user.email;
-
-        // Sanitize file name and generate timestamp
-        const sanitizedFileName = sanitizeFileName(droppedFile.name);
-        const timestamp = new Date().toISOString();
-        const filePath = `files/${dataroomId}/${timestamp}_${sanitizedFileName}`;
-
-        // Upload file to Supabase storage
-        const { error: uploadError } = await supabase.storage
-          .from("file_uploads")
-          .upload(filePath, droppedFile);
-        if (uploadError) throw uploadError;
-
-        // Save metadata to Supabase database
-        const { error: dbError } = await supabase.from("file_uploads").insert([
-          {
-            name: sanitizedFileName,
-            file_path: filePath,
-            uploaded_by: userEmail,
-            upload_at: timestamp,
-            dataroom_id: dataroomId,
-          },
-        ]);
-        if (dbError) throw dbError;
-
-        // Update local state with the new file
-        handleUpload({
-          name: sanitizedFileName,
-          file_path: filePath,
-          uploaded_by: userEmail,
-          upload_at: timestamp,
-          locked: false,
-        });
-      } catch (err) {
-        console.error("Error processing dropped file:", err.message);
-      }
+      setFile(e.dataTransfer.files[0]);
     }
   };
 
@@ -111,9 +68,8 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         console.log(sanitizeFileName);
         const date = new Date();
 
-        const timestamp = `${date.getFullYear()}-${
-          date.getMonth() + 1
-        }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
+        const timestamp = `${date.getFullYear()}-${date.getMonth() + 1
+          }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
 
         var fileName = timestamp + "_" + sanitizedFileName;
 
@@ -177,9 +133,8 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         </div>
 
         <div
-          className={`relative border-2 border-dashed rounded-xl p-8 text-center ${
-            dragActive ? "border-[#A3E636] bg-[#A3E636]/5" : "border-black/10"
-          }`}
+          className={`relative border-2 border-dashed rounded-xl p-8 text-center ${dragActive ? "border-[#A3E636] bg-[#A3E636]/5" : "border-black/10"
+            }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -234,11 +189,10 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
           <button
             onClick={handleSubmit}
             disabled={!file}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              file
-                ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
-                : "bg-black/5 text-black/40 cursor-not-allowed"
-            }`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${file
+              ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
+              : "bg-black/5 text-black/40 cursor-not-allowed"
+              }`}
           >
             Upload
           </button>
@@ -605,20 +559,12 @@ function Contentmanager({ items = [], dataroomId }) {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const droppedFile = e.dataTransfer.files[0];
-      handleUpload({
-        name: droppedFile.name,
-        uploadedBy: "Current User",
-        uploadDate: new Date().toISOString(),
-        views: 0,
-        downloads: 0,
-        locked: false,
-        size: droppedFile.size,
-      });
+      setFile(e.dataTransfer.files[0]);
     }
   };
+
+
 
   const gridTemplateColumns =
     "minmax(300px, 2fr) minmax(150px, 1fr) minmax(100px, 0.7fr) minmax(160px, 1fr)";
@@ -795,24 +741,14 @@ function Contentmanager({ items = [], dataroomId }) {
         // Existing code for the default view
 
         <div
-          className={`flex flex-col relative ${
-            dragActive
-              ? "after:absolute after:inset-0 after:bg-[#A3E636]/5 after:border-2 after:border-dashed after:border-[#A3E636] after:rounded-2xl after:pointer-events-none"
-              : ""
-          }`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
+
         >
-          {dragActive && (
-            <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-              <div className="bg-white rounded-xl shadow-lg p-4 flex items-center gap-3">
-                <i className="fas fa-cloud-upload-alt text-[#A3E636] text-xl"></i>
-                <span className="font-medium">Drop file to upload</span>
-              </div>
-            </div>
-          )}
+
+
+
+
+
+
 
           {/*  <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-semibold">Contents</h1>
@@ -1074,9 +1010,8 @@ function Contentmanager({ items = [], dataroomId }) {
                         className="flex items-center justify-center text-gray-600 hover:text-yellow-600 flex-1"
                       >
                         <i
-                          className={`fas fa-${
-                            file.locked ? "lock" : "lock-open"
-                          } text-sm md:text-base`}
+                          className={`fas fa-${file.locked ? "lock" : "lock-open"
+                            } text-sm md:text-base`}
                         ></i>
                         <span className="ml-2 text-sm">
                           {file.locked ? "Unlock" : "Lock"}
@@ -1137,9 +1072,8 @@ function Contentmanager({ items = [], dataroomId }) {
               <div
                 key={index}
                 className={`grid grid-cols-[1fr_auto] md:grid-cols-[2fr_1fr_1fr_auto] gap-2 md:gap-6 
-    items-center py-3 px-3 md:px-4 hover:bg-black/5 transition-colors ${
-      file.locked ? "bg-amber-50" : ""
-    }`}
+    items-center py-3 px-3 md:px-4 hover:bg-black/5 transition-colors ${file.locked ? "bg-amber-50" : ""
+                  }`}
               >
                 {/* File Name and Icon Section */}
                 <div className="flex items-center gap-2 md:gap-3 min-w-0 col-span-2 md:col-span-1">
@@ -1219,9 +1153,8 @@ function Contentmanager({ items = [], dataroomId }) {
                     className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
                   >
                     <i
-                      className={`fas fa-${
-                        file.locked ? "lock" : "lock-open"
-                      } text-sm md:text-base`}
+                      className={`fas fa-${file.locked ? "lock" : "lock-open"
+                        } text-sm md:text-base`}
                     ></i>
                   </button>
                   <button
@@ -1330,32 +1263,18 @@ function ContentMobileView({ files: [] }) {
           <div key={doc.id} className="border-b last:border-b-0 relative">
             {expandedRow === doc.id ? (
               <div className="flex items-center justify-between p-4 bg-gray-50">
-                <button className="flex items-center justify-center text-gray-600 hover:text-blue-600 flex-1">
-                  <i className="fas fa-eye text-lg"></i>
-                  <span className="ml-2 text-sm">View</span>
-                </button>
-                <button className="flex items-center justify-center text-gray-600 hover:text-green-600 flex-1">
-                  <i className="fas fa-download text-lg"></i>
-                  <span className="ml-2 text-sm">Download</span>
-                </button>
-                <button className="flex items-center justify-center text-gray-600 hover:text-yellow-600 flex-1">
-                  <i className="fas fa-lock text-lg"></i>
-                  <span className="ml-2 text-sm">Lock</span>
-                </button>
-                <button className="flex items-center justify-center text-gray-600 hover:text-red-600 flex-1">
-                  <i className="fas fa-trash text-lg"></i>
-                  <span className="ml-2 text-sm">Delete</span>
-                </button>
                 <button
                   className="flex items-center justify-center text-gray-600 hover:text-gray-800 ml-4"
                   onClick={(e) => toggleRow(doc.id, e)}
                 >
-                  <i className="fas fa-ellipsis-h text-lg"></i>
+                  <i className="fas fa-ellipsis-v text-gray-600 text-2xl font-bold"></i>
                 </button>
               </div>
             ) : (
               <div className="flex items-center p-4 hover:bg-gray-50">
-                <i className="{⁠ fas ${doc.icon} text-gray-500 text-xl w-8 ⁠}"></i>
+                <span className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-lg mr-4">
+                  <i className="fas fa-file text-gray-500"></i>
+                </span>
                 <div className="flex-1 min-w-0 px-4">
                   <p className="text-sm font-medium text-gray-900 truncate">
                     {doc.name}
@@ -1371,7 +1290,7 @@ function ContentMobileView({ files: [] }) {
                   className="p-2 hover:bg-gray-100 rounded"
                   onClick={(e) => toggleRow(doc.id, e)}
                 >
-                  <i className="fas fa-ellipsis-v text-gray-400"></i>
+                  <i className="fas fa-ellipsis-v text-gray-600 text-2xl font-bold"></i>
                 </button>
               </div>
             )}
@@ -1379,6 +1298,6 @@ function ContentMobileView({ files: [] }) {
         ))}
       </div>
     </div>
-  );
+  )
 }
 export default Contentmanager;

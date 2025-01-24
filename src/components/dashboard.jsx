@@ -90,7 +90,7 @@ function Dashboard({
       </div>
 
       {/* 3-2-1 Layout */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 mb-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6 mb-6">
         {/* Total Users */}
         <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
           <div className="text-4xl font-light mb-4 text-gray-800">{totalUser}</div>
@@ -102,17 +102,16 @@ function Dashboard({
           <div className="text-4xl font-light mb-4 text-gray-800">{totalActiveUser}</div>
           <div className="text-gray-700 text-sm">Active Users</div>
         </div>
-      </div>
 
-      {/* Downloads, Team, Users Section */}
-      <div className="grid grid-cols-3 gap-4 md:grid-cols-3 md:gap-6 mb-6">
         {/* Downloads */}
         <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
           <div className="text-4xl font-light mb-4 text-gray-800">{totalDownloads}</div>
           <div className="text-gray-700 text-sm">Downloads</div>
         </div>
+      </div>
 
-        {/* Team */}
+      {/* Team and Users Section */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-2 md:gap-6 mb-6">
         {/* Team */}
         <div className="bg-[#f5f5f5] p-4 rounded-xl border border-[#ddd] hover:border-[#A3E636] transition-all duration-300">
           <div className="flex justify-between items-center">
@@ -140,7 +139,6 @@ function Dashboard({
         </div>
       </div>
 
-
       <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] transition-all duration-300">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-light hover:text-[#A3E636]">Contents</h3>
@@ -151,17 +149,22 @@ function Dashboard({
             <i className="fas fa-arrow-right"></i>
           </button>
         </div>
+
+        {/* Responsive container for mobile */}
+        {/* Responsive container for mobile */}
+        {/* Responsive container for mobile */}
         <div className="space-y-4">
           {documentList.map((doc, index) => (
             <div
               key={index}
-              className="flex items-center justify-between p-4 bg-[#eee] rounded-xl hover:bg-[#e2e2e2] transition-all duration-300 group"
+              className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 bg-[#eee] rounded-xl hover:bg-[#e2e2e2] transition-all duration-300 group"
             >
-              <div className="flex items-center">
+              {/* File Icon + Name */}
+              <div className="flex items-center w-full md:w-auto">
                 <div className="w-10 h-10 bg-[#ddd] rounded-xl flex items-center justify-center mr-4 group-hover:bg-[#A3E636] group-hover:text-white transition-all duration-300">
                   <i className="fas fa-file-lines"></i>
                 </div>
-                <div>
+                <div className="truncate">
                   <div className="file-name font-light group-hover:text-[#A3E636]">
                     {doc.name}
                   </div>
@@ -170,29 +173,29 @@ function Dashboard({
                   </div>
                 </div>
               </div>
-              <div className="flex space-x-8">
-                <div className="text-center">
-                  {/* <div className="font-light group-hover:text-[#A3E636]">
-                    {doc.views}
-                  </div>
-                  <div className="text-xs text-gray-700 group-hover:text-black">
-                    Views
-                  </div> 
-                </div>
-                <div className="text-center"> */}
-                  <div className="font-light group-hover:text-[#A3E636]">
-                    {doc.downloads}
-                  </div>
-                  <div className="text-xs text-gray-700 group-hover:text-black">
-                    Downloads
-                  </div>
+
+
+              <div className="mt-2 md:mt-0 flex items-center md:justify-end w-full md:w-auto">
+                <div
+                  className="flex items-center space-x-1 font-bold text-base leading-none"
+                  style={{
+                    padding: "2px 4px", // Add a slight padding to ensure consistent spacing
+                    lineHeight: "1.2", // Ensure proper line height for vertical alignment
+                  }}
+                >
+                  <span className="font-bold text-base">{doc.downloads}</span>
+                  <span className="text-sm font-bold ">Downloads</span>
                 </div>
               </div>
+
             </div>
           ))}
         </div>
       </div>
+
+
     </div>
+
   );
 }
 

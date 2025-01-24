@@ -6,7 +6,8 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
   return (
     <div className="flex flex-col h-full w-full">
       {/* Header for document details and actions */}
-      <div className="flex flex-wrap justify-between items-start mb-4 gap-4 sm:gap-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-4 sm:gap-6">
+        {/* File Information */}
         <div className="flex-1 min-w-[200px]">
           <h2 className="text-lg font-semibold truncate">
             {selectedDocument.name}
@@ -21,6 +22,7 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
           </p>
         </div>
 
+        {/* Zoom Controls and Download */}
         <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
           {/* Zoom controls */}
           <div className="flex items-center gap-3">

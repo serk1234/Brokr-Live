@@ -224,11 +224,9 @@ function SettingsTab({
             </div>
             <ModernButton
               onClick={handleToggleLockStatus}
-              className={`w-full sm:w-auto px-4 py-2 ${
-                filesLocked ? "bg-green-500" : "bg-amber-400"
-              } rounded hover:${
-                filesLocked ? "bg-green-600" : "bg-amber-500"
-              } transition`}
+              className={`w-full sm:w-auto px-4 py-2 ${filesLocked ? "bg-green-500" : "bg-amber-400"
+                } rounded hover:${filesLocked ? "bg-amber-600" : "bg-amber-500"
+                } transition`}
               disabled={loading}
             >
               <i className={`fas ${filesLocked ? "fa-unlock" : "fa-lock"}`}></i>{" "}
