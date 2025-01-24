@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
   return (
     <div className="flex flex-col h-full w-full">
@@ -63,7 +61,7 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
                 transformOrigin: "center",
               }}
             />
-          ) : (
+          ) : selectedDocument.name.indexOf(".pdf") < 0 ? (
             <iframe
               src={`${selectedDocument.src}#toolbar=0`}
               title="File Viewer"
@@ -73,6 +71,18 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
                 transformOrigin: "top center",
               }}
             ></iframe>
+          ) : (
+            <object
+              className="w-full h-full"
+              data={selectedDocument.src}
+              type={"application/pdf"}
+              width="100%"
+              height="100%"
+              style={{
+                transform: `scale(${zoom / 100})`,
+                transformOrigin: "top center",
+              }}
+            ></object>
           )
         ) : (
           <div className="text-center text-gray-500">
@@ -86,3 +96,26 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
 }
 
 export default Viewer;
+<<<<<<< HEAD
+=======
+
+/* CSS for mobile optimizations */
+<style jsx>{`
+  @media (max-width: 640px) {
+    .flex-wrap {
+      flex-direction: column;
+    }
+    .truncate {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .flex-1 {
+      width: 100%;
+    }
+    .min-w-[200px] {
+      min-width: unset;
+    }
+  }
+`}</style>;
+>>>>>>> 02798c5dc23cfece0620861f5cee8d9c2daa40a4

@@ -191,10 +191,7 @@ function UserView() {
           file_id: selectedFile.id,
         });
 
-
-
         // Insert a download record
-
 
         // Trigger file download in the browser
         const blob = new Blob([data], {
@@ -216,9 +213,6 @@ function UserView() {
     }
   };
 
-
-
-
   const getDisplayName = (file) => file.new_name || file.name;
 
   return (
@@ -239,8 +233,8 @@ function UserView() {
       {showNDA && (
         <Modal
           isOpen={showNDA}
-          onAfterOpen={() => { }}
-          onRequestClose={() => { }}
+          onAfterOpen={() => {}}
+          onRequestClose={() => {}}
           style={customStyles}
           contentLabel="NDA Modal"
         >
@@ -262,13 +256,15 @@ function UserView() {
             {files.map((file, index) => (
               <li
                 key={index}
-                className={`flex items-center p-2 rounded-lg cursor-pointer ${file.locked ? "bg-red-100" : "hover:bg-green-50"
-                  }`}
+                className={`flex items-center p-2 rounded-lg cursor-pointer ${
+                  file.locked ? "bg-red-100" : "hover:bg-green-50"
+                }`}
                 onClick={() => handleFileClick(file)}
               >
                 <i
-                  className={`fas ${file.locked ? "fa-lock" : "fa-file"
-                    } text-gray-500 mr-2`}
+                  className={`fas ${
+                    file.locked ? "fa-lock" : "fa-file"
+                  } text-gray-500 mr-2`}
                 ></i>
                 <span className="flex-1 truncate">{getDisplayName(file)}</span>
               </li>
