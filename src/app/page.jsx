@@ -1,8 +1,8 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { supabase } from "./supabaseClient";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Popup from "../components/Popup"; // Adjust the path based on your file structure
+import { supabase } from "./supabaseClient";
 
 function MainComponent() {
   const [loading, setLoading] = useState(false);
@@ -66,7 +66,9 @@ function MainComponent() {
           <button
             onClick={handleLogin}
             disabled={loading}
-            className={`btn btn-email ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`btn btn-email ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
             {loading ? "Loading..." : "Continue with Email"}
           </button>

@@ -1,4 +1,6 @@
 "use client";
+import { useState } from "react";
+import { Document, Page } from "react-pdf";
 
 function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
   return (
@@ -47,8 +49,8 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
           </button>
         </div>
       </div>
-
       {/* Content Viewer */}
+      pdf viewwe
       <div className="flex-grow bg-gray-50 rounded-lg border border-gray-200 overflow-hidden flex items-center justify-center">
         {selectedDocument.src ? (
           selectedDocument.name.match(/\.(jpg|jpeg|png|gif)$/i) ? (
@@ -61,7 +63,7 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
                 transformOrigin: "center",
               }}
             />
-          ) : selectedDocument.name.indexOf(".pdf") < 0 ? (
+          ) : false && selectedDocument.name.indexOf(".pdf") < 0 ? (
             <iframe
               src={`${selectedDocument.src}#toolbar=0`}
               title="File Viewer"
@@ -72,9 +74,9 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
               }}
             ></iframe>
           ) : (
-            <object
+            /*  <object
               className="w-full h-full"
-              data={selectedDocument.src}
+              data={selectedDocument.src + "#toolbar=0"}
               type={"application/pdf"}
               width="100%"
               height="100%"
@@ -82,7 +84,8 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
                 transform: `scale(${zoom / 100})`,
                 transformOrigin: "top center",
               }}
-            ></object>
+            ></object> */
+            <PdfViewwer url={selectedDocument.src} />
           )
         ) : (
           <div className="text-center text-gray-500">
@@ -116,3 +119,23 @@ export default Viewer;
     }
   }
 `}</style>;
+
+function PdfViewwer({ url }) {
+  const [numPages, setNumPages] = useState();
+  const [pageNumber, setPageNumber] = useState(1);
+
+  function onDocumentLoadSuccess(numPages) {
+    setNumPages(numPages);
+  }
+
+  return (
+    <div>
+      <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
+        <Page pageNumber={pageNumber} />
+      </Document>
+      <p>
+        Page {pageNumber} of {numPages}
+      </p>
+    </div>
+  );
+}
