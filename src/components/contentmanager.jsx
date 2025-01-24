@@ -727,12 +727,27 @@ function Contentmanager({ items = [], dataroomId }) {
                       className="max-w-full max-h-[80vh] object-contain"
                     />
                   ) : (
-                    <iframe
-                      src={fileURL}
-                      title="File Viewer"
-                      className="w-full h-full border-none rounded-lg"
-                      style={{ minHeight: "500px" }}
-                    />
+                    <div>
+                      <iframe
+                        src={fileURL}
+                        title="File Viewer"
+                        className="w-full h-full border-none rounded-lg"
+                        style={{ minHeight: "500px" }}
+                      />
+                      <object
+                        data={fileURL}
+                        type="application/pdf"
+                        width="100%"
+                        height="100%"
+                      >
+                        <p>
+                          Alternative text - include a link{" "}
+                          <a href="http://africau.edu/images/default/sample.pdf">
+                            to the PDF!
+                          </a>
+                        </p>
+                      </object>
+                    </div>
                   )
                 ) : (
                   <div className="aspect-[16/9] bg-white rounded-lg flex items-center justify-center">
