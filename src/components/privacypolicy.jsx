@@ -12,7 +12,7 @@ function PrivacyPolicyModal({ show, onClose }) {
                 >
                     <i className="fas fa-times text-xl" />
                 </button>
-                <div className="prose prose-lg max-w-none">
+                <div className="prose prose-lg max-w-none text-black">
                     <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-black to-gray-700 bg-clip-text text-transparent">
                         Privacy Policy
                     </h2>
@@ -97,6 +97,7 @@ function PrivacyPolicyModal({ show, onClose }) {
                                 </li>
                             </ul>
                         </div>
+
                         <h2 className="text-4xl font-bold mt-16 mb-2 bg-gradient-to-r from-black to-gray-700 bg-clip-text text-transparent">
                             Terms of Service
                         </h2>
@@ -230,8 +231,6 @@ function PrivacyPolicyModal({ show, onClose }) {
                                 <p>Email: contact@hellobrokr.com</p>
                             </div>
                         </div>
-
-
                     </div>
                 </div>
             </div>

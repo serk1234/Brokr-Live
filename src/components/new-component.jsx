@@ -3,11 +3,9 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
-import StylizedButton from "../components/stylized-button";
 import SubscribeView from "../pages/subscription/index";
 import ModernButton from "./modern-button";
 import Popup from "./Popup";
-
 
 function NewComponent({ email }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -55,6 +53,12 @@ function NewComponent({ email }) {
     }
   };
   useEffect(() => {
+    console.log(
+      "pricing-table-id",
+      process.env.PRICING_TABLE,
+      "publishable-key",
+      process.env.STRIPE_PK_KEY
+    );
     // Fetch the latest profile data on component mount
     const fetchProfileData = async () => {
       try {
@@ -241,18 +245,10 @@ function NewComponent({ email }) {
                 async
                 src="https://js.stripe.com/v3/pricing-table.js"
               ></script>
-              {/*  <stripe-pricing-table
+
+              <stripe-pricing-table
                 pricing-table-id="prctbl_1QfSw5E43xWZCXH3onBilnVu"
                 publishable-key="pk_live_51QX5gGE43xWZCXH3ivdyoCspjeEUT2TVUCeNyAvwykKpSw95ZayoUndnephVBzkySNaqtjvJ0JVjTU4KEW7GLdN100uKErd8KG"
-              ></stripe-pricing-table>
-
-              <script
-                async
-                src="https://js.stripe.com/v3/pricing-table.js"
-              ></script> */}
-              <stripe-pricing-table
-                pricing-table-id="prctbl_1QfokrE43xWZCXH3U7IfKTYf"
-                publishable-key="pk_test_51QX5gGE43xWZCXH3LJ2HhFEboXxnv9Xas2Nnwm2vCmvyijbxXIV17UrkpTRgVELKcAsFUNYakl1nGFaItc0oC51N00jOTphvFi"
               ></stripe-pricing-table>
             </div>
           )}

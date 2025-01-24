@@ -87,9 +87,9 @@ function SubscribeView() {
       <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
       {/* 
       <stripe-pricing-table
-        pricing-table-id="prctbl_1QfSw5E43xWZCXH3onBilnVu"
+        pricing-table-id={process.env.PRICING_TABLE}
         customer-email={userEmail}
-        publishable-key="pk_live_51QX5gGE43xWZCXH3ivdyoCspjeEUT2TVUCeNyAvwykKpSw95ZayoUndnephVBzkySNaqtjvJ0JVjTU4KEW7GLdN100uKErd8KG"
+        publishable-key={process.env.STRIPE_PK_KEY}
       ></stripe-pricing-table> */}
       {/* ( customerID && customerSecret && (
       <stripe-pricing-table

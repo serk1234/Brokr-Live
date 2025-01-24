@@ -4,10 +4,10 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
 import MainSettingsSection from "./main-settings-section";
-import PrivacyPolicyModal from "./privacypolicy";
-import SecondarySettingsSection from "./secondary-settings-section";
 import ModernButton from "./modern-button";
 import Popup from "./Popup";
+import PrivacyPolicyModal from "./privacypolicy";
+import SecondarySettingsSection from "./secondary-settings-section";
 
 function SettingsTab({
   dataroomName,
@@ -37,7 +37,6 @@ function SettingsTab({
   // Fetch the dataroom details
   // Popup message
 
-
   useEffect(() => {
     const fetchDataroomDetails = async () => {
       try {
@@ -48,7 +47,6 @@ function SettingsTab({
           .single();
 
         if (error) {
-
           console.error("Error fetching dataroom details:", error.message);
         } else if (data) {
           setLocalStatus(data.status || "Live");
@@ -59,7 +57,10 @@ function SettingsTab({
         }
       } catch (err) {
         setPopupMessage("Unexpected error fetching dataroom details.");
-        console.error("Unexpected error fetching dataroom details:", err.message);
+        console.error(
+          "Unexpected error fetching dataroom details:",
+          err.message
+        );
       }
     };
 
@@ -100,7 +101,6 @@ function SettingsTab({
       setLoading(false);
     }
   };
-
 
   // Handle toggling lock status (local state only)
   const handleToggleLockStatus = () => {
@@ -225,7 +225,7 @@ function SettingsTab({
             <ModernButton
               onClick={handleToggleLockStatus}
               className={`w-full sm:w-auto px-4 py-2 ${filesLocked ? "bg-green-500" : "bg-amber-400"
-                } rounded hover:${filesLocked ? "bg-green-600" : "bg-amber-500"
+                } rounded hover:${filesLocked ? "bg-amber-600" : "bg-amber-500"
                 } transition`}
               disabled={loading}
             >

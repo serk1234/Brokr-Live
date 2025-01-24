@@ -3,13 +3,15 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../../src/app/supabaseClient";
 import ModernButton from "./modern-button";
+import Popup from "./Popup";
 
 function SecondarySettingsSection({ dataroomId }) {
   const [ndaText, setNdaText] = useState(""); // Store NDA template content
   const [ndaOption, setNdaOption] = useState("first"); // Default to "First Access"
   const [isOpen, setIsOpen] = useState(false); // Dropdown open state
   const [loading, setLoading] = useState(false); // Loading state
-  const [showNdaModal, setShowNdaModal] = useState(false); // Modal open state
+  const [showNdaModal, setShowNdaModal] = useState(false);
+  const [popupMessage, setPopupMessage] = useState(""); // Modal open state
 
   const ndaOptions = {
     never: "Never",
@@ -63,10 +65,13 @@ function SecondarySettingsSection({ dataroomId }) {
 
       if (error) {
         console.error("Error updating NDA status:", error.message);
-        alert("Failed to update NDA status. Please try again.");
+        setPopupMessage("Failed to update NDA status. Please try again."); // Show error message
+      } else {
+        setPopupMessage("NDA status updated successfully!"); // Show success message
       }
     } catch (err) {
       console.error("Unexpected error updating NDA status:", err.message);
+      setPopupMessage("Unexpected error. Please try again.");
     }
   };
 
@@ -86,13 +91,14 @@ function SecondarySettingsSection({ dataroomId }) {
 
       if (error) {
         console.error("Error saving NDA template:", error.message);
-        alert("Failed to save changes. Please try again.");
+        setPopupMessage("Failed to save changes. Please try again."); // Show error message
       } else {
-        alert("Template updated successfully!"); // Show success message
+        setPopupMessage("Template updated successfully!"); // Show success message
         setShowNdaModal(false); // Close the modal
       }
     } catch (err) {
       console.error("Unexpected error saving NDA template:", err.message);
+      setPopupMessage("Unexpected error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -183,6 +189,12 @@ function SecondarySettingsSection({ dataroomId }) {
             </div>
           </div>
         </div>
+      )}
+      {popupMessage && (
+        <Popup
+          message={popupMessage}
+          onClose={() => setPopupMessage("")} // Clear the message to hide the popup
+        />
       )}
     </div>
   );

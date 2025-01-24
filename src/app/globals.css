@@ -74,6 +74,12 @@ header {
     }
 }
 
+/* Ensure file name is truncated with ellipsis */
+/* Default for Mobile: Stack elements vertically */
+
+
+
+
 
 /* Apply truncation specifically on mobile devices */
 @media (max-width: 768px) {
