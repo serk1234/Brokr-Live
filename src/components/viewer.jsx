@@ -96,10 +96,6 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
 }
 
 export default Viewer;
-<<<<<<< HEAD
-=======
-
-/* CSS for mobile optimizations */
 <style jsx>{`
   @media (max-width: 640px) {
     .flex-wrap {
@@ -118,4 +114,3 @@ export default Viewer;
     }
   }
 `}</style>;
->>>>>>> 02798c5dc23cfece0620861f5cee8d9c2daa40a4

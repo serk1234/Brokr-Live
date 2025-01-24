@@ -57,6 +57,7 @@ function Dashboard({
         setFetchedActiveUsers(dataroomData.invited_users.filter((user) => user.status === "active"));
 
         // Process document data
+        // Process document data
         const formattedDocuments = dataroomData.file_uploads.map((file) => {
           const downloads = dataroomData.file_downloads.filter(
             (download) => download.file_id === file.id
@@ -65,9 +66,14 @@ function Dashboard({
           return {
             name: file.new_name || file.name, // Fallback to original name if new_name is empty
             downloads,
-            dateAdded: new Date(file.upload_at).toLocaleDateString(),
+            dateAdded: new Date(file.upload_at).toLocaleDateString("en-US", {
+              month: "2-digit",
+              day: "2-digit",
+              year: "numeric",
+            }),
           };
         });
+
 
         setDocumentList(formattedDocuments);
       } catch (err) {
