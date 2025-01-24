@@ -717,7 +717,6 @@ function Contentmanager({ items = [], dataroomId }) {
                   </div>
                 </div>
               </div>
-
               <div className="bg-black/5 rounded-xl p-6 flex justify-center items-center">
                 {fileURL ? (
                   selectedFile?.name?.match(/\.(jpg|jpeg|png|gif)$/i) ? (
@@ -727,26 +726,22 @@ function Contentmanager({ items = [], dataroomId }) {
                       className="max-w-full max-h-[80vh] object-contain"
                     />
                   ) : (
-                    <div>
+                    <div className="w-full h-full border-none rounded-lg">
                       <iframe
                         src={fileURL}
                         title="File Viewer"
                         className="w-full h-full border-none rounded-lg"
                         style={{ minHeight: "500px" }}
                       />
-                      <object
+                      {/*     <object
+                        style={{ minHeight: "250px" }}
                         data={fileURL}
-                        type="application/pdf"
+                        type={
+                          "application/" + selectedFile.name.split(".").pop()
+                        }
                         width="100%"
                         height="100%"
-                      >
-                        <p>
-                          Alternative text - include a link{" "}
-                          <a href="http://africau.edu/images/default/sample.pdf">
-                            to the PDF!
-                          </a>
-                        </p>
-                      </object>
+                      ></object> */}
                     </div>
                   )
                 ) : (
