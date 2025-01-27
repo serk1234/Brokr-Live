@@ -1,6 +1,7 @@
 "use client";
 
 import { supabase } from "@/app/supabaseClient";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 function Dashboard({
@@ -12,30 +13,32 @@ function Dashboard({
   dataroomId,
   setActiveTab,
 }) {
+  const router = useRouter();
+
   const [totalUser, setTotalUser] = useState("Loading...");
   const [totalActiveUser, setTotalActiveUser] = useState("Loading...");
   const [totalDownloads, setTotalDownloads] = useState("Loading...");
   const [timeSpent, setTimeSpend] = useState("Loading...");
+  const [userEmail, setUserEmail] = useState("");
   const [documentList, setDocumentList] = useState([]);
   const [fetchedTeamMembers, setFetchedTeamMembers] = useState([]);
   const [fetchedActiveUsers, setFetchedActiveUsers] = useState([]);
 
-
-  useEffect(() => {
+  useEffect(async () => {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
     const invitedTo = router.query.invited_to;
-  
-    if (invitedTo) {
+    setUserEmail(session.user.email);
+
+    /*  if (invitedTo) {
       fetchDataroomDetails(invitedTo); // Highlight or show the specific dataroom
       fetchInvitedDatarooms(userEmail); // Refresh the invited datarooms
     } else {
       fetchInvitedDatarooms(userEmail); // Default fetch
-    }
+    } */
   }, [router.query.invited_to, userEmail]);
-  
-
-
-
-
 
   const handleViewClick = (section) => {
     setActiveTab(section);
@@ -70,8 +73,12 @@ function Dashboard({
         setTotalDownloads(totalDownloadCount.toString());
 
         // Set team members and active users
-        setFetchedTeamMembers(dataroomData.invited_users.filter((user) => user.role === "team"));
-        setFetchedActiveUsers(dataroomData.invited_users.filter((user) => user.status === "active"));
+        setFetchedTeamMembers(
+          dataroomData.invited_users.filter((user) => user.role === "team")
+        );
+        setFetchedActiveUsers(
+          dataroomData.invited_users.filter((user) => user.status === "active")
+        );
 
         // Process document data
         // Process document data
@@ -91,7 +98,6 @@ function Dashboard({
           };
         });
 
-
         setDocumentList(formattedDocuments);
       } catch (err) {
         console.error("Error fetching data:", err.message);
@@ -100,9 +106,6 @@ function Dashboard({
 
     fetchUserSessionAndData();
   }, [dataroomId]);
-
-
-
 
   return (
     <div className="bg-white text-black p-8 rounded-2xl">
@@ -116,19 +119,25 @@ function Dashboard({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6 mb-6">
         {/* Total Users */}
         <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
-          <div className="text-4xl font-light mb-4 text-gray-800">{totalUser}</div>
+          <div className="text-4xl font-light mb-4 text-gray-800">
+            {totalUser}
+          </div>
           <div className="text-gray-700 text-sm">Total Users</div>
         </div>
 
         {/* Active Users */}
         <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
-          <div className="text-4xl font-light mb-4 text-gray-800">{totalActiveUser}</div>
+          <div className="text-4xl font-light mb-4 text-gray-800">
+            {totalActiveUser}
+          </div>
           <div className="text-gray-700 text-sm">Active Users</div>
         </div>
 
         {/* Downloads */}
         <div className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
-          <div className="text-4xl font-light mb-4 text-gray-800">{totalDownloads}</div>
+          <div className="text-4xl font-light mb-4 text-gray-800">
+            {totalDownloads}
+          </div>
           <div className="text-gray-700 text-sm">Downloads</div>
         </div>
       </div>
@@ -197,7 +206,6 @@ function Dashboard({
                 </div>
               </div>
 
-
               <div className="mt-2 md:mt-0 flex items-center md:justify-end w-full md:w-auto">
                 <div
                   className="flex items-center space-x-1 text-base leading-none"
@@ -210,18 +218,12 @@ function Dashboard({
                   <span className="text-sm  ">Downloads</span>
                 </div>
               </div>
-
             </div>
           ))}
         </div>
       </div>
-
-
     </div>
-
   );
 }
-
-
 
 export default Dashboard;

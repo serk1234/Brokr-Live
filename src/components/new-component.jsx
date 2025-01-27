@@ -233,7 +233,9 @@ function NewComponent({ email }) {
               <h2 className="text-2xl font-medium">Subscription</h2>
               <ModernButton
                 text={isSubscribed ? "Manage" : "Subscribe"}
-                onClick={isSubscribed ? handleManageSubscription : handleSubscribe}
+                onClick={
+                  isSubscribed ? handleManageSubscription : handleSubscribe
+                }
               />
             </div>
           </div>
@@ -242,12 +244,8 @@ function NewComponent({ email }) {
           {/* Subscription Popup */}
           {/* Subscription Popup */}
           {!isSubscribed && showSubscribeTable && (
-            <div
-              className="subscribe-popup fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-            >
-              <div
-                className="bg-black w-full max-w-3xl p-6 rounded-xl shadow-xl border border-[#A3E636] relative h-auto"
-              >
+            <div className="subscribe-popup fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="bg-black w-full max-w-3xl p-6 rounded-xl shadow-xl border border-[#A3E636] relative h-auto">
                 <div className="relative">
                   <SubscribeView />
                   <button
@@ -261,9 +259,6 @@ function NewComponent({ email }) {
             </div>
           )}
         </>
-
-
-
 
         {/* Support Section */}
         <div className=" bg-[#f5f5f5] rounded-xl p-6 shadow-lg relative  border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
@@ -288,4 +283,3 @@ function NewComponent({ email }) {
 }
 
 export default NewComponent;
-

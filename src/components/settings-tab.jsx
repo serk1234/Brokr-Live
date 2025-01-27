@@ -56,7 +56,10 @@ function SettingsTab({
           setDataroomId(data.id); // Store dataroom ID
         }
       } catch (err) {
-        console.error("Unexpected error fetching dataroom details:", err.message);
+        console.error(
+          "Unexpected error fetching dataroom details:",
+          err.message
+        );
       }
     };
 
@@ -97,7 +100,37 @@ function SettingsTab({
 
   // Handle toggling lock status (local state only)
   const handleToggleLockStatus = () => {
-    setFilesLocked(!filesLocked); // Only update local state
+    toggleLockAll();
+    // setFilesLocked(!filesLocked); // Only update local state
+  };
+
+  const lockUploadFiles = async (id) => {
+    // Update visibility for all files in the database
+    const { error } = await supabase
+      .from("file_uploads")
+      .update({ locked: !filesLocked }) // Set visibility to false
+      .eq("dataroom_id", dataroomId);
+    if (error) throw error;
+  };
+  const toggleLockAll = async () => {
+    lockUploadFiles(dataroomId);
+    try {
+      const { error1 } = await supabase
+        .from("datarooms")
+        .update({ files_locked: !filesLocked }) // Toggle visibility
+        //  .eq("name", file.name)
+        .eq("id", dataroomId);
+
+      if (error1) throw error1;
+
+      setFilesLocked(!filesLocked);
+
+      // Update local state
+      // setFiles([]);
+      console.log("All files locked and removed from user view.");
+    } catch (err) {
+      console.error("Error locking all files:", err.message);
+    }
   };
 
   // Handle dataroom deletion
@@ -176,7 +209,6 @@ function SettingsTab({
           setOrganization={setOrganizationName}
         />
 
-
         {/* Secondary Settings Section */}
         <SecondarySettingsSection
           dataroomId={dataroomId}
@@ -219,9 +251,11 @@ function SettingsTab({
             </div>
             <ModernButton
               onClick={handleToggleLockStatus}
-              className={`w-full sm:w-auto px-4 py-2 ${filesLocked ? "bg-green-500" : "bg-amber-400"
-                } rounded hover:${filesLocked ? "bg-amber-600" : "bg-amber-500"
-                } transition`}
+              className={`w-full sm:w-auto px-4 py-2 ${
+                filesLocked ? "bg-green-500" : "bg-amber-400"
+              } rounded hover:${
+                filesLocked ? "bg-amber-600" : "bg-amber-500"
+              } transition`}
               disabled={loading}
             >
               <i className={`fas ${filesLocked ? "fa-unlock" : "fa-lock"}`}></i>{" "}
