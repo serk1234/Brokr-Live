@@ -207,6 +207,42 @@ function Usermanagement() {
       setLoading(false);
     }
   };
+
+  const handleRemoveUser = async (email) => {
+    try {
+      setLoading(true); // Show a loading indicator during the deletion process
+
+      // Delete the user from the `invited_users` table
+      const { error } = await supabase
+        .from("invited_users")
+        .delete()
+        .eq("email", email) // Match the email
+        .eq("dataroom_id", router.query.id); // Ensure it's scoped to the correct dataroom
+
+      if (error) {
+        console.error("Error removing user:", error.message);
+        setSuccessMessage("Failed to remove the user. Please try again.");
+        setShowPopup(true); // Display a popup with the error message
+        return;
+      }
+
+      // Refresh the user lists after successful deletion
+      fetchUsers(router.query.id);
+
+      setSuccessMessage("User removed successfully!");
+      setShowPopup(true); // Display a success popup
+    } catch (err) {
+      console.error("Unexpected error removing user:", err.message);
+      setSuccessMessage("An error occurred while removing the user.");
+      setShowPopup(true); // Display a popup with the error
+    } finally {
+      setLoading(false); // Hide the loading indicator
+    }
+  };
+
+
+
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -238,59 +274,71 @@ function Usermanagement() {
             activeUsers.map((user) => (
               <div
                 key={user.email}
-                className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4"
+                className="bg-[#f5f5f5] p-4 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4 flex flex-col sm:flex-row items-center sm:justify-between gap-2"
               >
-                <div className="flex flex-wrap justify-between items-center gap-2">
-                  {/* Email Section */}
-                  <div className="font-medium w-full md:w-auto">{user.email}</div>
+                {/* User Email */}
+                <div className="font-medium text-center sm:text-left w-full sm:w-auto">
+                  {user.email}
+                </div>
 
-                  {/* Active Since Section */}
-                  <div className="text-gray-500 text-sm w-full md:w-auto md:text-right">
+                {/* Invited At and Remove Button */}
+                <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+                  <div className="text-gray-500 text-sm text-center sm:text-right">
                     Active Since:{" "}
-                    {`${new Date(user.invited_at).toLocaleDateString(
-                      "en-US"
-                    )} ${new Date(user.invited_at).toLocaleTimeString(
-                      "en-US",
-                      {
-                        hour: "numeric",
-                        minute: "numeric",
-                        second: "numeric",
-                        hour12: true,
-                      }
-
-
-                    )}`}
+                    {`${new Date(user.invited_at).toLocaleDateString("en-US")} ${new Date(
+                      user.invited_at
+                    ).toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "numeric",
+                      second: "numeric",
+                      hour12: true,
+                    })}`}
                   </div>
+                  <button
+                    className="w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full hover:bg-red-600 transition"
+                    onClick={() => handleRemoveUser(user.email)}
+                  >
+                    <i className="fas fa-trash-alt"></i>
+                  </button>
                 </div>
               </div>
+
+
             ))}
+
           {activeTab === "invited" &&
             invitedUsers.map((user) => (
               <div
                 key={user.email}
-                className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4"
+                className="bg-[#f5f5f5] p-4 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4 flex flex-col sm:flex-row items-center sm:justify-between gap-2"
               >
-                <div className="flex flex-wrap justify-between items-center gap-2">
-                  {/* Email Section */}
-                  <div className="font-medium w-full md:w-auto">{user.email}</div>
+                {/* User Email */}
+                <div className="font-medium text-center sm:text-left w-full sm:w-auto">
+                  {user.email}
+                </div>
 
-                  {/* Invited At Section */}
-                  <div className="text-gray-500 text-sm w-full md:w-auto md:text-right">
+                {/* Invited At and Remove Button */}
+                <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+                  <div className="text-gray-500 text-sm text-center sm:text-right">
                     Invited At:{" "}
-                    {`${new Date(user.invited_at).toLocaleDateString(
-                      "en-US"
-                    )} ${new Date(user.invited_at).toLocaleTimeString(
-                      "en-US",
-                      {
-                        hour: "numeric",
-                        minute: "numeric",
-                        second: "numeric",
-                        hour12: true,
-                      }
-                    )}`}
+                    {`${new Date(user.invited_at).toLocaleDateString("en-US")} ${new Date(
+                      user.invited_at
+                    ).toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "numeric",
+                      second: "numeric",
+                      hour12: true,
+                    })}`}
                   </div>
+                  <button
+                    className="w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full hover:bg-red-600 transition"
+                    onClick={() => handleRemoveUser(user.email)}
+                  >
+                    <i className="fas fa-trash-alt"></i>
+                  </button>
                 </div>
               </div>
+
             ))}
         </div>
 
