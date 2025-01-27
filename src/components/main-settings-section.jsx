@@ -20,8 +20,8 @@ function MainSettingsSection({
           <input
             type="text"
             name="name"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
+            value={displayName} // Bind to displayName
+            onChange={(e) => setDisplayName(e.target.value)} // Update displayName
             className="w-full px-3 py-2 border border-black rounded shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
           />
         </div>

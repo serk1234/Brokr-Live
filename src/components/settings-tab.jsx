@@ -42,61 +42,54 @@ function SettingsTab({
       try {
         const { data, error } = await supabase
           .from("datarooms")
-          .select("id, status, organization, files_locked")
-          .eq("name", dataroomName)
+          .select("id, name, status, organization, files_locked")
+          .eq("name", dataroomName) // Fetch by the dataroom name
           .single();
 
         if (error) {
           console.error("Error fetching dataroom details:", error.message);
         } else if (data) {
           setLocalStatus(data.status || "Live");
-          setDataroomId(data.id);
-          setDisplayStatus(data.status || "Live");
-          setOrganizationName(data.organization || ""); // Pre-fill organization name
-          setFilesLocked(data.files_locked || false); // Set the initial lock status
+          setOrganizationName(data.organization || "");
+          setFilesLocked(data.files_locked || false);
+          setNewName(data.name || ""); // Sync updated name with local state
+          setDataroomId(data.id); // Store dataroom ID
         }
       } catch (err) {
-        setPopupMessage("Unexpected error fetching dataroom details.");
-        console.error(
-          "Unexpected error fetching dataroom details:",
-          err.message
-        );
+        console.error("Unexpected error fetching dataroom details:", err.message);
       }
     };
 
     if (dataroomName) {
       fetchDataroomDetails();
-    } else {
-      setPopupMessage("No dataroom name provided.");
     }
-  }, [dataroomName, setDisplayStatus]);
+  }, [dataroomName]); //
 
   const handleSave = async () => {
     setLoading(true);
     try {
-      if (!dataroomName || !localStatus) {
-        setPopupMessage("Please ensure all fields are filled before saving.");
+      if (!newName || !localStatus) {
+        alert("Please ensure all fields are filled before saving.");
         return;
       }
 
       const { error } = await supabase
         .from("datarooms")
         .update({
+          name: newName, // Update the name
           status: localStatus,
-          name: dataroomName,
           organization: organizationName,
-          files_locked: filesLocked, // Save the updated lock status
         })
-        .eq("name", dataroomName);
+        .eq("id", dataroomId); // Use the unique ID for updates
 
       if (error) throw error;
 
+      setDataroomName(newName); // Update parent state
       setDisplayStatus(localStatus);
-      setDataroomName(dataroomName);
       setPopupMessage("Settings updated successfully!");
     } catch (err) {
-      setPopupMessage("Error saving changes.");
       console.error("Error saving changes:", err.message);
+      setPopupMessage("Error saving changes.");
     } finally {
       setLoading(false);
     }
@@ -175,12 +168,14 @@ function SettingsTab({
         {/* Main Settings Section */}
         <MainSettingsSection
           displayName={newName}
-          setDisplayName={setNewName}
+          setDisplayName={(value) => {
+            setNewName(value); // Update local title name
+            setDataroomName(value); // Sync with parent dataroom name
+          }}
           organization={organizationName}
           setOrganization={setOrganizationName}
-          displayStatus={localStatus}
-          setDisplayStatus={setLocalStatus}
         />
+
 
         {/* Secondary Settings Section */}
         <SecondarySettingsSection
