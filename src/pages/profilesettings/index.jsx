@@ -54,7 +54,7 @@ function MainComponent() {
           },
           body: JSON.stringify({
             customerId,
-            returnUrl: "https://brokr.app", // Replace with your return URL
+            returnUrl: "https://brokr.app/pofilesettings", // Replace with your return URL
           }),
         });
 

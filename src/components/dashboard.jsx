@@ -57,6 +57,7 @@ function Dashboard({
         setFetchedActiveUsers(dataroomData.invited_users.filter((user) => user.status === "active"));
 
         // Process document data
+        // Process document data
         const formattedDocuments = dataroomData.file_uploads.map((file) => {
           const downloads = dataroomData.file_downloads.filter(
             (download) => download.file_id === file.id
@@ -65,9 +66,14 @@ function Dashboard({
           return {
             name: file.new_name || file.name, // Fallback to original name if new_name is empty
             downloads,
-            dateAdded: new Date(file.upload_at).toLocaleDateString(),
+            dateAdded: new Date(file.upload_at).toLocaleDateString("en-US", {
+              month: "2-digit",
+              day: "2-digit",
+              year: "numeric",
+            }),
           };
         });
+
 
         setDocumentList(formattedDocuments);
       } catch (err) {
@@ -177,14 +183,14 @@ function Dashboard({
 
               <div className="mt-2 md:mt-0 flex items-center md:justify-end w-full md:w-auto">
                 <div
-                  className="flex items-center space-x-1 font-bold text-base leading-none"
+                  className="flex items-center space-x-1 text-base leading-none"
                   style={{
                     padding: "2px 4px", // Add a slight padding to ensure consistent spacing
                     lineHeight: "1.2", // Ensure proper line height for vertical alignment
                   }}
                 >
-                  <span className="font-bold text-base">{doc.downloads}</span>
-                  <span className="text-sm font-bold ">Downloads</span>
+                  <span className=" text-base">{doc.downloads}</span>
+                  <span className="text-sm  ">Downloads</span>
                 </div>
               </div>
 

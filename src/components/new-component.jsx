@@ -13,6 +13,8 @@ function NewComponent({ email }) {
   const [newOrg, setNewOrg] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showPricingTable, setShowPricingTable] = useState(false);
+
+  const handleCloseSubscribe = () => setshowSubscribeTable(false);
   const router = useRouter();
   const [showPopup, setShowPopup] = useState(false); // State to manage popup visibility
   const [popupMessage, setPopupMessage] = useState("");
@@ -32,7 +34,7 @@ function NewComponent({ email }) {
         },
         body: JSON.stringify({
           customerId,
-          returnUrl: "https://brokr.app/", // Replace with your return URL
+          returnUrl: "https://brokr.app/profilesettings", // Replace with your return URL
         }),
       });
 
@@ -225,34 +227,38 @@ function NewComponent({ email }) {
         </div>
 
         {/* Subscription Section */}
-        <div className=" bg-[#f5f5f5] rounded-xl p-6 shadow-lg relative mb-6 border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
-          <div className="flex items-center justify-between gap-4 mb-6">
-            <h2 className="text-2xl font-medium">Subscription</h2>
-            <ModernButton
-              text={isSubscribed ? "Manage" : "Subscribe"}
-              onClick={
-                isSubscribed ? handleManageSubscription : handleSubscribe
-              }
-            />
+        <>
+          <div className="bg-[#f5f5f5] rounded-xl p-6 shadow-lg relative mb-6 border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <h2 className="text-2xl font-medium">Subscription</h2>
+              <ModernButton
+                text={isSubscribed ? "Manage" : "Subscribe"}
+                onClick={
+                  isSubscribed ? handleManageSubscription : handleSubscribe
+                }
+              />
+            </div>
           </div>
+
+          {/* Subscription Popup */}
+          {/* Subscription Popup */}
+          {/* Subscription Popup */}
           {!isSubscribed && showSubscribeTable && (
-            <SubscribeView></SubscribeView>
-          )}
-
-          {showPricingTable && (
-            <div className="mt-4">
-              <script
-                async
-                src="https://js.stripe.com/v3/pricing-table.js"
-              ></script>
-
-              <stripe-pricing-table
-                pricing-table-id="prctbl_1QfSw5E43xWZCXH3onBilnVu"
-                publishable-key="pk_live_51QX5gGE43xWZCXH3ivdyoCspjeEUT2TVUCeNyAvwykKpSw95ZayoUndnephVBzkySNaqtjvJ0JVjTU4KEW7GLdN100uKErd8KG"
-              ></stripe-pricing-table>
+            <div className="subscribe-popup fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="bg-black w-full max-w-3xl p-6 rounded-xl shadow-xl border border-[#A3E636] relative h-auto">
+                <div className="relative">
+                  <SubscribeView />
+                  <button
+                    onClick={handleCloseSubscribe}
+                    className="absolute top-4 right-4 text-white bg-red-500 px-3 py-1 rounded-full hover:bg-red-600 transition"
+                  >
+                    X
+                  </button>
+                </div>
+              </div>
             </div>
           )}
-        </div>
+        </>
 
         {/* Support Section */}
         <div className=" bg-[#f5f5f5] rounded-xl p-6 shadow-lg relative  border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">

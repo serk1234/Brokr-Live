@@ -22,6 +22,24 @@ function MainComponent() {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (user) {
         setUserEmail(user.email);
+
+        // Check for dataroom_id in query
+        const dataroomId = router.query.dataroom_id;
+
+        if (dataroomId) {
+          const { data: dataroomData, error: dataroomError } = await supabase
+            .from("datarooms")
+            .select("*")
+            .eq("id", dataroomId)
+            .single();
+
+          if (dataroomError) {
+            console.error("Error fetching specific dataroom:", dataroomError.message);
+          } else {
+            setUserDatarooms((prev) => [...prev, dataroomData]);
+          }
+        }
+
         fetchUserDatarooms(user.email);
         fetchInvitedDatarooms(user.email);
       } else if (error) {
@@ -30,7 +48,8 @@ function MainComponent() {
     };
 
     fetchUser();
-  }, []);
+  }, [router.query.dataroom_id]);
+
 
   // Fetch user's own datarooms
   const fetchUserDatarooms = async (email) => {

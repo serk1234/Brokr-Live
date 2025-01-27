@@ -104,6 +104,39 @@ function SubscribeView() {
       <HeaderLive email={userEmail} />
       <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
 
+
+
+      <div className="flex justify-center items-center mt-10 gap-6 flex-wrap">
+        {/* Basic Plan */}
+        <div className="flex-1 max-w-sm bg-gray-800 text-black p-6 rounded-xl">
+          <h2 className="text-xl font-bold">Basic</h2>
+          <p className="text-3xl font-bold mt-4">
+            US$1,000 <span className="text-sm">per month</span>
+          </p>
+          <p className="mt-2 text-sm">US$12,000 billed annually</p>
+          <button className="mt-6 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
+            Subscribe
+          </button>
+        </div>
+
+        {/* Premium Plan */}
+        <div className="flex-1 max-w-sm bg-gray-800 text-black p-6 rounded-xl">
+          <h2 className="text-xl font-bold">Premium</h2>
+          <span className="inline-block px-2 py-1 mt-2 bg-yellow-500 text-black text-xs rounded">
+            Most Popular
+          </span>
+          <p className="text-3xl font-bold mt-4">
+            US$1,500 <span className="text-sm">per month</span>
+          </p>
+          <p className="mt-2 text-sm">US$18,000 billed annually</p>
+          <button className="mt-6 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
+            Subscribe
+          </button>
+        </div>
+      </div>
+
+
+
       {customerID && customerSecret && (
         <stripe-pricing-table
           customer-session-client-secret={customerSecret}

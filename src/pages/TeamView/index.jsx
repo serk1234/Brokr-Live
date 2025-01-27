@@ -117,7 +117,7 @@ function MainComponent() {
 
         {/* Main Section */}
         <div className="flex-1 bg-white p-4 sm:p-6">
-          {activeTab === "settings" && (
+          {activeTab === "settings" && dataroomId && displayName && (
             <SettingsTab
               dataroomName={displayName}
               setDataroomName={setDisplayName}

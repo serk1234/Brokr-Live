@@ -1,6 +1,5 @@
 "use client";
-import { useState } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
+import { pdfjs } from "react-pdf";
 pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
@@ -100,8 +99,6 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
 }
 
 export default Viewer;
-
-/* CSS for mobile optimizations */
 <style jsx>{`
   @media (max-width: 640px) {
     .flex-wrap {
@@ -120,23 +117,3 @@ export default Viewer;
     }
   }
 `}</style>;
-
-function PdfViewwer({ url }) {
-  const [numPages, setNumPages] = useState();
-  const [pageNumber, setPageNumber] = useState(1);
-
-  function onDocumentLoadSuccess(numPages) {
-    setNumPages(numPages);
-  }
-
-  return (
-    <div>
-      <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
-        <Page pageNumber={pageNumber} />
-      </Document>
-      <p>
-        Page {pageNumber} of {numPages}
-      </p>
-    </div>
-  );
-}

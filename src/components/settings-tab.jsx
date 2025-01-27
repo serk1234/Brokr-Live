@@ -42,21 +42,20 @@ function SettingsTab({
       try {
         const { data, error } = await supabase
           .from("datarooms")
-          .select("id, status, organization, files_locked")
-          .eq("name", dataroomName)
+          .select("id, name, status, organization, files_locked")
+          .eq("name", dataroomName) // Fetch by the dataroom name
           .single();
 
         if (error) {
           console.error("Error fetching dataroom details:", error.message);
         } else if (data) {
           setLocalStatus(data.status || "Live");
-          setDataroomId(data.id);
-          setDisplayStatus(data.status || "Live");
-          setOrganizationName(data.organization || ""); // Pre-fill organization name
-          setFilesLocked(data.files_locked || false); // Set the initial lock status
+          setOrganizationName(data.organization || "");
+          setFilesLocked(data.files_locked || false);
+          setNewName(data.name || ""); // Sync updated name with local state
+          setDataroomId(data.id); // Store dataroom ID
         }
       } catch (err) {
-        setPopupMessage("Unexpected error fetching dataroom details.");
         console.error(
           "Unexpected error fetching dataroom details:",
           err.message
@@ -66,37 +65,34 @@ function SettingsTab({
 
     if (dataroomName) {
       fetchDataroomDetails();
-    } else {
-      setPopupMessage("No dataroom name provided.");
     }
-  }, [dataroomName, setDisplayStatus]);
+  }, [dataroomName]); //
 
   const handleSave = async () => {
     setLoading(true);
     try {
-      if (!dataroomName || !localStatus) {
-        setPopupMessage("Please ensure all fields are filled before saving.");
+      if (!newName || !localStatus) {
+        alert("Please ensure all fields are filled before saving.");
         return;
       }
 
       const { error } = await supabase
         .from("datarooms")
         .update({
+          name: newName, // Update the name
           status: localStatus,
-          name: dataroomName,
           organization: organizationName,
-          files_locked: filesLocked, // Save the updated lock status
         })
-        .eq("name", dataroomName);
+        .eq("id", dataroomId); // Use the unique ID for updates
 
       if (error) throw error;
 
+      setDataroomName(newName); // Update parent state
       setDisplayStatus(localStatus);
-      setDataroomName(dataroomName);
       setPopupMessage("Settings updated successfully!");
     } catch (err) {
-      setPopupMessage("Error saving changes.");
       console.error("Error saving changes:", err.message);
+      setPopupMessage("Error saving changes.");
     } finally {
       setLoading(false);
     }
@@ -104,7 +100,42 @@ function SettingsTab({
 
   // Handle toggling lock status (local state only)
   const handleToggleLockStatus = () => {
+    toggleLockAll();
     setFilesLocked(!filesLocked); // Only update local state
+  };
+
+  const lockUploadFiles = async (id) => {
+    // Update visibility for all files in the database
+    const { error } = await supabase
+      .from("file_uploads")
+      .update({ locked: !isLocked }) // Set visibility to false
+      .eq("dataroom_id", dataroomId);
+    if (error) throw error;
+  };
+  const toggleLockAll = async () => {
+    lockUploadFiles(dataroomId);
+    try {
+      const { error1 } = await supabase
+        .from("datarooms")
+        .update({ files_locked: !isLocked }) // Toggle visibility
+        //  .eq("name", file.name)
+        .eq("id", dataroomId);
+
+      if (error1) throw error1;
+      setFiles(
+        files.map((e) => {
+          e.locked = !isLocked;
+          return e;
+        })
+      );
+      setIsLocked(!isLocked);
+
+      // Update local state
+      // setFiles([]);
+      console.log("All files locked and removed from user view.");
+    } catch (err) {
+      console.error("Error locking all files:", err.message);
+    }
   };
 
   // Handle dataroom deletion
@@ -137,12 +168,12 @@ function SettingsTab({
 
       if (error) throw error;
 
-      alert("Dataroom deleted successfully!");
+      setPopupMessage("Dataroom deleted successfully!");
       setShowDeleteModal(false);
       router.push("/dashboard"); // Redirect to the dashboard
     } catch (err) {
       console.error("Error deleting dataroom:", err.message);
-      alert("Error deleting dataroom. Please try again.");
+      setPopupMessage("Error deleting dataroom. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -175,11 +206,12 @@ function SettingsTab({
         {/* Main Settings Section */}
         <MainSettingsSection
           displayName={newName}
-          setDisplayName={setNewName}
+          setDisplayName={(value) => {
+            setNewName(value); // Update local title name
+            setDataroomName(value); // Sync with parent dataroom name
+          }}
           organization={organizationName}
           setOrganization={setOrganizationName}
-          displayStatus={localStatus}
-          setDisplayStatus={setLocalStatus}
         />
 
         {/* Secondary Settings Section */}
@@ -224,9 +256,11 @@ function SettingsTab({
             </div>
             <ModernButton
               onClick={handleToggleLockStatus}
-              className={`w-full sm:w-auto px-4 py-2 ${filesLocked ? "bg-green-500" : "bg-amber-400"
-                } rounded hover:${filesLocked ? "bg-amber-600" : "bg-amber-500"
-                } transition`}
+              className={`w-full sm:w-auto px-4 py-2 ${
+                filesLocked ? "bg-green-500" : "bg-amber-400"
+              } rounded hover:${
+                filesLocked ? "bg-amber-600" : "bg-amber-500"
+              } transition`}
               disabled={loading}
             >
               <i className={`fas ${filesLocked ? "fa-unlock" : "fa-lock"}`}></i>{" "}
