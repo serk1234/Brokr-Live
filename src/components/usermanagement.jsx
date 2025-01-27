@@ -274,71 +274,71 @@ function Usermanagement() {
             activeUsers.map((user) => (
               <div
                 key={user.email}
-                className="bg-[#f5f5f5] p-4 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4 flex flex-col sm:flex-row items-center sm:justify-between gap-2"
+                className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4"
               >
-                {/* User Email */}
-                <div className="font-medium text-center sm:text-left w-full sm:w-auto">
-                  {user.email}
-                </div>
+                <div className="flex flex-wrap justify-between items-center gap-2">
+                  {/* Email Section */}
+                  <div className="font-medium w-full md:w-auto">{user.email}</div>
 
-                {/* Invited At and Remove Button */}
-                <div className="flex items-center justify-between w-full sm:w-auto gap-4">
-                  <div className="text-gray-500 text-sm text-center sm:text-right">
+                  {/* Active Since Section */}
+                  <div className="text-gray-500 text-sm w-full md:w-auto md:text-right">
                     Active Since:{" "}
-                    {`${new Date(user.invited_at).toLocaleDateString("en-US")} ${new Date(
-                      user.invited_at
-                    ).toLocaleTimeString("en-US", {
-                      hour: "numeric",
-                      minute: "numeric",
-                      second: "numeric",
-                      hour12: true,
-                    })}`}
+                    {`${new Date(user.invited_at).toLocaleDateString(
+                      "en-US"
+                    )} ${new Date(user.invited_at).toLocaleTimeString(
+                      "en-US",
+                      {
+                        hour: "numeric",
+                        minute: "numeric",
+                        second: "numeric",
+                        hour12: true,
+                      }
+
+
+                    )}`}
                   </div>
                   <button
-                    className="w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full hover:bg-red-600 transition"
+                    className="text-red-500 hover:text-red-700"
                     onClick={() => handleRemoveUser(user.email)}
                   >
-                    <i className="fas fa-trash-alt"></i>
+                    Remove
                   </button>
                 </div>
               </div>
-
-
             ))}
-
           {activeTab === "invited" &&
             invitedUsers.map((user) => (
               <div
                 key={user.email}
-                className="bg-[#f5f5f5] p-4 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4 flex flex-col sm:flex-row items-center sm:justify-between gap-2"
+                className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4"
               >
-                {/* User Email */}
-                <div className="font-medium text-center sm:text-left w-full sm:w-auto">
-                  {user.email}
-                </div>
+                <div className="flex flex-wrap justify-between items-center gap-2">
+                  {/* Email Section */}
+                  <div className="font-medium w-full md:w-auto">{user.email}</div>
 
-                {/* Invited At and Remove Button */}
-                <div className="flex items-center justify-between w-full sm:w-auto gap-4">
-                  <div className="text-gray-500 text-sm text-center sm:text-right">
+                  {/* Invited At Section */}
+                  <div className="text-gray-500 text-sm w-full md:w-auto md:text-right">
                     Invited At:{" "}
-                    {`${new Date(user.invited_at).toLocaleDateString("en-US")} ${new Date(
-                      user.invited_at
-                    ).toLocaleTimeString("en-US", {
-                      hour: "numeric",
-                      minute: "numeric",
-                      second: "numeric",
-                      hour12: true,
-                    })}`}
+                    {`${new Date(user.invited_at).toLocaleDateString(
+                      "en-US"
+                    )} ${new Date(user.invited_at).toLocaleTimeString(
+                      "en-US",
+                      {
+                        hour: "numeric",
+                        minute: "numeric",
+                        second: "numeric",
+                        hour12: true,
+                      }
+                    )}`}
                   </div>
                   <button
-                    className="w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full hover:bg-red-600 transition"
+                    className="text-red-500 hover:text-red-700"
                     onClick={() => handleRemoveUser(user.email)}
                   >
-                    <i className="fas fa-trash-alt"></i>
+                    Remove
                   </button>
                 </div>
               </div>
-
             ))}
         </div>
 
