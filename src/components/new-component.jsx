@@ -32,7 +32,7 @@ function NewComponent({ email }) {
         },
         body: JSON.stringify({
           customerId,
-          returnUrl: "https://example.com/account", // Replace with your return URL
+          returnUrl: "https://brokr.app/", // Replace with your return URL
         }),
       });
 

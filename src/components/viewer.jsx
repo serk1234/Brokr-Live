@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { Document, Page } from "react-pdf";
+import { Document, Page, pdfjs } from "react-pdf";
+pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
   return (
@@ -52,8 +53,7 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
         </div>
       </div>
       {/* Content Viewer */}
-      pdf viewwe
-      <div className="flex-grow bg-gray-50 rounded-lg border border-gray-200 overflow-hidden flex items-center justify-center">
+      <div className="pdf-container flex-grow bg-gray-50 rounded-lg border border-gray-200 overflow-hidden flex items-center justify-center">
         {selectedDocument.src ? (
           selectedDocument.name.match(/\.(jpg|jpeg|png|gif)$/i) ? (
             <img
@@ -65,11 +65,10 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
                 transformOrigin: "center",
               }}
             />
-          ) : false && selectedDocument.name.indexOf(".pdf") < 0 ? (
+          ) : true || selectedDocument.name.indexOf(".pdf") < 0 ? (
             <iframe
-              src={`${selectedDocument.src}#toolbar=0`}
+              src={`https://drive.google.com/viewerng/viewer?embedded=true&url=${selectedDocument.src}#page=2&toolbar=0&navpanes=0`}
               title="File Viewer"
-              className="w-full h-full"
               style={{
                 transform: `scale(${zoom / 100})`,
                 transformOrigin: "top center",
