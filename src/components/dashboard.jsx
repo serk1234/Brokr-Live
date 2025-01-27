@@ -1,6 +1,7 @@
 "use client";
 
 import { supabase } from "@/app/supabaseClient";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 function Dashboard({
@@ -12,30 +13,32 @@ function Dashboard({
   dataroomId,
   setActiveTab,
 }) {
+  const router = useRouter();
+
   const [totalUser, setTotalUser] = useState("Loading...");
   const [totalActiveUser, setTotalActiveUser] = useState("Loading...");
   const [totalDownloads, setTotalDownloads] = useState("Loading...");
   const [timeSpent, setTimeSpend] = useState("Loading...");
+  const [userEmail, setUserEmail] = useState("");
   const [documentList, setDocumentList] = useState([]);
   const [fetchedTeamMembers, setFetchedTeamMembers] = useState([]);
   const [fetchedActiveUsers, setFetchedActiveUsers] = useState([]);
 
-
-  useEffect(() => {
+  useEffect(async () => {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
     const invitedTo = router.query.invited_to;
-  
-    if (invitedTo) {
+    setUserEmail(session.user.email);
+
+    /*  if (invitedTo) {
       fetchDataroomDetails(invitedTo); // Highlight or show the specific dataroom
       fetchInvitedDatarooms(userEmail); // Refresh the invited datarooms
     } else {
       fetchInvitedDatarooms(userEmail); // Default fetch
-    }
+    } */
   }, [router.query.invited_to, userEmail]);
-  
-
-
-
-
 
   const handleViewClick = (section) => {
     setActiveTab(section);

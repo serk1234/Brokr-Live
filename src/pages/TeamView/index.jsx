@@ -17,7 +17,8 @@ import Usermanagement from "../../components/usermanagement";
 
 function MainComponent() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("dashboard");
+  // const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("users");
   const [displayName, setDisplayName] = useState("Loading...");
   const [teamCount, setTeamCount] = useState(0);
   const [newMessages, setNewMessages] = useState(0);

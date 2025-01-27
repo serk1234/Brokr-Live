@@ -101,14 +101,14 @@ function SettingsTab({
   // Handle toggling lock status (local state only)
   const handleToggleLockStatus = () => {
     toggleLockAll();
-    setFilesLocked(!filesLocked); // Only update local state
+    // setFilesLocked(!filesLocked); // Only update local state
   };
 
   const lockUploadFiles = async (id) => {
     // Update visibility for all files in the database
     const { error } = await supabase
       .from("file_uploads")
-      .update({ locked: !isLocked }) // Set visibility to false
+      .update({ locked: !filesLocked }) // Set visibility to false
       .eq("dataroom_id", dataroomId);
     if (error) throw error;
   };
@@ -117,18 +117,13 @@ function SettingsTab({
     try {
       const { error1 } = await supabase
         .from("datarooms")
-        .update({ files_locked: !isLocked }) // Toggle visibility
+        .update({ files_locked: !filesLocked }) // Toggle visibility
         //  .eq("name", file.name)
         .eq("id", dataroomId);
 
       if (error1) throw error1;
-      setFiles(
-        files.map((e) => {
-          e.locked = !isLocked;
-          return e;
-        })
-      );
-      setIsLocked(!isLocked);
+
+      setFilesLocked(!filesLocked);
 
       // Update local state
       // setFiles([]);
