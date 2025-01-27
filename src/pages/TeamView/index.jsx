@@ -1,19 +1,20 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
 import { supabase } from "../../../src/app/supabaseClient";
-import "../../app/globals.css";
-import Contentmanager from "../../components/contentmanager";
-import Dashboard from "../../components/dashboard";
-import Footer from "../../components/footer";
 import HeaderLive from "../../components/header-live";
-import Menu from "../../components/menu";
-import SettingsTab from "../../components/settings-tab";
-import Teamactivity from "../../components/teamactivity";
-import Teamsecteam from "../../components/teamsecteam";
-import Title from "../../components/title";
 import Usermanagement from "../../components/usermanagement";
+import SettingsTab from "../../components/settings-tab";
+import Dashcompteam from "../../components/dashcompteam";
+import Contentmanager from "../../components/contentmanager";
+import Teamactivity from "../../components/teamactivity";
+import Footer from "../../components/footer";
+import Teamsecteam from "../../components/teamsecteam";
+import "../../app/globals.css";
+import Title from "../../components/title";
+import Menu from "../../components/menu";
+import Dashboard from "../../components/dashboard";
 
 function MainComponent() {
   const router = useRouter();
@@ -27,6 +28,8 @@ function MainComponent() {
   const [organization, setOrganization] = useState("");
   const [dataroomId, setDataroomId] = useState(null);
 
+
+
   // Fetch user session
   useEffect(() => {
     const fetchSession = async () => {
@@ -39,10 +42,7 @@ function MainComponent() {
         if (session?.user) {
           setUserEmail(session.user.email);
         } else {
-          console.error(
-            "No active session found",
-            error?.message || "No user session"
-          );
+          console.error("No active session found", error?.message || "No user session");
           setUserEmail("No User Found");
         }
       } catch (error) {
@@ -146,6 +146,7 @@ function MainComponent() {
       <div className="team-view-footer">
         <Footer />
       </div>
+
     </div>
   );
 }

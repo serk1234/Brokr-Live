@@ -137,12 +137,12 @@ function SettingsTab({
 
       if (error) throw error;
 
-      alert("Dataroom deleted successfully!");
+      setPopupMessage("Dataroom deleted successfully!");
       setShowDeleteModal(false);
       router.push("/dashboard"); // Redirect to the dashboard
     } catch (err) {
       console.error("Error deleting dataroom:", err.message);
-      alert("Error deleting dataroom. Please try again.");
+      setPopupMessage("Error deleting dataroom. Please try again.");
     } finally {
       setLoading(false);
     }

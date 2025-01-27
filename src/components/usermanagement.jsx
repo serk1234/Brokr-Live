@@ -4,7 +4,7 @@ import { supabase } from "../../src/app/supabaseClient";
 import ModernButton from "./modern-button";
 import { useRouter } from "next/router";
 import Popup from "./Popup";
-import { utcToZonedTime, format } from "date-fns-tz";
+import { format, utcToZonedTime } from "date-fns-tz";
 
 
 function Usermanagement() {
@@ -234,16 +234,8 @@ function Usermanagement() {
 
       <div>
         <div>
-
-
-// Inside the map for activeUsers
-          {activeUsers.map((user) => {
-            const activeSince = utcToZonedTime(user.invited_at, "America/New_York"); // Replace with the desired time zone
-            const formattedDate = format(activeSince, "MM/dd/yyyy h:mm:ss a zzz", {
-              timeZone: "America/New_York",
-            });
-
-            return (
+          {activeTab === "active" &&
+            activeUsers.map((user) => (
               <div
                 key={user.email}
                 className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4"
@@ -254,13 +246,24 @@ function Usermanagement() {
 
                   {/* Active Since Section */}
                   <div className="text-gray-500 text-sm w-full md:w-auto md:text-right">
-                    Active Since: {formattedDate}
+                    Active Since:{" "}
+                    {`${new Date(user.invited_at).toLocaleDateString(
+                      "en-US"
+                    )} ${new Date(user.invited_at).toLocaleTimeString(
+                      "en-US",
+                      {
+                        hour: "numeric",
+                        minute: "numeric",
+                        second: "numeric",
+                        hour12: true,
+                      }
+
+
+                    )}`}
                   </div>
                 </div>
               </div>
-            );
-          })}
-
+            ))}
           {activeTab === "invited" &&
             invitedUsers.map((user) => (
               <div

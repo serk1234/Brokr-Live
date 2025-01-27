@@ -22,6 +22,13 @@ function Teamsecteam({ dataroomName }) {
   const [creatorEmail, setCreatorEmail] = useState("");
   const router = useRouter();
 
+
+
+
+
+
+
+
   useEffect(() => {
     const fetchCreatorAndUsers = async () => {
       try {
@@ -176,9 +183,7 @@ function Teamsecteam({ dataroomName }) {
         <div className="flex items-center gap-3">
           <div className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">Team</div>
         </div>
-        <ModernButton onClick={() => setShowPopup(true)} className="px-4 py-2 bg-[#A3E636]">
-          <i className="fas fa-user-plus mr-2"></i>Add Team
-        </ModernButton>
+
       </div>
 
       {showPopup && (
@@ -281,4 +286,5 @@ function Teamsecteam({ dataroomName }) {
 }
 
 export default Teamsecteam;
+
 
