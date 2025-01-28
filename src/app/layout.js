@@ -17,7 +17,7 @@ export default function RootLayout({ children }) {
 
         {/* Open Graph Meta Tags */}
         <meta property="og:title" content="brokr" />
-        <meta property="og:description" content="A brief description of your website or product." />
+        <meta property="og:description" content="The Dataroom you actually want to use." />
         <meta property="og:image" content="https://brokr.app/brokr.png" />
         <meta property="og:url" content="https://brokr.app" />
         <meta property="og:type" content="website" />

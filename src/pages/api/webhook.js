@@ -57,6 +57,7 @@ export default async function handler(req, res) {
       }
     }
 
+    var apiResult;
     // Handle the event
     switch (event.type) {
       //   case "payment_intent.succeeded":
@@ -85,11 +86,11 @@ export default async function handler(req, res) {
         console.log(paymentIntent1122.id);
         console.log(paymentIntent1122);
         console.log(paymentIntent1122.plan);
-        var result = await supabase
+        apiResult = await supabase
           .from("subscriptions")
           .delete()
-          .eq("email", customerEmail);
-        console.log(result);
+          .eq("user_email", customerEmail);
+        console.log(apiResult);
         break;
 
       case "payment_intent.payment_failed":
@@ -101,7 +102,7 @@ export default async function handler(req, res) {
         console.log(`Unhandled event type ${event.type}`);
     }
 
-    res.json({ received: true });
+    res.json({ received: true, customerEmail, apiResult });
   } else {
   }
 }

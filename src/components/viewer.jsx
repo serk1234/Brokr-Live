@@ -1,4 +1,6 @@
 "use client";
+import { pdfjs } from "react-pdf";
+pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
   return (
@@ -7,7 +9,9 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-4 sm:gap-6">
         {/* File Information */}
         <div className="flex-1 min-w-[200px]">
-          <h2 className="text-lg font-semibold truncate">{selectedDocument.name}</h2>
+          <h2 className="text-lg font-semibold truncate">
+            {selectedDocument.name}
+          </h2>
           <p className="text-sm text-gray-600">
             Uploaded by {selectedDocument.uploadedBy || "Unknown"} on{" "}
             {new Date(selectedDocument.uploadAt).toLocaleDateString("en-US", {
@@ -47,9 +51,8 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
           </button>
         </div>
       </div>
-
-      {/* File Content Viewer */}
-      <div className="flex-grow bg-gray-50 rounded-lg border border-gray-200 overflow-hidden flex items-center justify-center">
+      {/* Content Viewer */}
+      <div className="pdf-container flex-grow bg-gray-50 rounded-lg border border-gray-200 overflow-hidden flex items-center justify-center">
         {selectedDocument.src ? (
           selectedDocument.name.match(/\.(jpg|jpeg|png|gif)$/i) ? (
             <img
@@ -61,20 +64,19 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
                 transformOrigin: "center",
               }}
             />
-          ) : selectedDocument.name.indexOf(".pdf") < 0 ? (
+          ) : true || selectedDocument.name.indexOf(".pdf") < 0 ? (
             <iframe
-              src={`${selectedDocument.src}#toolbar=0`}
+              src={`https://drive.google.com/viewerng/viewer?embedded=true&url=${selectedDocument.src}#page=2&toolbar=0&navpanes=0`}
               title="File Viewer"
-              className="w-full h-full"
               style={{
                 transform: `scale(${zoom / 100})`,
                 transformOrigin: "top center",
               }}
             ></iframe>
           ) : (
-            <object
+            /*  <object
               className="w-full h-full"
-              data={selectedDocument.src}
+              data={selectedDocument.src + "#toolbar=0"}
               type={"application/pdf"}
               width="100%"
               height="100%"
@@ -82,7 +84,8 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
                 transform: `scale(${zoom / 100})`,
                 transformOrigin: "top center",
               }}
-            ></object>
+            ></object> */
+            <PdfViewwer url={selectedDocument.src} />
           )
         ) : (
           <div className="text-center text-gray-500">

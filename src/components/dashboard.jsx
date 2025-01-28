@@ -20,23 +20,6 @@ function Dashboard({
   const [fetchedTeamMembers, setFetchedTeamMembers] = useState([]);
   const [fetchedActiveUsers, setFetchedActiveUsers] = useState([]);
 
-
-  useEffect(() => {
-    const invitedTo = router.query.invited_to;
-  
-    if (invitedTo) {
-      fetchDataroomDetails(invitedTo); // Highlight or show the specific dataroom
-      fetchInvitedDatarooms(userEmail); // Refresh the invited datarooms
-    } else {
-      fetchInvitedDatarooms(userEmail); // Default fetch
-    }
-  }, [router.query.invited_to, userEmail]);
-  
-
-
-
-
-
   const handleViewClick = (section) => {
     setActiveTab(section);
   };

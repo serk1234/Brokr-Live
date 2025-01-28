@@ -20,6 +20,8 @@ function Usermanagement() {
   const [showInvitePopup, setShowInvitePopup] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [confirmationPopup, setConfirmationPopup] = useState(false);
+  const [userToRemove, setUserToRemove] = useState(null);
   const router = useRouter();
 
   const handleRemoveEmailField = (index) => {
@@ -208,36 +210,37 @@ function Usermanagement() {
     }
   };
 
-  const handleRemoveUser = async (email) => {
-    try {
-      setLoading(true); // Show a loading indicator during the deletion process
+  const handleRemoveUser = async () => {
+    if (!userToRemove) return;
 
-      // Delete the user from the `invited_users` table
+    try {
+      setLoading(true);
+
       const { error } = await supabase
         .from("invited_users")
         .delete()
-        .eq("email", email) // Match the email
-        .eq("dataroom_id", router.query.id); // Ensure it's scoped to the correct dataroom
+        .eq("email", userToRemove.email)
+        .eq("dataroom_id", router.query.id);
 
-      if (error) {
-        console.error("Error removing user:", error.message);
-        setSuccessMessage("Failed to remove the user. Please try again.");
-        setShowPopup(true); // Display a popup with the error message
-        return;
-      }
+      if (error) throw error;
 
-      // Refresh the user lists after successful deletion
-      fetchUsers(router.query.id);
+      // Immediately remove user from UI
+      setActiveUsers((prev) => prev.filter((user) => user.email !== userToRemove.email));
+      setInvitedUsers((prev) => prev.filter((user) => user.email !== userToRemove.email));
 
-      setSuccessMessage("User removed successfully!");
-      setShowPopup(true); // Display a success popup
+      setConfirmationPopup(false);
+      setUserToRemove(null);
     } catch (err) {
-      console.error("Unexpected error removing user:", err.message);
-      setSuccessMessage("An error occurred while removing the user.");
-      setShowPopup(true); // Display a popup with the error
+      console.error("Error removing user:", err.message);
     } finally {
-      setLoading(false); // Hide the loading indicator
+      setLoading(false);
     }
+  };
+
+  // Open confirmation modal
+  const confirmRemoveUser = (user) => {
+    setUserToRemove(user);
+    setConfirmationPopup(true);
   };
 
 
@@ -270,77 +273,121 @@ function Usermanagement() {
 
       <div>
         <div>
-          {activeTab === "active" &&
-            activeUsers.map((user) => (
-              <div
-                key={user.email}
-                className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4"
-              >
-                <div className="flex flex-wrap justify-between items-center gap-2">
-                  {/* Email Section */}
-                  <div className="font-medium w-full md:w-auto">{user.email}</div>
-
-                  {/* Active Since Section */}
-                  <div className="text-gray-500 text-sm w-full md:w-auto md:text-right">
-                    Active Since:{" "}
-                    {`${new Date(user.invited_at).toLocaleDateString(
-                      "en-US"
-                    )} ${new Date(user.invited_at).toLocaleTimeString(
-                      "en-US",
-                      {
-                        hour: "numeric",
-                        minute: "numeric",
-                        second: "numeric",
-                        hour12: true,
-                      }
-
-
-                    )}`}
-                  </div>
-                  <button
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => handleRemoveUser(user.email)}
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ))}
-          {activeTab === "invited" &&
-            invitedUsers.map((user) => (
-              <div
-                key={user.email}
-                className="bg-[#f5f5f5] p-6 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4"
-              >
-                <div className="flex flex-wrap justify-between items-center gap-2">
-                  {/* Email Section */}
-                  <div className="font-medium w-full md:w-auto">{user.email}</div>
-
-                  {/* Invited At Section */}
-                  <div className="text-gray-500 text-sm w-full md:w-auto md:text-right">
-                    Invited At:{" "}
-                    {`${new Date(user.invited_at).toLocaleDateString(
-                      "en-US"
-                    )} ${new Date(user.invited_at).toLocaleTimeString(
-                      "en-US",
-                      {
-                        hour: "numeric",
-                        minute: "numeric",
-                        second: "numeric",
-                        hour12: true,
-                      }
-                    )}`}
-                  </div>
-                  <button
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => handleRemoveUser(user.email)}
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ))}
         </div>
+
+        {activeTab === "active" &&
+          activeUsers.map((user) => (
+            <div
+              key={user.email}
+              className="bg-[#f5f5f5] p-4 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4"
+            >
+              {/* Left Section: Email */}
+              <div className="font-medium">{user.email}</div>
+
+              {/* Right Section: Details and Trash Button */}
+              <div className="flex flex-row justify-between items-center sm:justify-end sm:gap-4 w-full sm:w-auto">
+                <div className="text-gray-500 text-sm sm:text-base text-right sm:text-left">
+                  Active Since:{" "}
+                  {`${new Date(user.invited_at).toLocaleDateString("en-US")} ${new Date(
+                    user.invited_at
+                  ).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "numeric",
+                    second: "numeric",
+                    hour12: true,
+                  })}`}
+                </div>
+                <button
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition sm:w-8 sm:h-8"
+                  onClick={() => confirmRemoveUser(user)}
+                >
+                  <i className="fas fa-trash-alt text-lg sm:text-base"></i>
+                </button>
+
+              </div>
+            </div>
+
+          ))}
+
+        {activeTab === "invited" &&
+          invitedUsers.map((user) => (
+            <div
+              key={user.email}
+              className="bg-[#f5f5f5] p-4 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4"
+            >
+              {/* Left Section (Mobile: Email + Invited At stacked, Desktop: Only Email) */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
+                <div className="font-medium">{user.email}</div>
+                {/* Show "Invited At" BELOW email on mobile, move it to the right on desktop */}
+                <div className="text-gray-500 text-sm sm:hidden">
+                  Invited At:{" "}
+                  {`${new Date(user.invited_at).toLocaleDateString("en-US")} ${new Date(
+                    user.invited_at
+                  ).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "numeric",
+                    second: "numeric",
+                    hour12: true,
+                  })}`}
+                </div>
+              </div>
+
+              {/* Right Section (Desktop: Invited At + Trash Icon, Mobile: Only Trash Icon) */}
+              <div className="flex flex-row items-center sm:gap-4">
+                {/* "Invited At" on desktop only */}
+                <div className="hidden sm:block text-gray-500 text-sm sm:text-base sm:whitespace-nowrap">
+                  Invited At:{" "}
+                  {`${new Date(user.invited_at).toLocaleDateString("en-US")} ${new Date(
+                    user.invited_at
+                  ).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "numeric",
+                    second: "numeric",
+                    hour12: true,
+                  })}`}
+                </div>
+
+                {/* Trash Button (Always aligned right) */}
+                <button
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition sm:w-8 sm:h-8"
+                  onClick={() => confirmRemoveUser(user)}
+                >
+                  <i className="fas fa-trash-alt text-lg sm:text-base"></i>
+                </button>
+              </div>
+            </div>
+
+
+
+
+          ))}
+
+
+        {confirmationPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 shadow-lg w-96 space-y-4">
+              <h2 className="text-xl font-semibold">Confirm User Removal</h2>
+              <p className="text-sm text-gray-600">
+                Are you sure you want to remove this user? This action cannot be undone.
+              </p>
+              <div className="flex justify-end space-x-4">
+                <button
+                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
+                  onClick={() => setConfirmationPopup(false)} // Close the modal
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                  onClick={handleRemoveUser} // Confirm the deletion
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
 
 
         {activeTab === "archived" &&

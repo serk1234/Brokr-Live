@@ -4,6 +4,7 @@ const nextConfig = {
     esmExternals: "loose",
   },
   webpack: (config) => {
+    config.resolve.alias.canvas = false;
     config.externals = [...config.externals, { canvas: "canvas" }]; // required to make pdfjs work
     return config;
   },
