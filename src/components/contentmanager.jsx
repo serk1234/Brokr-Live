@@ -243,8 +243,8 @@ function Contentmanager({ items = [], dataroomId }) {
         const { data, error } = await supabase
           .from("file_uploads")
           .select("name, file_path, uploaded_by, upload_at, locked, id")
-          .eq("dataroom_id", dataroomId);
-
+          .eq("dataroom_id", dataroomId)
+          .eq("deleted", false);
         if (error) {
           console.error("Error fetching files:", error.message);
         } else {
@@ -497,26 +497,29 @@ function Contentmanager({ items = [], dataroomId }) {
   };
 
   const handleRemove = async (fileToRemove) => {
+    console.log("handleRemove=>", fileToRemove);
     try {
       // Remove the file from the Supabase storage bucket
-      const { error: storageError } = await supabase.storage
-        .from("file_uploads")
-        .remove([`files/${fileToRemove.name}`]);
+      // const { error: storageError } = await supabase.storage
+      //   .from("file_uploads")
+      //   .remove([fileToRemove.file_path]);
+      // .remove([`files/${fileToRemove.name}`]);
 
-      if (storageError) {
+      /*   if (storageError) {
         console.error(
           "Error removing file from storage:",
           storageError.message
         );
         return;
-      }
+      } */
 
       // Remove the file metadata from the Supabase database
       const { error: dbError } = await supabase
         .from("file_uploads")
-        .delete()
-        .eq("name", fileToRemove.name)
-        .eq("dataroom_id", dataroomId);
+        .update({ deleted: true })
+        .eq("id", fileToRemove.id);
+      /*. eq("name", fileToRemove.name)
+        .eq("dataroom_id", dataroomId); */
 
       if (dbError) {
         console.error(
@@ -528,9 +531,9 @@ function Contentmanager({ items = [], dataroomId }) {
 
       // Remove the file from the local state
       setFiles((prevFiles) =>
-        prevFiles.filter((file) => file.name !== fileToRemove.name)
+        prevFiles.filter((file) => file.id !== fileToRemove.id)
       );
-      console.log("File successfully removed:", fileToRemove.name);
+      console.log("File successfully removed:", fileToRemove.id);
     } catch (err) {
       console.error("Unexpected error removing file:", err.message);
     }
@@ -539,9 +542,9 @@ function Contentmanager({ items = [], dataroomId }) {
 
     try {
       // Supabase storage and database logic
-      console.log("Removing file:", fileToRemove.name); // Debugging log
+      console.log("Removing file:", fileToRemove.id); // Debugging log
       setFiles((prevFiles) =>
-        prevFiles.filter((file) => file.name !== fileToRemove.name)
+        prevFiles.filter((file) => file.id !== fileToRemove.id)
       );
     } catch (err) {
       console.error("Unexpected error removing file:", err.message);
@@ -892,7 +895,25 @@ function Contentmanager({ items = [], dataroomId }) {
               <ModernButton
                 text={window.innerWidth > 768 ? "Upload" : ""}
                 icon="fa-cloud-upload-alt"
-                onClick={() => setShowUploadModal(true)}
+                onClick={async () => {
+                  const {
+                    data: { user },
+                    error: userError,
+                  } = await supabase.auth.getUser();
+                  if (userError) throw userError;
+                  var response = await supabase
+                    .from("subscriptions")
+                    .select("id")
+                    .eq("user_email", user.email)
+                    .single();
+
+                  console.log(response);
+                  if (!response.data) {
+                    alert("Please subscribed before uploading");
+                    return;
+                  }
+                  setShowUploadModal(true);
+                }}
                 variant="primary"
                 className="w-10 md:w-auto"
               />

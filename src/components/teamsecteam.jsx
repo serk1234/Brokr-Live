@@ -1,7 +1,6 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
-import ModernButton from "./modern-button";
 import Popup from "./Popup";
 
 function Teamsecteam({ dataroomName }) {
@@ -22,13 +21,6 @@ function Teamsecteam({ dataroomName }) {
   const [creatorEmail, setCreatorEmail] = useState("");
   const router = useRouter();
 
-
-
-
-
-
-
-
   useEffect(() => {
     const fetchCreatorAndUsers = async () => {
       try {
@@ -38,7 +30,10 @@ function Teamsecteam({ dataroomName }) {
         } = await supabase.auth.getUser();
 
         if (authError) {
-          console.error("Error fetching authenticated user:", authError.message);
+          console.error(
+            "Error fetching authenticated user:",
+            authError.message
+          );
           return;
         }
 
@@ -110,7 +105,9 @@ function Teamsecteam({ dataroomName }) {
         });
 
         if (magicLinkError) {
-          throw new Error(`Failed to send magic link to ${email}: ${magicLinkError.message}`);
+          throw new Error(
+            `Failed to send magic link to ${email}: ${magicLinkError.message}`
+          );
         }
 
         const inviterEmail = creatorEmail;
@@ -124,10 +121,14 @@ function Teamsecteam({ dataroomName }) {
           permission: "view",
         };
 
-        const { error: insertError } = await supabase.from("dataroom_teams").insert(newUser);
+        const { error: insertError } = await supabase
+          .from("dataroom_teams")
+          .insert(newUser);
 
         if (insertError) {
-          throw new Error(`Error inviting user "${email}": ${insertError.message}`);
+          throw new Error(
+            `Error inviting user "${email}": ${insertError.message}`
+          );
         }
 
         setUsers((prevUsers) => [
@@ -181,9 +182,10 @@ function Teamsecteam({ dataroomName }) {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
-          <div className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">Team</div>
+          <div className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">
+            Team
+          </div>
         </div>
-
       </div>
 
       {showPopup && (
@@ -245,10 +247,11 @@ function Teamsecteam({ dataroomName }) {
         {users.map((user, index) => (
           <div
             key={index}
-            className={`p-6 rounded-lg shadow-sm transition-all duration-200 ${user.email === creatorEmail
-              ? "bg-black text-white hover:border-[#A3E636]" // Admin box style with hover
-              : "bg-gray-100 border border-[#ddd] hover:border-[#A3E636]" // Regular box style with hover
-              }`}
+            className={`p-6 rounded-lg shadow-sm transition-all duration-200 ${
+              user.email === creatorEmail
+                ? "bg-black text-white hover:border-[#A3E636]" // Admin box style with hover
+                : "bg-gray-100 border border-[#ddd] hover:border-[#A3E636]" // Regular box style with hover
+            }`}
           >
             <div className="flex justify-between items-center">
               <div>
@@ -268,14 +271,24 @@ function Teamsecteam({ dataroomName }) {
             </div>
             <div>
               {user.email !== creatorEmail && ( // Hide "Invited By" for Admin
-                <div className="text-gray-600">Invited By: {user.invited_by || "N/A"}</div>
+                <div className="text-gray-600">
+                  Invited By: {user.invited_by || "N/A"}
+                </div>
               )}
               <div
-                className={`${user.email === creatorEmail ? "text-white" : "text-gray-600"
-                  }`}
+                className={`${
+                  user.email === creatorEmail ? "text-white" : "text-gray-600"
+                }`}
               >
-                Created At: {`${new Date(user.created_at).toLocaleDateString("en-US")} ${new Date(user.created_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric", second: "numeric", hour12: true })}`}
-
+                Created At:{" "}
+                {`${new Date(user.created_at).toLocaleDateString(
+                  "en-US"
+                )} ${new Date(user.created_at).toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "numeric",
+                  second: "numeric",
+                  hour12: true,
+                })}`}
               </div>
             </div>
           </div>
@@ -286,5 +299,3 @@ function Teamsecteam({ dataroomName }) {
 }
 
 export default Teamsecteam;
-
-

@@ -1,18 +1,15 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
 import ModernButton from "./modern-button";
-import { useRouter } from "next/router";
 import Popup from "./Popup";
-import { format, utcToZonedTime } from "date-fns-tz";
-
 
 function Usermanagement() {
   const [activeTab, setActiveTab] = useState("active");
   const [activeUsers, setActiveUsers] = useState([]);
   const [invitedUsers, setInvitedUsers] = useState([]);
   // Save the local time as a string
-
 
   const [loading, setLoading] = useState(false);
   const [inviteEmails, setInviteEmails] = useState([""]);
@@ -27,7 +24,6 @@ function Usermanagement() {
   const handleRemoveEmailField = (index) => {
     setInviteEmails(inviteEmails.filter((_, i) => i !== index));
   };
-
 
   // Fetch all users from Supabase
   const fetchUsers = async (dataroomId) => {
@@ -62,29 +58,31 @@ function Usermanagement() {
 
   // Watch for session changes and update the status to "active"
   useEffect(() => {
-    const { subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session?.user?.email) {
-        const dataroomId = router.query.id; // Ensure dataroom ID is available
-        if (!dataroomId) {
-          console.error("Dataroom ID is missing while updating user status");
-          return;
-        }
+    const { subscription } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "SIGNED_IN" && session?.user?.email) {
+          const dataroomId = router.query.id; // Ensure dataroom ID is available
+          if (!dataroomId) {
+            console.error("Dataroom ID is missing while updating user status");
+            return;
+          }
 
-        try {
-          const { error } = await supabase
-            .from("invited_users")
-            .update({ status: "active" })
-            .eq("email", session.user.email)
-            .eq("dataroom_id", dataroomId); // Include dataroom ID in the query
+          try {
+            const { error } = await supabase
+              .from("invited_users")
+              .update({ status: "active" })
+              .eq("email", session.user.email)
+              .eq("dataroom_id", dataroomId); // Include dataroom ID in the query
 
-          if (error) throw error;
+            if (error) throw error;
 
-          fetchUsers(dataroomId); // Refresh the user lists with the correct dataroom ID
-        } catch (err) {
-          console.error("Error updating user status:", err.message);
+            fetchUsers(dataroomId); // Refresh the user lists with the correct dataroom ID
+          } catch (err) {
+            console.error("Error updating user status:", err.message);
+          }
         }
       }
-    });
+    );
 
     // Safely unsubscribe only if subscription exists
     return () => {
@@ -94,7 +92,25 @@ function Usermanagement() {
     };
   }, [router.query.id]);
 
-  const handleInviteClick = () => setShowInvitePopup(true);
+  const handleInviteClick = async () => {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    var response = await supabase
+      .from("subscriptions")
+      .select("id")
+      .eq("user_email", user.email)
+      .single();
+
+    console.log(response);
+    if (!response.data) {
+      alert("Please subscribed before uploading");
+      return;
+    }
+    setShowInvitePopup(true);
+  };
 
   const handleCloseInvitePopup = () => {
     setShowInvitePopup(false);
@@ -225,8 +241,12 @@ function Usermanagement() {
       if (error) throw error;
 
       // Immediately remove user from UI
-      setActiveUsers((prev) => prev.filter((user) => user.email !== userToRemove.email));
-      setInvitedUsers((prev) => prev.filter((user) => user.email !== userToRemove.email));
+      setActiveUsers((prev) =>
+        prev.filter((user) => user.email !== userToRemove.email)
+      );
+      setInvitedUsers((prev) =>
+        prev.filter((user) => user.email !== userToRemove.email)
+      );
 
       setConfirmationPopup(false);
       setUserToRemove(null);
@@ -243,13 +263,12 @@ function Usermanagement() {
     setConfirmationPopup(true);
   };
 
-
-
-
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">Users</h1>
+        <h1 className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">
+          Users
+        </h1>
         <ModernButton
           text="Invite"
           icon="fa-user-plus"
@@ -263,8 +282,9 @@ function Usermanagement() {
           <ModernButton
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-full font-medium ${activeTab === tab ? "bg-[#A3E636] text-black" : "bg-gray-200"
-              }`}
+            className={`px-4 py-2 rounded-full font-medium ${
+              activeTab === tab ? "bg-[#A3E636] text-black" : "bg-gray-200"
+            }`}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </ModernButton>
@@ -272,8 +292,7 @@ function Usermanagement() {
       </div>
 
       <div>
-        <div>
-        </div>
+        <div></div>
 
         {activeTab === "active" &&
           activeUsers.map((user) => (
@@ -288,9 +307,9 @@ function Usermanagement() {
               <div className="flex flex-row justify-between items-center sm:justify-end sm:gap-4 w-full sm:w-auto">
                 <div className="text-gray-500 text-sm sm:text-base text-right sm:text-left">
                   Active Since:{" "}
-                  {`${new Date(user.invited_at).toLocaleDateString("en-US")} ${new Date(
-                    user.invited_at
-                  ).toLocaleTimeString("en-US", {
+                  {`${new Date(user.invited_at).toLocaleDateString(
+                    "en-US"
+                  )} ${new Date(user.invited_at).toLocaleTimeString("en-US", {
                     hour: "numeric",
                     minute: "numeric",
                     second: "numeric",
@@ -303,10 +322,8 @@ function Usermanagement() {
                 >
                   <i className="fas fa-trash-alt text-lg sm:text-base"></i>
                 </button>
-
               </div>
             </div>
-
           ))}
 
         {activeTab === "invited" &&
@@ -321,9 +338,9 @@ function Usermanagement() {
                 {/* Show "Invited At" BELOW email on mobile, move it to the right on desktop */}
                 <div className="text-gray-500 text-sm sm:hidden">
                   Invited At:{" "}
-                  {`${new Date(user.invited_at).toLocaleDateString("en-US")} ${new Date(
-                    user.invited_at
-                  ).toLocaleTimeString("en-US", {
+                  {`${new Date(user.invited_at).toLocaleDateString(
+                    "en-US"
+                  )} ${new Date(user.invited_at).toLocaleTimeString("en-US", {
                     hour: "numeric",
                     minute: "numeric",
                     second: "numeric",
@@ -337,9 +354,9 @@ function Usermanagement() {
                 {/* "Invited At" on desktop only */}
                 <div className="hidden sm:block text-gray-500 text-sm sm:text-base sm:whitespace-nowrap">
                   Invited At:{" "}
-                  {`${new Date(user.invited_at).toLocaleDateString("en-US")} ${new Date(
-                    user.invited_at
-                  ).toLocaleTimeString("en-US", {
+                  {`${new Date(user.invited_at).toLocaleDateString(
+                    "en-US"
+                  )} ${new Date(user.invited_at).toLocaleTimeString("en-US", {
                     hour: "numeric",
                     minute: "numeric",
                     second: "numeric",
@@ -356,19 +373,15 @@ function Usermanagement() {
                 </button>
               </div>
             </div>
-
-
-
-
           ))}
-
 
         {confirmationPopup && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 shadow-lg w-96 space-y-4">
               <h2 className="text-xl font-semibold">Confirm User Removal</h2>
               <p className="text-sm text-gray-600">
-                Are you sure you want to remove this user? This action cannot be undone.
+                Are you sure you want to remove this user? This action cannot be
+                undone.
               </p>
               <div className="flex justify-end space-x-4">
                 <button
@@ -387,8 +400,6 @@ function Usermanagement() {
             </div>
           </div>
         )}
-
-
 
         {activeTab === "archived" &&
           archivedUsers.map((user) => (
