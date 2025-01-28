@@ -240,7 +240,12 @@ function UserView() {
         >
           <Onboarding
             roomId={router.query.id}
-            onClosed={() => {
+            onClosed={async () => {
+              await supabase
+                .from("invited_users")
+                .update({ status: "active" })
+                .eq("dataroom_id", dataroom.id)
+                .eq("email", userEmail);
               setShowNDA(false);
             }}
           />
@@ -294,7 +299,6 @@ function UserView() {
 
       <Footer />
     </div>
-
   );
 }
 
