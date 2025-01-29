@@ -89,6 +89,11 @@ function SecondarySettingsSection({ dataroomId }) {
         .update({ nda_template: ndaText }) // Save the updated NDA template
         .eq("id", dataroomId);
 
+      const { data: ndaSignatures, error: ndaError } = await supabase
+        .from("nda_signatures")
+        .delete()
+        .eq("dataroom_id", dataroomId);
+
       if (error) {
         console.error("Error saving NDA template:", error.message);
         setPopupMessage("Failed to save changes. Please try again."); // Show error message

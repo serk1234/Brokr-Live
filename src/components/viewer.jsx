@@ -66,7 +66,8 @@ function Viewer({ selectedDocument, zoom, setZoom, handleDownload }) {
             />
           ) : true || selectedDocument.name.indexOf(".pdf") < 0 ? (
             <iframe
-              src={`https://drive.google.com/viewerng/viewer?embedded=true&url=${selectedDocument.src}#page=2&toolbar=0&navpanes=0`}
+              src={`${selectedDocument.src}#toolbar=0`}
+              className="w-full h-full border-none rounded-lg"
               title="File Viewer"
               style={{
                 transform: `scale(${zoom / 100})`,
