@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import { supabase } from "../../../src/app/supabaseClient";
-import StylizedButton from "../../components/stylized-button";
-import Footer from "../../components/footer";
 import "../../app/globals.css";
+import Footer from "../../components/footer";
+import StylizedButton from "../../components/stylized-button";
 
 function Onboarding({ roomId, onClosed }) {
   const [name, setName] = useState("");
@@ -15,6 +15,7 @@ function Onboarding({ roomId, onClosed }) {
   const router = useRouter();
 
   useEffect(() => {
+    console.log("nda_query", roomId);
     const fetchSessionAndParams = async () => {
       try {
         const {
@@ -35,7 +36,7 @@ function Onboarding({ roomId, onClosed }) {
           return;
         }
 
-        const dataroomIdFromQuery = roomId;// router.query.dataroomId;
+        const dataroomIdFromQuery = roomId; // router.query.dataroomId;
         if (!dataroomIdFromQuery) {
           console.error("No dataroom ID in query params.");
           alert("No dataroom ID provided. Please contact support.");
@@ -44,16 +45,19 @@ function Onboarding({ roomId, onClosed }) {
 
         setDataroomId(dataroomIdFromQuery);
 
-        const navigationEntries = window.performance.getEntriesByType('navigation');
+        const navigationEntries =
+          window.performance.getEntriesByType("navigation");
         console.log(navigationEntries);
 
-
-        if (navigationEntries.length > 0 && navigationEntries[0].type === 'reload') {
+        /*  if (
+          navigationEntries.length > 0 &&
+          navigationEntries[0].type === "reload"
+        ) {
           console.log("Page was reloaded");
           // router.push(`/userview?id=${dataroomId}`);
 
           return;
-        }
+        } */
         // Fetch the NDA template from the database
         const { data, error } = await supabase
           .from("datarooms")
@@ -61,25 +65,25 @@ function Onboarding({ roomId, onClosed }) {
           .select("*")
           .eq("id", dataroomIdFromQuery)
           .single();
-
+        console.log("nda_template", data, error);
         if (error) {
           console.error("Error fetching NDA template:", error.message);
-          setNdaTemplate("Default NDA template.");
+          setNdaTemplate("Default NDA template");
         } else {
           console.log(data);
-          setNdaTemplate(data?.nda_template || "Default NDA template.");
+          setNdaTemplate(data?.nda_template || "Default NDA template");
         }
       } catch (err) {
         console.error("Unexpected error:", err.message);
       }
     };
 
-    if (roomId || router.query.dataroomId) {
+    if (roomId /* || router.query.dataroomId */) {
       fetchSessionAndParams();
     }
   }, [
     //router.query.dataroomId
-    roomId
+    roomId,
   ]);
 
   const handleSignClick = async () => {
@@ -99,12 +103,13 @@ function Onboarding({ roomId, onClosed }) {
 
       if (checkError && checkError.code !== "PGRST116") {
         console.error("Error checking NDA signatures:", checkError.message);
-        alert("An error occurred while verifying your NDA status. Please try again.");
+        alert(
+          "An error occurred while verifying your NDA status. Please try again."
+        );
         return;
       }
 
       if (existingSignature) {
-
         console.log("exising");
         // Update `last_accessed_at` and redirect
 
@@ -121,14 +126,16 @@ function Onboarding({ roomId, onClosed }) {
       console.log("new");
 
       // Insert a new NDA signature
-      const { error: insertError } = await supabase.from("nda_signatures").insert([
-        {
-          user_email: userEmail,
-          dataroom_id: dataroomId,
-          signed_at: new Date().toISOString(),
-          last_accessed_at: new Date().toISOString(),
-        },
-      ]);
+      const { error: insertError } = await supabase
+        .from("nda_signatures")
+        .insert([
+          {
+            user_email: userEmail,
+            dataroom_id: dataroomId,
+            signed_at: new Date().toISOString(),
+            last_accessed_at: new Date().toISOString(),
+          },
+        ]);
 
       if (insertError) {
         console.error("Error saving NDA signature:", insertError.message);
@@ -139,7 +146,6 @@ function Onboarding({ roomId, onClosed }) {
       // Redirect to the User View of the Dataroom
       // router.push(`/userview?id=${dataroomId}`);
       onClosed();
-
     } catch (err) {
       console.error("Unexpected error:", err.message);
       alert("Unexpected error. Please try again.");
@@ -170,14 +176,21 @@ function Onboarding({ roomId, onClosed }) {
             </h2>
             <p className="text-gray-400 mb-4">(For Dataroom Access)</p>
             <p className="mb-4">
-              This Non-Disclosure Agreement is entered into as
-              of {new Date().toLocaleDateString()} by and between:
+              This Non-Disclosure Agreement is entered into as of{" "}
+              {new Date().toLocaleDateString()} by and between:
             </p>
             <div className="mb-4">
               <p>1. Disclosing Party: BROKR </p>
               <p>2. Receiving Party: {userEmail || "Loading..."}</p>
             </div>
-            <pre className="text-gray-300 whitespace-pre-wrap">{ndaTemplate}</pre>
+            <pre className="text-gray-300 whitespace-pre-wrap">
+              {ndaTemplate === "Loading NDA template..."
+                ? "Loading NDA template..."
+                : ""}
+            </pre>
+            {ndaTemplate !== "Loading NDA template..." && (
+              <div dangerouslySetInnerHTML={{ __html: ndaTemplate }}></div>
+            )}
           </div>
         </div>
 
@@ -220,7 +233,6 @@ function Onboarding({ roomId, onClosed }) {
       <Footer />
     </div>
   );
-
 }
 
 export default Onboarding;
