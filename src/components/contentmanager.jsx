@@ -26,6 +26,7 @@ function ModernButton({ text, icon, onClick, variant = "primary" }) {
 function UploadModal({ onClose, onUpload, dataroomId }) {
   const [dragActive, setDragActive] = useState(false);
   const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const inputRef = useRef(null);
 
   const handleDrag = (e) => {
@@ -43,7 +44,16 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      console.log("files__", file);
+
       setFile(e.dataTransfer.files[0]);
+      console.log("files__", e.dataTransfer.files);
+      console.log("files__", file);
+      var filesList = [];
+      for (let i = 0; i < e.dataTransfer.files.length; i++) {
+        filesList.push(e.dataTransfer.files[i]);
+      }
+      setFiles(filesList);
     }
   };
 
@@ -51,6 +61,12 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
     e.preventDefault();
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
+      var filesList = [];
+      for (let i = 0; i < e.target.files.length; i++) {
+        filesList.push(e.target.files[i]);
+      }
+      setFiles(filesList);
+      console.log("files__", file);
     }
   };
 
@@ -63,9 +79,18 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
   };
 
   const handleSubmit = async () => {
-    if (file) {
+    for (var i = 0; i < files.length; i++) {
+      setFile(files[i]);
+      console.log("setting_files=>", files[i], file);
+      await uploadFile(files[i]);
+      setFile(null);
+    }
+    onClose();
+  };
+  async function uploadFile(paramFile) {
+    if (paramFile) {
       try {
-        const sanitizedFileName = sanitizeFileName(file.name);
+        const sanitizedFileName = sanitizeFileName(paramFile.name);
         console.log(sanitizeFileName);
         const date = new Date();
 
@@ -79,7 +104,7 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         const { error: uploadError } = await supabase.storage
           .from("file_uploads")
           // .upload(`files/${sanitizedFileName}`, file);
-          .upload(filePath, file);
+          .upload(filePath, paramFile);
 
         if (uploadError) throw uploadError;
 
@@ -110,13 +135,11 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
 
           upload_at: new Date().toISOString(),
         });
-
-        onClose();
       } catch (err) {
         console.error("Error uploading file:", err.message);
       }
     }
-  };
+  }
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -142,6 +165,7 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
           onDrop={handleDrop}
         >
           <input
+            multiple
             ref={inputRef}
             type="file"
             className="hidden"
@@ -154,11 +178,17 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
             </div>
 
             {file ? (
-              <div className="space-y-2">
-                <p className="text-lg font-medium">{file.name}</p>
-                <p className="text-sm text-black/40">
-                  {(file.size / (1024 * 1024)).toFixed(2)} MB
-                </p>
+              <div>
+                {files?.map((e) => (
+                  <li>
+                    <div className="space-y-2">
+                      <p className="text-lg font-medium">{e.name}</p>
+                      <p className="text-sm text-black/40">
+                        {(e.size / (1024 * 1024)).toFixed(2)} MB
+                      </p>
+                    </div>
+                  </li>
+                ))}
               </div>
             ) : (
               <div className="space-y-2">

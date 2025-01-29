@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
 import ModernButton from "./modern-button";
 import Popup from "./Popup";
@@ -89,6 +89,11 @@ function SecondarySettingsSection({ dataroomId }) {
         .update({ nda_template: ndaText }) // Save the updated NDA template
         .eq("id", dataroomId);
 
+      const { data: ndaSignatures, error: ndaError } = await supabase
+        .from("nda_signatures")
+        .delete()
+        .eq("dataroom_id", dataroomId);
+
       if (error) {
         console.error("Error saving NDA template:", error.message);
         setPopupMessage("Failed to save changes. Please try again."); // Show error message
@@ -122,7 +127,9 @@ function SecondarySettingsSection({ dataroomId }) {
           >
             {ndaOptions[ndaOption]}
             <i
-              className={`fas fa-chevron-down ml-2 ${isOpen ? "rotate-180" : ""}`}
+              className={`fas fa-chevron-down ml-2 ${
+                isOpen ? "rotate-180" : ""
+              }`}
             ></i>
           </button>
           {isOpen && (
@@ -133,8 +140,9 @@ function SecondarySettingsSection({ dataroomId }) {
               {Object.entries(ndaOptions).map(([value, label]) => (
                 <div
                   key={value}
-                  className={`px-4 py-2 cursor-pointer hover:bg-gray-50 ${ndaOption === value ? "bg-[#A3E636]" : ""
-                    }`}
+                  className={`px-4 py-2 cursor-pointer hover:bg-gray-50 ${
+                    ndaOption === value ? "bg-[#A3E636]" : ""
+                  }`}
                   onClick={() => handleNdaStatusChange(value)} // Update local state and database
                 >
                   {label}
