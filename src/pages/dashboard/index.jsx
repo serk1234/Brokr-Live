@@ -101,7 +101,8 @@ function MainComponent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 flex flex-col">
       <div className="relative z-50">
-        <HeaderLive email={userEmail || "Loading..."} />
+        <HeaderLive email={userEmail || "Loading..."} setShowModal={setShowModal} />
+
       </div>
 
       <div className="container mx-auto px-4 py-8 flex-grow">
@@ -172,7 +173,7 @@ function MainComponent() {
                   </div>
                 ))
               ) : (
-                <div className="text-gray-500 text-sm">"No data available"</div>
+                <div className="text-gray-500 text-sm"></div>
               )}
             </div>
           </div>

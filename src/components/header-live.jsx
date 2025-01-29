@@ -5,12 +5,11 @@ import StylizedButton from "../components/stylized-button";
 import { supabase } from "../../src/app/supabaseClient";
 import { useRouter } from "next/router";
 
-function HeaderLive({ email }) {
+function HeaderLive({ email, setShowModal }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [dataroomOpen, setDataroomOpen] = useState(false);
   const [teamDatarooms, setTeamDatarooms] = useState([]);
   const [userDatarooms, setUserDatarooms] = useState([]);
-  const [name, setname] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -54,21 +53,14 @@ function HeaderLive({ email }) {
   }, []);
 
   const handleRedirect = (dataroomId, isUserDataroom = false) => {
-    if (isUserDataroom) {
-      router.push({
-        pathname: "/userview",
-        query: { id: dataroomId },
-      });
-    } else {
-      router.push({
-        pathname: "/TeamView",
-        query: { id: dataroomId },
-      });
-    }
+    router.push({
+      pathname: isUserDataroom ? "/userview" : "/TeamView",
+      query: { id: dataroomId },
+    });
   };
 
   const handleSettings = () => {
-    router.push("/profilesettings"); // Update to match your folder structure
+    router.push("/profilesettings");
   };
 
   const handleLogout = async () => {
@@ -87,11 +79,11 @@ function HeaderLive({ email }) {
         <div className="flex items-center gap-4">
           <a
             onClick={() => router.push("/dashboard")}
-            className="text-white font-semibold text-xl font-open-sans hover:text-[#A3E636] transition-colors"
+            className="text-white font-semibold text-xl font-inter hover:text-[#A3E636] transition-colors cursor-pointer"
           >
             brokr
           </a>
-          {/* Dataroom Dropdown */}
+
           {/* Dataroom Dropdown */}
           <div className="relative inline-block min-w-[48px]">
             <StylizedButton
@@ -103,20 +95,17 @@ function HeaderLive({ email }) {
               }
             />
             {dataroomOpen && (
-
-
-
-
               <div className="absolute left-0 mt-2 w-[320px] bg-black/95 backdrop-blur-xl border border-gray-800 rounded-xl shadow-2xl p-2 transition-all duration-200 ease-in-out">
+
                 {/* Team Datarooms */}
                 <div className="mb-2">
-                  <p className="text-gray-400 text-xs px-4 py-2">TEAM DATAROOMS</p>
+                  <p className="text-gray-400 text-xs px-4 py-2 font-inter">TEAM DATAROOMS</p>
                   {teamDatarooms.length > 0 ? (
                     teamDatarooms.map((item) => (
                       <a
                         key={item.id}
                         onClick={() => handleRedirect(item.id)}
-                        className="block w-full px-4 py-3 rounded-lg text-white font-medium hover:bg-white/10 transition-all duration-150 group cursor-pointer"
+                        className="block w-full px-4 py-3 rounded-lg text-white font-medium hover:bg-white/10 transition-all duration-150 group cursor-pointer font-inter"
                       >
                         <div className="flex items-center justify-between gap-4">
                           <div className="flex-1 min-w-0">
@@ -127,19 +116,27 @@ function HeaderLive({ email }) {
                       </a>
                     ))
                   ) : (
-                    <p className="text-gray-400 text-sm px-4 py-2">No team datarooms available</p>
+                    <div
+                      className="flex items-center justify-between px-4 py-3 cursor-pointer bg-[#121212] rounded-lg hover:bg-white/10 transition-all duration-150 font-inter"
+                      onClick={() => setShowModal(true)}
+                    >
+                      <span className="text-white font-medium">Create your Dataroom</span>
+                      <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#A3E636] hover:bg-[#B3F646] transition-all duration-300">
+                        <i className="fas fa-plus text-black"></i>
+                      </button>
+                    </div>
                   )}
                 </div>
 
                 {/* User Datarooms */}
-                <div>
-                  <p className="text-gray-400 text-xs px-4 py-2">USER DATAROOMS</p>
-                  {userDatarooms.length > 0 ? (
-                    userDatarooms.map((item) => (
+                {userDatarooms.length > 0 && (
+                  <div>
+                    <p className="text-gray-400 text-xs px-4 py-2 font-inter">USER DATAROOMS</p>
+                    {userDatarooms.map((item) => (
                       <a
                         key={item.id}
                         onClick={() => handleRedirect(item.id, true)}
-                        className="block w-full px-4 py-3 rounded-lg text-white font-medium hover:bg-white/10 transition-all duration-150 group cursor-pointer"
+                        className="block w-full px-4 py-3 rounded-lg text-white font-medium hover:bg-white/10 transition-all duration-150 group cursor-pointer font-inter"
                       >
                         <div className="flex items-center justify-between gap-4">
                           <div className="flex-1 min-w-0">
@@ -148,58 +145,42 @@ function HeaderLive({ email }) {
                           <i className="fas fa-chevron-right text-gray-600 group-hover:text-[#A3E636] transition-colors flex-shrink-0"></i>
                         </div>
                       </a>
-                    ))
-                  ) : (
-                    <p className="text-gray-400 text-sm px-4 py-2">No user datarooms available</p>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
         </div>
 
-        {/* Profile Dropdown */}
+        {/* Profile Dropdown (With Hover Effects) */}
         <div className="relative inline-block min-w-[48px]">
           <button
             onClick={() => setProfileOpen(!profileOpen)}
             className="group w-full px-4 py-2 rounded-lg text-gray-800 font-medium bg-gray-200 hover:bg-gray-300 transition-all duration-200 flex items-center gap-2"
           >
             <i className="fas fa-user"></i>
-            <span className="text-white font-medium">{name || ""}</span>
+            <span className="text-black font-medium font-inter">{email || "User"}</span>
             <i className="fas fa-chevron-down transition-transform duration-200 ease-in-out"></i>
           </button>
           {profileOpen && (
             <div className="absolute right-0 mt-2 w-[220px] bg-black/95 backdrop-blur-xl border border-gray-800 rounded-xl shadow-2xl p-2 transition-all duration-200 ease-in-out">
-              <div className="px-4 py-3 border-b border-gray-800">
-                <div
-                  className="text-sm text-gray-400"
-                  style={{
-                    maxWidth: '220px', // Adjust this width to fit your dropdown
-                    overflow: 'hidden',
-                    whiteSpace: 'nowrap',
-                    textOverflow: 'ellipsis',
-                  }}
-                  title={email} // Tooltip to show the full email on hover
-                >
-                  {email}
-                </div>
+              <div className="px-4 py-3 border-b border-gray-800 font-inter">
+                <p className="text-sm text-gray-400 truncate">{email}</p>
               </div>
-
-
-
               <button
                 onClick={handleSettings}
-                className="w-full px-4 py-3 rounded-lg text-white font-medium hover:bg-white/10 transition-all duration-150 group flex items-center justify-between"
+                className="w-full px-4 py-3 text-white flex items-center justify-between hover:bg-white/10 transition-all duration-150 font-inter"
               >
                 <span>Settings</span>
-                <i className="fas fa-cog text-gray-600 group-hover:text-[#A3E636] transition-colors"></i>
+                <i className="fas fa-cog text-gray-400 group-hover:text-[#A3E636] transition-colors"></i>
               </button>
               <button
                 onClick={handleLogout}
-                className="w-full px-4 py-3 rounded-lg text-white font-medium hover:bg-white/10 transition-all duration-150 group flex items-center justify-between"
+                className="w-full px-4 py-3 text-white flex items-center justify-between hover:bg-white/10 transition-all duration-150 font-inter"
               >
                 <span>Log Out</span>
-                <i className="fas fa-sign-out-alt text-gray-600 group-hover:text-[#A3E636] transition-colors"></i>
+                <i className="fas fa-sign-out-alt text-gray-400 group-hover:rotate-90 transition-transform duration-300"></i>
               </button>
             </div>
           )}
@@ -210,4 +191,3 @@ function HeaderLive({ email }) {
 }
 
 export default HeaderLive;
-
