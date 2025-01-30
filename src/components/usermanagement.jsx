@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
 import ModernButton from "./modern-button";
 import Popup from "./Popup";
+import SubscribeAlert from "./SubscribeAlert";
 
 function Usermanagement() {
   const [activeTab, setActiveTab] = useState("active");
   const [activeUsers, setActiveUsers] = useState([]);
   const [invitedUsers, setInvitedUsers] = useState([]);
+  const [showSubscribeModal, setShowSubscribeModal] = useState(false);
   // Save the local time as a string
 
   const [loading, setLoading] = useState(false);
@@ -98,6 +100,7 @@ function Usermanagement() {
       error: userError,
     } = await supabase.auth.getUser();
     if (userError) throw userError;
+
     var response = await supabase
       .from("subscriptions")
       .select("id")
@@ -105,10 +108,12 @@ function Usermanagement() {
       .single();
 
     console.log(response);
+
     if (!response.data) {
-      alert("Please subscribed before uploading");
+      setShowSubscribeModal(true); // Show the subscribe modal instead of alert
       return;
     }
+
     setShowInvitePopup(true);
   };
 
@@ -277,14 +282,31 @@ function Usermanagement() {
         />
       </div>
 
+      <SubscribeAlert
+        isOpen={showSubscribeModal}
+        onClose={() => setShowSubscribeModal(false)}
+      />
+
+      {showInvitePopup && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Invite Users</h3>
+              <button onClick={() => setShowInvitePopup(false)}>
+                <i className="fas fa-times text-gray-500"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-4 mb-6">
         {["active", "invited"].map((tab) => (
           <ModernButton
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-full font-medium ${
-              activeTab === tab ? "bg-[#A3E636] text-black" : "bg-gray-200"
-            }`}
+            className={`px-4 py-2 rounded-full font-medium ${activeTab === tab ? "bg-[#A3E636] text-black" : "bg-gray-200"
+              }`}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </ModernButton>
