@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import StylizedButton from "../components/stylized-button";
-import { supabase } from "../../src/app/supabaseClient";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { supabase } from "../../src/app/supabaseClient";
+import StylizedButton from "../components/stylized-button";
 
 function HeaderLive({ email, setShowModal }) {
   const [profileOpen, setProfileOpen] = useState(false);
@@ -47,6 +47,12 @@ function HeaderLive({ email, setShowModal }) {
       } else {
         setUserDatarooms(userData.map((item) => item.datarooms));
       }
+
+      var response = await supabase
+        .from("profile_updates")
+        .select("*")
+        .single()
+        .eq("user_email", user.email);
     };
 
     fetchDatarooms();
@@ -96,10 +102,11 @@ function HeaderLive({ email, setShowModal }) {
             />
             {dataroomOpen && (
               <div className="absolute left-0 mt-2 w-[320px] bg-black/95 backdrop-blur-xl border border-gray-800 rounded-xl shadow-2xl p-2 transition-all duration-200 ease-in-out">
-
                 {/* Team Datarooms */}
                 <div className="mb-2">
-                  <p className="text-gray-400 text-xs px-4 py-2 font-inter">TEAM DATAROOMS</p>
+                  <p className="text-gray-400 text-xs px-4 py-2 font-inter">
+                    TEAM DATAROOMS
+                  </p>
                   {teamDatarooms.length > 0 ? (
                     teamDatarooms.map((item) => (
                       <a
@@ -109,7 +116,9 @@ function HeaderLive({ email, setShowModal }) {
                       >
                         <div className="flex items-center justify-between gap-4">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold truncate mb-0.5">{item.name}</p>
+                            <p className="text-sm font-semibold truncate mb-0.5">
+                              {item.name}
+                            </p>
                           </div>
                           <i className="fas fa-chevron-right text-gray-600 group-hover:text-[#A3E636] transition-colors flex-shrink-0"></i>
                         </div>
@@ -120,7 +129,9 @@ function HeaderLive({ email, setShowModal }) {
                       className="flex items-center justify-between px-4 py-3 cursor-pointer bg-[#121212] rounded-lg hover:bg-white/10 transition-all duration-150 font-inter"
                       onClick={() => setShowModal(true)}
                     >
-                      <span className="text-white font-medium">Create your Dataroom</span>
+                      <span className="text-white font-medium">
+                        Create your Dataroom
+                      </span>
                       <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#A3E636] hover:bg-[#B3F646] transition-all duration-300">
                         <i className="fas fa-plus text-black"></i>
                       </button>
@@ -131,7 +142,9 @@ function HeaderLive({ email, setShowModal }) {
                 {/* User Datarooms */}
                 {userDatarooms.length > 0 && (
                   <div>
-                    <p className="text-gray-400 text-xs px-4 py-2 font-inter">USER DATAROOMS</p>
+                    <p className="text-gray-400 text-xs px-4 py-2 font-inter">
+                      USER DATAROOMS
+                    </p>
                     {userDatarooms.map((item) => (
                       <a
                         key={item.id}
@@ -140,7 +153,9 @@ function HeaderLive({ email, setShowModal }) {
                       >
                         <div className="flex items-center justify-between gap-4">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold truncate mb-0.5">{item.name}</p>
+                            <p className="text-sm font-semibold truncate mb-0.5">
+                              {item.name}
+                            </p>
                           </div>
                           <i className="fas fa-chevron-right text-gray-600 group-hover:text-[#A3E636] transition-colors flex-shrink-0"></i>
                         </div>
@@ -160,7 +175,9 @@ function HeaderLive({ email, setShowModal }) {
             className="group w-full px-4 py-2 rounded-lg text-gray-800 font-medium bg-gray-200 hover:bg-gray-300 transition-all duration-200 flex items-center gap-2"
           >
             <i className="fas fa-user"></i>
-            <span className="text-black font-medium font-inter">{email || "User"}</span>
+            <span className="text-black font-medium font-inter">
+              {email || "User"}
+            </span>
             <i className="fas fa-chevron-down transition-transform duration-200 ease-in-out"></i>
           </button>
           {profileOpen && (

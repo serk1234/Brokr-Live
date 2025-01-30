@@ -12,7 +12,12 @@ function NewComponent({ email }) {
   const [newName, setNewName] = useState("");
   const [newOrg, setNewOrg] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [usagePercent, seUsagePercent] = useState(0);
   const [showPricingTable, setShowPricingTable] = useState(false);
+  const [memoryData, setMemoryData] = useState({
+    totalMemory: 50,
+    usedMemory: 0,
+  });
 
   const handleCloseSubscribe = () => setshowSubscribeTable(false);
   const router = useRouter();
@@ -114,8 +119,26 @@ function NewComponent({ email }) {
       }
     };
 
+    const getUSage = async () => {
+      var response = await supabase
+        .from("file_uploads")
+        .select("file_size_mb")
+        .eq("uploaded_by", email);
+      console.log("file_uploads", response);
+      var total = 0;
+      for (var data of response.data) {
+        console.log(data);
+        total += data.file_size_mb ?? 0;
+      }
+      console.log("file_uploads", total);
+      setMemoryData({
+        totalMemory: 50,
+        usedMemory: total / 1024,
+      });
+    };
     fetchProfileData();
     fetchSubscriptionStatus();
+    getUSage();
   }, [email]);
 
   const handleEditSubmit = async () => {
@@ -238,6 +261,30 @@ function NewComponent({ email }) {
                 }
               />
             </div>
+            {isSubscribed && (
+              <div className="pt-10">
+                <p>Total Memory: {memoryData.totalMemory} GB</p>
+                <p>Used Memory: {memoryData.usedMemory.toFixed(4)} GB</p>
+                <div className="w-full bg-gray-200 rounded-full h-6 mt-4">
+                  <div
+                    className="bg-blue-600 h-6 rounded-full"
+                    style={{
+                      width: `${
+                        (memoryData.usedMemory / memoryData.totalMemory) * 100
+                      }%`,
+                    }}
+                  ></div>
+                </div>
+                <p className="mt-2">
+                  Memory Usage:{" "}
+                  {(
+                    (memoryData.usedMemory / memoryData.totalMemory) *
+                    100
+                  ).toFixed(4)}
+                  %
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Subscription Popup */}

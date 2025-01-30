@@ -21,6 +21,7 @@ function MainComponent() {
 
   const [newOrg, setNewOrg] = useState("XYZ Inc.");
   const [email, setEmail] = useState("");
+  const [userName, setUserName] = useState("");
 
   const handleSubmit = () => {
     setName(newName);
@@ -88,6 +89,7 @@ function MainComponent() {
       }
 
       setEmail(user.email || "");
+      // setNewName(user || "");
     };
 
     fetchUser();

@@ -113,7 +113,6 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
           error: userError,
         } = await supabase.auth.getUser();
         if (userError) throw userError;
-
         const { error: insertError } = await supabase
           .from("file_uploads")
           .insert([
@@ -123,6 +122,7 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
               uploaded_by: user.email,
               upload_at: new Date().toISOString(),
               dataroom_id: dataroomId,
+              file_size_mb: paramFile.size / (1024 * 1024),
             },
           ]);
 

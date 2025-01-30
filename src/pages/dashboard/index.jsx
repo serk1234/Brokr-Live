@@ -67,7 +67,7 @@ function MainComponent() {
   // Handle creating a new dataroom
   const handleCreateDataroom = async () => {
     if (newDataroomName.trim()) {
-      var defaultNDA = `<p><strong><span style="font-size:11pt;font-family:Arial,sans-serif;">NON-DISCLOSURE AGREEMENT (NDA)</span></strong></p>
+      var defaultNDA1 = `<p><strong><span style="font-size:11pt;font-family:Arial,sans-serif;">NON-DISCLOSURE AGREEMENT (NDA)</span></strong></p>
       <p><span style="font-size:11pt;font-family:Arial,sans-serif;">This Non-Disclosure Agreement (&quot;Agreement&quot;) is entered into as of the date of execution (&quot;Effective Date&quot;) by and between:</span></p>
       <ol>
           <li style="list-style-type:decimal;font-size:11pt;font-family:Arial,sans-serif;">
@@ -175,6 +175,56 @@ function MainComponent() {
       <p><br></p>
       <p><br></p>`;
 
+      var defaultNDA = `NON-DISCLOSURE AGREEMENT (NDA)
+This Non-Disclosure Agreement ("Agreement") is entered into as of the date of execution ("Effective Date") by and between:
+The Team: The party responsible for sharing Confidential Information via the dataroom ("Team").
+The Users: The party or parties receiving access to the Confidential Information ("Users").
+The parties agree as follows:
+1. Purpose
+The Team agrees to disclose, and the Users agree to receive, certain confidential and proprietary information ("Confidential Information") solely for the purpose of evaluating a potential transaction, partnership, or any other business arrangement facilitated through the dataroom (the "Purpose").
+The brokr platform ("Platform") serves solely as an intermediary and is not the owner of the contents shared in the dataroom. The owner or agent sharing the content is fully responsible for the accuracy, legality, and management of the contents and retains the right to amend this NDA as necessary.
+2. Definition of Confidential Information
+"Confidential Information" means any non-public, proprietary, or sensitive information disclosed directly or indirectly by the Team to the Users, whether in written, oral, electronic, or any other form. This includes, but is not limited to:
+Financial statements, business plans, and forecasts;
+Contracts, agreements, and legal documents;
+Intellectual property, including patents, trademarks, and trade secrets;
+Customer and supplier information;
+Any information uploaded to the dataroom.
+Confidential Information does not include information that:
+Is or becomes publicly available through no breach of this Agreement;
+Was already known to the Users without restriction before disclosure by the Team;
+Is independently developed by the Users without use of or reference to the Team’s Confidential Information; or
+Is lawfully obtained from a third party without restriction on disclosure.
+3. Obligations of Confidentiality
+The Users agree to:
+Maintain the confidentiality of the Confidential Information using the same degree of care as they use to protect their own confidential information, but not less than a reasonable standard of care;
+Use the Confidential Information solely for the Purpose;
+Restrict disclosure of the Confidential Information to their employees, agents, or representatives who need to know the information for the Purpose and who are bound by confidentiality obligations no less restrictive than those in this Agreement;
+Not disclose the Confidential Information to any third party without the prior written consent of the Team;
+Promptly notify the Team if they become aware of any unauthorized use or disclosure of the Confidential Information.
+4. Return or Destruction of Confidential Information
+Upon the Team’s written request, the Users shall promptly:
+Return all Confidential Information, including any copies thereof, to the Team; or
+Destroy all Confidential Information and provide written certification of such destruction to the Team.
+5. Term
+This Agreement shall remain in effect for a period of five (5) years from the Effective Date or until the Confidential Information ceases to qualify as confidential under this Agreement, whichever occurs first.
+6. Exclusions
+Nothing in this Agreement prohibits the Users from disclosing Confidential Information as required by law, regulation, or court order, provided the Users give prompt notice to the Team (to the extent legally permissible) to enable the Team to seek a protective order or other remedy.
+7. No License
+No rights or licenses, express or implied, are granted to the Users under any patents, trademarks, copyrights, or other intellectual property of the Team by this Agreement.
+8. No Obligation
+This Agreement does not obligate either party to proceed with any transaction or business relationship. Confidential Information is provided “AS IS” without any warranties, express or implied.
+9. Remedies
+The Users acknowledge that any unauthorized disclosure or use of Confidential Information may cause irreparable harm to the Team, for which monetary damages may be inadequate. The Team shall be entitled to seek injunctive relief and other equitable remedies in addition to any other rights or remedies available under law.
+10. Miscellaneous
+Entire Agreement: This Agreement constitutes the entire understanding between the parties regarding its subject matter and supersedes all prior agreements and understandings.
+Amendments: This Agreement may be amended only in writing signed by both parties or as updated by the owner or agent sharing the content via the Platform.
+Governing Law: This Agreement shall be governed by and construed in accordance with the laws of the State of Delaware.
+Severability: If any provision of this Agreement is found to be invalid or unenforceable, the remaining provisions shall remain in full force and effect.
+Assignment: This Agreement may not be assigned by either party without the prior written consent of the other party.
+
+`;
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -215,8 +265,10 @@ function MainComponent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 flex flex-col">
       <div className="relative z-50">
-        <HeaderLive email={userEmail || "Loading..."} setShowModal={setShowModal} />
-
+        <HeaderLive
+          email={userEmail || "Loading..."}
+          setShowModal={setShowModal}
+        />
       </div>
 
       <div className="container mx-auto px-4 py-8 flex-grow">
