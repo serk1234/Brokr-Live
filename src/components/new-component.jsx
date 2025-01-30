@@ -261,28 +261,30 @@ function NewComponent({ email }) {
                 }
               />
             </div>
-            <div className="pt-10">
-              <p>Total Memory: {memoryData.totalMemory} GB</p>
-              <p>Used Memory: {memoryData.usedMemory.toFixed(4)} GB</p>
-              <div className="w-full bg-gray-200 rounded-full h-6 mt-4">
-                <div
-                  className="bg-blue-600 h-6 rounded-full"
-                  style={{
-                    width: `${
-                      (memoryData.usedMemory / memoryData.totalMemory) * 100
-                    }%`,
-                  }}
-                ></div>
+            {isSubscribed && (
+              <div className="pt-10">
+                <p>Total Memory: {memoryData.totalMemory} GB</p>
+                <p>Used Memory: {memoryData.usedMemory.toFixed(4)} GB</p>
+                <div className="w-full bg-gray-200 rounded-full h-6 mt-4">
+                  <div
+                    className="bg-blue-600 h-6 rounded-full"
+                    style={{
+                      width: `${
+                        (memoryData.usedMemory / memoryData.totalMemory) * 100
+                      }%`,
+                    }}
+                  ></div>
+                </div>
+                <p className="mt-2">
+                  Memory Usage:{" "}
+                  {(
+                    (memoryData.usedMemory / memoryData.totalMemory) *
+                    100
+                  ).toFixed(4)}
+                  %
+                </p>
               </div>
-              <p className="mt-2">
-                Memory Usage:{" "}
-                {(
-                  (memoryData.usedMemory / memoryData.totalMemory) *
-                  100
-                ).toFixed(4)}
-                %
-              </p>
-            </div>
+            )}
           </div>
 
           {/* Subscription Popup */}
