@@ -29,6 +29,26 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
   const [files, setFiles] = useState([]);
   const inputRef = useRef(null);
 
+  const handleDragEnter = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setDragActive(false);
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+
+
+
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -69,6 +89,11 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
       console.log("files__", file);
     }
   };
+
+  const removeFile = (index) => {
+    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  };
+
 
   const sanitizeFileName = (fileName) => {
     // Replace all non-alphanumeric characters, spaces, and special symbols with underscores
@@ -143,10 +168,9 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="content-box p-6">
-        {/* Your content here */}
-
-        <div className="flex justify-between items-center mb-6">
+      <div className="bg-white rounded-xl shadow-lg w-[520px] p-6">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Upload File</h2>
           <button
             onClick={onClose}
@@ -156,12 +180,13 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
           </button>
         </div>
 
+        {/* Drag & Drop Box */}
         <div
-          className={`relative border-2 border-dashed rounded-xl p-8 text-center ${dragActive ? "border-[#A3E636] bg-[#A3E636]/5" : "border-black/10"
+          className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-colors ${dragActive ? "border-[#A3E636] bg-[#A3E636]/10" : "border-black/10"
             }`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
           onDrop={handleDrop}
         >
           <input
@@ -172,57 +197,63 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
             onChange={handleChange}
           />
 
-          <div className="space-y-4">
-            <div className="w-16 h-16 bg-[#A3E636]/10 rounded-2xl flex items-center justify-center mx-auto">
+          <div className="flex flex-col items-center">
+            <div className="w-14 h-14 bg-[#A3E636]/10 rounded-2xl flex items-center justify-center">
               <i className="fas fa-cloud-upload-alt text-[#A3E636] text-2xl"></i>
             </div>
 
-            {file ? (
-              <div>
-                {files?.map((e) => (
-                  <li>
-                    <div className="space-y-2">
-                      <p className="text-lg font-medium">{e.name}</p>
-                      <p className="text-sm text-black/40">
+            {/* Scrollable File List */}
+            {files.length > 0 ? (
+              <div className="mt-4 w-full max-h-60 overflow-y-auto border-t border-black/10">
+                <ul className="divide-y divide-black/10">
+                  {files.map((e, index) => (
+                    <li key={index} className="px-4 py-2 flex items-center justify-between">
+                      <div className="flex-1 truncate">
+                        <p className="text-lg font-medium truncate">{e.name}</p>
+                      </div>
+                      <p className="text-sm text-black/40 w-24 text-center">
                         {(e.size / (1024 * 1024)).toFixed(2)} MB
                       </p>
-                    </div>
-                  </li>
-                ))}
+                      <button
+                        className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition"
+                        onClick={() => removeFile(index)}
+                      >
+                        <i className="fas fa-trash-alt text-lg"></i>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ) : (
-              <div className="space-y-2">
-                <p className="text-lg font-medium">
-                  Drag and drop your file here
-                </p>
-                <p className="text-sm text-black/40">
-                  or click to browse from your computer
-                </p>
+              <div className="mt-3 text-gray-600">
+                <p className="text-lg font-medium">Drag and drop your file here</p>
+                <p className="text-sm text-gray-500">or click to browse from your computer</p>
               </div>
             )}
-
-            <button
-              onClick={() => inputRef.current?.click()}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-black/5 hover:bg-black/10 transition-colors"
-            >
-              Choose File
-            </button>
           </div>
+
+          <button
+            onClick={() => inputRef.current?.click()}
+            className="mt-3 px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 hover:bg-gray-200 transition-colors"
+          >
+            Choose Files
+          </button>
         </div>
 
-        <div className="flex justify-end gap-3 mt-6">
+        {/* Buttons */}
+        <div className="flex justify-end gap-3 mt-5">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-black/5 hover:bg-black/10 transition-colors"
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 hover:bg-gray-200 transition-colors"
           >
             Cancel
           </button>
           <button
-            onClick={handleSubmit}
-            disabled={!file}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${file
+            onClick={() => handleSubmit(files)}
+            disabled={files.length === 0}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${files.length > 0
               ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
-              : "bg-black/5 text-black/40 cursor-not-allowed"
+              : "bg-gray-100 text-gray-400 cursor-not-allowed"
               }`}
           >
             Upload
@@ -230,6 +261,8 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         </div>
       </div>
     </div>
+
+
   );
 }
 

@@ -169,6 +169,7 @@ function Onboarding({ roomId, onClosed }) {
         </h1>
 
         {/* NDA Content Section */}
+        {/* NDA Content Section */}
         <div className="bg-[#1A1A1A] rounded-lg border border-[#333] p-6 sm:p-8">
           <div className="overflow-y-auto max-h-[400px] mb-8 scrollbar-thin scrollbar-thumb-[#8BC34A] scrollbar-track-[#1A1A1A] scrollbar-w-[2px] pr-4">
             <h2 className="text-[#A3E636] text-2xl font-semibold mb-4">
@@ -180,19 +181,18 @@ function Onboarding({ roomId, onClosed }) {
               {new Date().toLocaleDateString()} by and between:
             </p>
             <div className="mb-4">
-              <p>1. Disclosing Party: BROKR </p>
+              <p>1. Disclosing Party: BROKR</p>
               <p>2. Receiving Party: {userEmail || "Loading..."}</p>
             </div>
-            <pre className="text-gray-300 whitespace-pre-wrap">
-              {ndaTemplate === "Loading NDA template..."
-                ? "Loading NDA template..."
-                : ""}
-            </pre>
-            {ndaTemplate !== "Loading NDA template..." && (
-              <div dangerouslySetInnerHTML={{ __html: ndaTemplate }}></div>
-            )}
+            {/* Render the NDA text correctly */}
+            <div
+              className="text-gray-300 text-sm leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: ndaTemplate.replace(/\n/g, "<br>") }}
+            ></div>
+
           </div>
         </div>
+
 
         {/* Sign Agreement Section */}
         <div className="border-t border-[#333] pt-8">

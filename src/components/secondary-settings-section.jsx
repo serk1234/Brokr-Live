@@ -127,9 +127,8 @@ function SecondarySettingsSection({ dataroomId }) {
           >
             {ndaOptions[ndaOption]}
             <i
-              className={`fas fa-chevron-down ml-2 ${
-                isOpen ? "rotate-180" : ""
-              }`}
+              className={`fas fa-chevron-down ml-2 ${isOpen ? "rotate-180" : ""
+                }`}
             ></i>
           </button>
           {isOpen && (
@@ -140,9 +139,8 @@ function SecondarySettingsSection({ dataroomId }) {
               {Object.entries(ndaOptions).map(([value, label]) => (
                 <div
                   key={value}
-                  className={`px-4 py-2 cursor-pointer hover:bg-gray-50 ${
-                    ndaOption === value ? "bg-[#A3E636]" : ""
-                  }`}
+                  className={`px-4 py-2 cursor-pointer hover:bg-gray-50 ${ndaOption === value ? "bg-[#A3E636]" : ""
+                    }`}
                   onClick={() => handleNdaStatusChange(value)} // Update local state and database
                 >
                   {label}
@@ -173,31 +171,65 @@ function SecondarySettingsSection({ dataroomId }) {
 
       {/* Custom NDA Template Modal */}
       {showNdaModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="bg-gray-300 p-4 rounded-lg w-11/12 max-w-md shadow-lg">
-            <h3 className="text-lg font-semibold mb-3">Edit NDA</h3>
-            <textarea
-              value={ndaText}
-              onChange={(e) => setNdaText(e.target.value)}
-              className="w-full h-40 p-3 border border-black rounded font-mono text-sm"
-            />
-            <div className="flex justify-end space-x-3 mt-3">
-              <ModernButton
-                onClick={() => setShowNdaModal(false)}
-                className="px-3 py-1.5 bg-red-500 text-white rounded hover:bg-red-600 transition"
-              >
-                Cancel
-              </ModernButton>
-              <ModernButton
-                onClick={handleSaveNdaTemplate}
-                className="px-3 py-1.5 bg-[#A3E636] rounded border border-black shadow-lg flex items-center gap-2 hover:bg-[#93d626] transition-color"
-              >
-                Save
-              </ModernButton>
+        <>
+          {/* Prevent background scrolling */}
+          <style>{`body { overflow: hidden; }`}</style>
+
+          {/* Centered Floating Modal */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            {/* Modal Box */}
+            <div className="bg-white w-[90vw] max-w-4xl h-[80vh] p-6 rounded-lg shadow-lg flex flex-col border border-gray-300">
+              {/* Modal Header with X Close Button */}
+              <div className="flex justify-between items-center border-b pb-3">
+                <h3 className="text-xl font-semibold">Edit NDA</h3>
+                <button
+                  onClick={() => {
+                    setShowNdaModal(false);
+                    document.body.style.overflow = "auto"; // Restore background scroll
+                  }}
+                  className="text-gray-500 hover:text-gray-800 transition"
+                >
+                  {/* SVG "X" Icon */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    className="w-6 h-6"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Scrollable NDA Content */}
+              <textarea
+                value={ndaText}
+                onChange={(e) => setNdaText(e.target.value)}
+                className="w-full flex-1 mt-3 p-4 border border-gray-300 rounded font-mono text-sm resize-none overflow-auto"
+                style={{ height: "calc(100% - 90px)" }} // Adjust height dynamically
+              />
+
+              {/* Modal Footer */}
+              <div className="flex justify-end border-t pt-3">
+                <ModernButton
+                  onClick={handleSaveNdaTemplate}
+                  className="px-4 py-2 bg-[#A3E636] rounded border border-black shadow-lg hover:bg-[#93d626] transition-color"
+                >
+                  Save
+                </ModernButton>
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
+
+
+
+
+
+
       {popupMessage && (
         <Popup
           message={popupMessage}

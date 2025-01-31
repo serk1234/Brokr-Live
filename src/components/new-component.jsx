@@ -251,38 +251,49 @@ function NewComponent({ email }) {
 
         {/* Subscription Section */}
         <>
+
           <div className="bg-[#f5f5f5] rounded-xl p-6 shadow-lg relative mb-6 border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300">
-            <div className="flex items-center justify-between gap-4 mb-6">
+            <div className="flex items-center justify-between gap-4 mb-4">
               <h2 className="text-2xl font-medium">Subscription</h2>
-              <ModernButton
-                text={isSubscribed ? "Manage" : "Subscribe"}
-                onClick={
-                  isSubscribed ? handleManageSubscription : handleSubscribe
-                }
-              />
+              <button
+                onClick={isSubscribed ? handleManageSubscription : handleSubscribe}
+                className="bg-[#A3E636] text-black px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-all"
+              >
+                {isSubscribed ? "Manage" : "Subscribe"}
+              </button>
             </div>
+
             {isSubscribed && (
-              <div className="pt-10">
-                <p>Total Memory: {memoryData.totalMemory} GB</p>
-                <p>Used Memory: {memoryData.usedMemory.toFixed(4)} GB</p>
-                <div className="w-full bg-gray-200 rounded-full h-6 mt-4">
+              <div>
+                {/* Storage & Used in a Single Row with Correct Spacing */}
+                <div className="flex justify-between items-center mb-3">
+                  {/* Storage */}
+                  <div className="flex items-center space-x-2 text-gray-600">
+                    <i className="fa-solid fa-microchip text-lg text-gray-500"></i>
+                    <p className="text-base font-medium text-gray-600">Storage</p>
+                    <p className="text-lg font-semibold text-black ml-1">{memoryData.totalMemory} GB</p> {/* Closer spacing */}
+                  </div>
+
+                  {/* Used */}
+                  <div className="flex items-center space-x-2 text-gray-600">
+                    <i className="fa-solid fa-database text-lg text-gray-500"></i>
+                    <p className="text-base font-medium text-gray-600">Used</p>
+                    <p className="text-lg font-semibold text-black ml-1">
+                      {memoryData.usedMemory.toFixed(1)} GB
+                      <span className="text-gray-500 text-base"> ({((memoryData.usedMemory / memoryData.totalMemory) * 100).toFixed(1)}%)</span>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Green Progress Bar */}
+                <div className="w-full bg-gray-200 rounded-full h-4">
                   <div
-                    className="bg-blue-600 h-6 rounded-full"
+                    className="h-4 rounded-full bg-[#A3E636] transition-all duration-300"
                     style={{
-                      width: `${
-                        (memoryData.usedMemory / memoryData.totalMemory) * 100
-                      }%`,
+                      width: `${(memoryData.usedMemory / memoryData.totalMemory) * 100}%`,
                     }}
                   ></div>
                 </div>
-                <p className="mt-2">
-                  Memory Usage:{" "}
-                  {(
-                    (memoryData.usedMemory / memoryData.totalMemory) *
-                    100
-                  ).toFixed(4)}
-                  %
-                </p>
               </div>
             )}
           </div>
