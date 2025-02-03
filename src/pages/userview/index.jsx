@@ -1,5 +1,6 @@
 "use client";
 
+import { ModernButton } from "@/components/contentmanager";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Modal from "react-modal";
@@ -126,6 +127,7 @@ function UserView() {
               .select(
                 "name, new_name, uploaded_by, upload_at, locked, file_path"
               )
+              .eq("deleted", false)
               .eq("dataroom_id", dataroomId);
 
             if (fileError) {
@@ -247,8 +249,26 @@ function UserView() {
         </Modal>
       )}
 
-      <div className="flex flex-1">
-        <div className="w-1/4 bg-gray-50 border-r border-gray-200 p-4">
+      {/* Responsive Layout */}
+      <div className="flex flex-1 flex-col sm:flex-row">
+        {/* Sidebar for Contents */}
+        <div className="w-full sm:w-1/4 bg-gray-50 border-r border-gray-200 p-4">
+          <ModernButton
+            text="Leave"
+            icon="fa-delete"
+            onClick={async () => {
+              const response = await supabase
+                .from("invited_users")
+                .delete()
+                .eq("email", userEmail)
+                .eq("dataroom_id", router.query.id);
+              alert("Leaved sucessfully");
+              console.log(response);
+
+              router.back();
+            }}
+            variant="secondary"
+          />
           <h2 className="text-lg font-medium mb-4">Contents</h2>
           <ul className="space-y-2">
             {files.map((file, index) => (
