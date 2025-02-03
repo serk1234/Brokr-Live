@@ -14,6 +14,7 @@ import Teamactivity from "../../components/teamactivity";
 import Teamsecteam from "../../components/teamsecteam";
 import Title from "../../components/title";
 import Usermanagement from "../../components/usermanagement";
+import Inbox from "../../components/Inbox"; // Import Inbox component
 
 function MainComponent() {
   const router = useRouter();
@@ -138,6 +139,10 @@ function MainComponent() {
             <Contentmanager items={[]} dataroomId={dataroomId} />
           )}
           {activeTab === "team" && <Teamsecteam />}
+
+
+          {activeTab === "inbox" && <Inbox userEmail={userEmail} dataroomId={dataroomId} />}
+
         </div>
       </div>
 

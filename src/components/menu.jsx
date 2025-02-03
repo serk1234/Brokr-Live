@@ -1,13 +1,14 @@
 "use client";
 import React from "react";
 
-function Menu({ activeTab, setActiveTab, teamCount, activeUsers, contentCount }) {
+function Menu({ activeTab, setActiveTab, teamCount, activeUsers, contentCount, newMessages }) {
   const tabs = [
-    { name: "dashboard", icon: "fas fa-dashboard", label: "Dashboard", badge: contentCount || null },
-    { name: "contents", icon: "fas fa-file-lines", label: "Contents", badge: contentCount || null },
+    { name: "dashboard", icon: "fas fa-tachometer-alt", label: "Dashboard" },
+    { name: "contents", icon: "fas fa-file-alt", label: "Contents" },
     { name: "users", icon: "fas fa-user", label: "Users", badge: activeUsers.length || null },
     { name: "team", icon: "fas fa-users", label: "Team", badge: teamCount || null },
-    { name: "settings", icon: "fas fa-cog", label: "Settings", badge: null },
+    // Ensure same style as others
+    { name: "settings", icon: "fas fa-cog", label: "Settings" },
   ];
 
   return (
@@ -18,19 +19,18 @@ function Menu({ activeTab, setActiveTab, teamCount, activeUsers, contentCount })
           {tabs.map((tab) => (
             <li
               key={tab.name}
-              className={`group cursor-pointer ${activeTab === tab.name ? "bg-gray-100" : ""}`}
+              className={`group cursor-pointer flex items-center p-2 rounded hover:bg-gray-200 transition-colors ${activeTab === tab.name ? "bg-gray-100" : ""
+                }`}
               onClick={() => setActiveTab(tab.name)}
             >
-              <div className="flex items-center p-2 rounded hover:bg-gray-200 hover:text-black transition-colors">
-                <div className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-lg border border-black group-hover:bg-black group-hover:text-white transition-colors">
-                  <i className={tab.icon}></i>
-                </div>
-                <span className="ml-3">{tab.label}</span>
+              <div className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-lg border border-black group-hover:bg-black group-hover:text-white transition-colors">
+                <i className={`${tab.icon} text-lg`} />
               </div>
+              <span className="ml-3">{tab.label}</span>
               {tab.badge && (
-                <div className="ml-auto px-2 py-1 bg-[#A3E636] text-black text-xs font-semibold rounded-full border border-black">
+                <span className="ml-auto px-2 py-1 bg-red-500 text-white text-xs font-semibold rounded-full">
                   {tab.badge}
-                </div>
+                </span>
               )}
             </li>
           ))}
@@ -42,11 +42,10 @@ function Menu({ activeTab, setActiveTab, teamCount, activeUsers, contentCount })
         {tabs.map((tab) => (
           <div
             key={tab.name}
-            className={`mobile-bottom-menu-item flex flex-col items-center text-xs 
-            ${activeTab === tab.name ? "text-lime-600" : ""}`}
+            className={`flex flex-col items-center text-xs ${activeTab === tab.name ? "text-lime-600" : ""}`}
             onClick={() => setActiveTab(tab.name)}
           >
-            <i className={`${tab.icon} text-lg`}></i>
+            <i className={`${tab.icon} text-lg`} />
             <span>{tab.label}</span>
           </div>
         ))}

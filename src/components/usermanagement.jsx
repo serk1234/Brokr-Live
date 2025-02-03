@@ -7,6 +7,24 @@ import Popup from "./Popup";
 import SubscribeAlert from "./SubscribeAlert";
 
 function Usermanagement() {
+
+  const router = useRouter();
+  const [userEmail, setUserEmail] = useState(null); // 🔹 Store user email
+
+
+
+
+  useEffect(() => {
+    const fetchUserEmail = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (!error && data?.user) {
+        setUserEmail(data.user.email);
+      } else {
+        console.error("Error fetching user email:", error?.message);
+      }
+    };
+    fetchUserEmail();
+  }, []);
   const [activeTab, setActiveTab] = useState("active");
   const [activeUsers, setActiveUsers] = useState([]);
   const [invitedUsers, setInvitedUsers] = useState([]);
@@ -21,11 +39,83 @@ function Usermanagement() {
   const [showPopup, setShowPopup] = useState(false);
   const [confirmationPopup, setConfirmationPopup] = useState(false);
   const [userToRemove, setUserToRemove] = useState(null);
-  const router = useRouter();
+
 
   const handleRemoveEmailField = (index) => {
     setInviteEmails(inviteEmails.filter((_, i) => i !== index));
   };
+
+  const startChat = async (otherUserEmail) => {
+    if (!userEmail) {
+      console.error("Error: userEmail is null");
+      return;
+    }
+
+    console.log("Starting chat with:", otherUserEmail);
+
+    // 1️⃣ Fetch all chat IDs where the other user is a participant
+    const { data: otherUserChats, error: otherUserError } = await supabase
+      .from("chat_participants")
+      .select("chat_id")
+      .eq("user_email", otherUserEmail);
+
+    if (otherUserError) {
+      console.error("Error fetching other user's chats:", otherUserError.message);
+      return;
+    }
+
+    const otherUserChatIds = otherUserChats.map(chat => chat.chat_id);
+
+    // 2️⃣ Check if there's a common chat between the logged-in user and the other user
+    const { data: existingChat, error: existingError } = await supabase
+      .from("chat_participants")
+      .select("chat_id")
+      .eq("user_email", userEmail)
+      .in("chat_id", otherUserChatIds);
+
+    if (existingError) {
+      console.error("Error checking existing chat:", existingError.message);
+      return;
+    }
+
+    let chatId;
+    if (existingChat.length > 0) {
+      console.log("Chat already exists:", existingChat[0].chat_id);
+      chatId = existingChat[0].chat_id;
+    } else {
+      // 3️⃣ Create a new chat
+      const { data: newChat, error: chatError } = await supabase
+        .from("chats")
+        .insert([{ type: "private" }])
+        .select()
+        .single();
+
+      if (chatError) {
+        console.error("Error creating chat:", chatError.message);
+        return;
+      }
+
+      console.log("New chat created:", newChat);
+      chatId = newChat.id;
+
+      // 4️⃣ Add both users to the chat
+      const { error: participantsError } = await supabase.from("chat_participants").insert([
+        { chat_id: chatId, user_email: userEmail },
+        { chat_id: chatId, user_email: otherUserEmail }
+      ]);
+
+      if (participantsError) {
+        console.error("Error adding participants:", participantsError.message);
+        return;
+      }
+
+      console.log("Chat started successfully!");
+    }
+
+    setActiveTab("inbox"); // ✅ Instead of navigating, switch the UI to Inbox
+  };
+
+
 
   // Fetch all users from Supabase
   const fetchUsers = async (dataroomId) => {
@@ -324,6 +414,7 @@ function Usermanagement() {
             >
               {/* Left Section: Email */}
               <div className="font-medium">{user.email}</div>
+
 
               {/* Right Section: Details and Trash Button */}
               <div className="flex flex-row justify-between items-center sm:justify-end sm:gap-4 w-full sm:w-auto">

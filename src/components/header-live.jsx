@@ -175,7 +175,7 @@ function HeaderLive({ email, setShowModal }) {
             className="group w-full px-4 py-2 rounded-lg text-gray-800 font-medium bg-gray-200 hover:bg-gray-300 transition-all duration-200 flex items-center gap-2"
           >
             <i className="fas fa-user"></i>
-            <span className="text-black font-medium font-inter">
+            <span className="text-black font-medium font-inter hidden sm:inline">
               {email || "User"}
             </span>
             <i className="fas fa-chevron-down transition-transform duration-200 ease-in-out"></i>

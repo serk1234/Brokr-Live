@@ -270,14 +270,14 @@ function NewComponent({ email }) {
                   {/* Storage */}
                   <div className="flex items-center space-x-2 text-gray-600">
                     <i className="fa-solid fa-microchip text-lg text-gray-500"></i>
-                    <p className="text-base font-medium text-gray-600">Storage</p>
+                    <p className="text-base font-sm text-gray-600">Storage</p>
                     <p className="text-lg font-semibold text-black ml-1">{memoryData.totalMemory} GB</p> {/* Closer spacing */}
                   </div>
 
                   {/* Used */}
                   <div className="flex items-center space-x-2 text-gray-600">
                     <i className="fa-solid fa-database text-lg text-gray-500"></i>
-                    <p className="text-base font-medium text-gray-600">Used</p>
+                    <p className="text-base font-sm text-gray-600">Used</p>
                     <p className="text-lg font-semibold text-black ml-1">
                       {memoryData.usedMemory.toFixed(1)} GB
                       <span className="text-gray-500 text-base"> ({((memoryData.usedMemory / memoryData.totalMemory) * 100).toFixed(1)}%)</span>
@@ -286,14 +286,17 @@ function NewComponent({ email }) {
                 </div>
 
                 {/* Green Progress Bar */}
-                <div className="w-full bg-gray-200 rounded-full h-4">
+                {/* Green Progress Bar - Fixed Rounded Fill */}
+                <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
                   <div
-                    className="h-4 rounded-full bg-[#A3E636] transition-all duration-300"
+                    className="h-4 bg-[#A3E636] transition-all duration-300"
                     style={{
-                      width: `${(memoryData.usedMemory / memoryData.totalMemory) * 100}%`,
+                      width: `${Math.min((memoryData.usedMemory / memoryData.totalMemory) * 100, 100)}%`,
+                      borderRadius: "9999px", // Ensures full round edges
                     }}
                   ></div>
                 </div>
+
               </div>
             )}
           </div>
