@@ -7,7 +7,7 @@ function Menu({ activeTab, setActiveTab, teamCount, activeUsers, contentCount, n
     { name: "contents", icon: "fas fa-file-alt", label: "Contents" },
     { name: "users", icon: "fas fa-user", label: "Users", badge: activeUsers.length || null },
     { name: "team", icon: "fas fa-users", label: "Team", badge: teamCount || null },
-    // Ensure same style as others
+    { name: "inbox", icon: "fas fa-envelope", label: "Inbox", badge: newMessages || null },
     { name: "settings", icon: "fas fa-cog", label: "Settings" },
   ];
 

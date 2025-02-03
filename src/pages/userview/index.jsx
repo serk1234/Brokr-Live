@@ -233,43 +233,34 @@ function UserView() {
       {showNDA && (
         <Modal
           isOpen={showNDA}
-          onAfterOpen={() => {}}
-          onRequestClose={() => {}}
+          onAfterOpen={() => { }}
+          onRequestClose={() => { }}
           style={customStyles}
-          contentLabel="NDA Modal"
+          contentLabel="Example Modal"
         >
           <Onboarding
             roomId={router.query.id}
-            onClosed={async () => {
-              await supabase
-                .from("invited_users")
-                .update({ status: "active" })
-                .eq("dataroom_id", dataroom.id)
-                .eq("email", userEmail);
+            onClosed={() => {
               setShowNDA(false);
             }}
           />
         </Modal>
       )}
 
-      {/* Responsive Layout */}
-      <div className="flex flex-1 flex-col sm:flex-row">
-        {/* Sidebar for Contents */}
-        <div className="w-full sm:w-1/4 bg-gray-50 border-r border-gray-200 p-4">
+      <div className="flex flex-1">
+        <div className="w-1/4 bg-gray-50 border-r border-gray-200 p-4">
           <h2 className="text-lg font-medium mb-4">Contents</h2>
           <ul className="space-y-2">
             {files.map((file, index) => (
               <li
                 key={index}
-                className={`flex items-center p-2 rounded-lg cursor-pointer ${
-                  file.locked ? "bg-red-100" : "hover:bg-green-50"
-                }`}
+                className={`flex items-center p-2 rounded-lg cursor-pointer ${file.locked ? "bg-red-100" : "hover:bg-green-50"
+                  }`}
                 onClick={() => handleFileClick(file)}
               >
                 <i
-                  className={`fas ${
-                    file.locked ? "fa-lock" : "fa-file"
-                  } text-gray-500 mr-2`}
+                  className={`fas ${file.locked ? "fa-lock" : "fa-file"
+                    } text-gray-500 mr-2`}
                 ></i>
                 <span className="flex-1 truncate">{getDisplayName(file)}</span>
               </li>
@@ -277,7 +268,6 @@ function UserView() {
           </ul>
         </div>
 
-        {/* File Viewer */}
         <div className="flex-1 bg-white p-6">
           {selectedFile ? (
             <Viewer

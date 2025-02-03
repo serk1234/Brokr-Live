@@ -11,7 +11,6 @@ function Inbox({ userEmail, dataroomId }) {
     const [activeUsers, setActiveUsers] = useState([]);
     const [showUserList, setShowUserList] = useState(false);
 
-    /** ✅ Fetch active users for starting a new chat **/
     useEffect(() => {
         const fetchActiveUsers = async () => {
             if (!dataroomId) return;
@@ -20,209 +19,100 @@ function Inbox({ userEmail, dataroomId }) {
                 .select("email")
                 .eq("status", "active")
                 .eq("dataroom_id", dataroomId);
-
             if (!error) setActiveUsers(data);
         };
         fetchActiveUsers();
     }, [dataroomId]);
 
-    /** ✅ Fetch previous chats **/
     useEffect(() => {
         const fetchChats = async () => {
             if (!userEmail) return;
-
             const { data, error } = await supabase
                 .from("chat_participants")
                 .select("chat_id, user_email")
                 .neq("user_email", userEmail);
-
-            if (error) {
-                console.error("❌ Error fetching chats:", error.message);
-                return;
-            }
-
-            const chatMap = {};
-            data.forEach(({ chat_id, user_email }) => {
-                if (!chatMap[chat_id]) {
-                    chatMap[chat_id] = { email: user_email };
-                }
-            });
-
-            const chatList = Object.entries(chatMap).map(([chat_id, user]) => ({
-                id: chat_id,
-                name: user.email,
-            }));
-
-            setChats(chatList);
+            if (error) return console.error("Error fetching chats:", error);
+            setChats(data);
         };
-
         fetchChats();
     }, [userEmail]);
 
-    /** ✅ Fetch messages **/
     useEffect(() => {
         if (!selectedChat) return;
-
         const fetchMessages = async () => {
             const { data, error } = await supabase
                 .from("messages")
                 .select("*")
                 .eq("chat_id", selectedChat.id)
                 .order("created_at", { ascending: true });
-
             if (!error) setMessages(data);
         };
-
         fetchMessages();
     }, [selectedChat]);
 
-    /** ✅ Real-time message updates **/
-    useEffect(() => {
-        if (!selectedChat) return;
-
-        const channel = supabase
-            .channel(`chat-${selectedChat.id}`)
-            .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload) => {
-                setMessages((prev) => [...prev, payload.new]);
-            })
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [selectedChat]);
-
-    /** ✅ Start a new chat **/
     const startChat = async (otherUserEmail) => {
-        console.log("Starting chat with:", otherUserEmail);
-
-        const { data: existingChat, error: existingError } = await supabase
-            .from("chat_participants")
-            .select("chat_id")
-            .eq("user_email", userEmail);
-
-        if (existingError) {
-            console.error("Error checking existing chat:", existingError.message);
-            return;
-        }
-
-        let chatExists = null;
-        for (let chat of existingChat) {
-            const { data, error } = await supabase
-                .from("chat_participants")
-                .select("chat_id")
-                .eq("chat_id", chat.chat_id)
-                .eq("user_email", otherUserEmail);
-
-            if (!error && data.length > 0) {
-                chatExists = chat.chat_id;
-                break;
-            }
-        }
-
-        if (chatExists) {
-            setSelectedChat({ id: chatExists, name: otherUserEmail });
-            return;
-        }
-
-        const { data: newChat, error: chatError } = await supabase
-            .from("chats")
-            .insert([{ type: "private" }])
-            .select()
-            .single();
-
-        if (chatError) {
-            console.error("Error creating chat:", chatError.message);
-            return;
-        }
-
-        await supabase.from("chat_participants").insert([
-            { chat_id: newChat.id, user_email: userEmail },
-            { chat_id: newChat.id, user_email: otherUserEmail }
-        ]);
-
-        setSelectedChat({ id: newChat.id, name: otherUserEmail });
         setShowUserList(false);
+        setSelectedChat({ id: Date.now(), name: otherUserEmail });
     };
 
-    /** ✅ Send a message **/
     const sendMessage = async () => {
         if (!newMessage.trim() || !selectedChat) return;
-
-        const { error } = await supabase.from("messages").insert({
-            chat_id: selectedChat.id,
-            sender_email: userEmail,
-            content: newMessage,
-        });
-
-        if (!error) {
-            setMessages([...messages, { sender_email: userEmail, content: newMessage }]);
-            setNewMessage("");
-        }
+        setMessages([...messages, { sender_email: userEmail, content: newMessage }]);
+        setNewMessage("");
     };
 
     return (
-        <div className="flex h-full">
-            {/* 📌 Sidebar */}
-            <div className="w-1/3 bg-gray-100 p-4">
-                <h2 className="text-xl font-semibold mb-4">Messages</h2>
-
-                {/* ✅ Start Chat Button */}
-                <button
-                    className="w-full bg-green-500 text-white p-3 rounded-lg mb-4"
-                    onClick={() => setShowUserList(!showUserList)}
-                >
-                    Start Chat
-                </button>
-
-                {/* ✅ Show active users to start a new chat */}
-                {showUserList && (
-                    <div className="mt-4 bg-white shadow-md p-3 rounded-lg">
-                        <h3 className="text-md font-semibold mb-2">Start a Chat</h3>
-                        {activeUsers.map(user => (
-                            <div
-                                key={user.email}
-                                className="p-2 cursor-pointer hover:bg-gray-200 rounded"
-                                onClick={() => startChat(user.email)}
-                            >
-                                {user.email}
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {/* ✅ Show list of previous chats (Always Visible) */}
-                <h3 className="text-md font-semibold mt-4">Previous Chats</h3>
-                {chats.length > 0 ? (
-                    chats.map(chat => (
-                        <div
-                            key={chat.id}
-                            className="flex items-center p-3 cursor-pointer hover:bg-gray-200 rounded-lg"
-                            onClick={() => setSelectedChat(chat)}
+        <div className="flex h-full border shadow-lg rounded-lg">
+            {/* Sidebar */}
+            <div className="w-1/3 bg-gray-100 p-4 border-r">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold">Messages</h2>
+                    <div className="flex items-center gap-2">
+                        <button
+                            className="bg-[#A3E636] text-black px-3 py-1 rounded-md text-sm"
+                            onClick={() => setShowUserList(true)}
                         >
-                            <div className="font-semibold text-blue-600">{chat.name}</div>
+                            Start Chat
+                        </button>
+                        <i
+                            className="fas fa-message-plus text-blue-600 cursor-pointer text-2xl"
+                            onClick={() => setShowUserList(true)}
+                        ></i>
+                    </div>
+                </div>
+                {chats.map((chat, index) => (
+                    <div
+                        key={index}
+                        className="p-3 flex justify-between items-center cursor-pointer hover:bg-gray-200 rounded-lg"
+                        onClick={() => setSelectedChat(chat)}
+                    >
+                        <div>
+                            <p className="font-semibold">{chat.user_email}</p>
+                            <p className="text-gray-500 text-sm">Last message...</p>
                         </div>
-                    ))
-                ) : (
-                    <p className="text-gray-500">No previous chats</p>
-                )}
+                        <span className="text-gray-400 text-xs">2h</span>
+                    </div>
+                ))}
             </div>
 
-            {/* 📌 Chat Messages */}
+            {/* Chat Window */}
             <div className="flex-1 flex flex-col p-4">
                 {selectedChat ? (
                     <>
-                        <h2 className="text-xl font-semibold mb-4">{selectedChat.name}</h2>
-                        <div className="flex-1 overflow-y-auto bg-white p-4 rounded-lg shadow">
+                        <h2 className="text-xl font-semibold border-b pb-2 mb-4">{selectedChat.name}</h2>
+                        <div className="flex-1 overflow-y-auto bg-white p-4 rounded-lg">
                             {messages.length > 0 ? (
                                 messages.map((msg, index) => (
-                                    <div key={index} className={`mb-2 p-2 rounded ${msg.sender_email === userEmail ? "bg-green-200 text-right" : "bg-gray-300 text-left"}`}>
+                                    <div
+                                        key={index}
+                                        className={`mb-2 p-2 rounded ${msg.sender_email === userEmail ? "bg-green-200 text-right" : "bg-gray-300 text-left"}`}
+                                    >
                                         <strong>{msg.sender_email}</strong>
                                         <p>{msg.content}</p>
                                     </div>
                                 ))
                             ) : (
-                                <p className="text-gray-500">No messages yet. Start a conversation!</p>
+                                <p className="text-gray-500">No messages yet.</p>
                             )}
                         </div>
                         <div className="mt-4 flex">
@@ -233,18 +123,39 @@ function Inbox({ userEmail, dataroomId }) {
                                 value={newMessage}
                                 onChange={(e) => setNewMessage(e.target.value)}
                             />
-                            <button className="bg-green-500 text-white px-4 rounded-r" onClick={sendMessage}>
-                                Send
-                            </button>
+                            <button className="bg-green-500 text-white px-4 rounded-r" onClick={sendMessage}>Send</button>
                         </div>
                     </>
                 ) : (
                     <p className="text-gray-500">Select a chat to start messaging</p>
                 )}
             </div>
+
+            {/* User List Modal */}
+            {showUserList && (
+                <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-gray-900 bg-opacity-50">
+                    <div className="bg-white p-5 rounded-lg shadow-lg w-1/3">
+                        <h3 className="text-lg font-semibold mb-3">Start a Chat</h3>
+                        {activeUsers.map(user => (
+                            <div
+                                key={user.email}
+                                className="p-2 cursor-pointer hover:bg-gray-200 rounded"
+                                onClick={() => startChat(user.email)}
+                            >
+                                {user.email}
+                            </div>
+                        ))}
+                        <button
+                            className="mt-3 bg-red-500 text-white p-2 rounded w-full"
+                            onClick={() => setShowUserList(false)}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
 
 export default Inbox;
-
