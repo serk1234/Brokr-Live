@@ -30,8 +30,17 @@ function MainComponent() {
   // Email Login
   const handleLogin = async () => {
     setLoading(true);
+    console.log(location.hostname);
     try {
-      const { error } = await supabase.auth.signInWithOtp({ email });
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options:
+          location.hostname === "localhost" || location.hostname === "127.0.0.1"
+            ? {
+                emailRedirectTo: "http://localhost:3001/auth/confirm",
+              }
+            : null,
+      });
       if (error) throw error;
       setPopupMessage("Check your email for the magic link!");
     } catch (error) {

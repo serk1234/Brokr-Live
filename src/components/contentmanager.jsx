@@ -5,267 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../src/app/supabaseClient";
 import SubscribeAlert from "./SubscribeAlert";
 
-function ModernButton({ text, icon, onClick, variant = "primary" }) {
-  const baseClasses =
-    "px-4 py-2.5 rounded-xl font-medium inline-flex items-center gap-2 transition-all duration-200";
-  const variants = {
-    primary:
-      "bg-[#A3E636] hover:bg-[#93d626] text-black shadow-[0_2px_8px_rgba(163,230,54,0.25)] hover:shadow-[0_4px_12px_rgba(163,230,54,0.35)]",
-    secondary: "bg-black/5 hover:bg-black/10 text-black",
-    danger: "bg-red-50 hover:bg-red-100 text-red-600",
-  };
-
-  return (
-    <button onClick={onClick} className={`${baseClasses} ${variants[variant]}`}>
-      <i className={`fas ${icon} text-lg`}></i>
-      <span>{text}</span>
-    </button>
-  );
-}
-
-function UploadModal({ onClose, onUpload, dataroomId }) {
-  const [dragActive, setDragActive] = useState(false);
-  const [file, setFile] = useState(null);
-  const [files, setFiles] = useState([]);
-  const inputRef = useRef(null);
-
-  const handleDragEnter = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setDragActive(true);
-  };
-
-  const handleDragLeave = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setDragActive(false);
-  };
-
-  const handleDragOver = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-  };
-
-
-
-
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      console.log("files__", file);
-
-      setFile(e.dataTransfer.files[0]);
-      console.log("files__", e.dataTransfer.files);
-      console.log("files__", file);
-      var filesList = [];
-      for (let i = 0; i < e.dataTransfer.files.length; i++) {
-        filesList.push(e.dataTransfer.files[i]);
-      }
-      setFiles(filesList);
-    }
-  };
-
-  const handleChange = (e) => {
-    e.preventDefault();
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-      var filesList = [];
-      for (let i = 0; i < e.target.files.length; i++) {
-        filesList.push(e.target.files[i]);
-      }
-      setFiles(filesList);
-      console.log("files__", file);
-    }
-  };
-
-  const removeFile = (index) => {
-    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
-  };
-
-
-  const sanitizeFileName = (fileName) => {
-    // Replace all non-alphanumeric characters, spaces, and special symbols with underscores
-    return fileName
-      .replace(/[^a-zA-Z0-9._-]/g, "_") // Replace unsupported characters with "_"
-      .replace(/_+/g, "_") // Replace multiple underscores with a single underscore
-      .trim(); // Remove any leading/trailing underscores
-  };
-
-  const handleSubmit = async () => {
-    for (var i = 0; i < files.length; i++) {
-      setFile(files[i]);
-      console.log("setting_files=>", files[i], file);
-      await uploadFile(files[i]);
-      setFile(null);
-    }
-    onClose();
-  };
-  async function uploadFile(paramFile) {
-    if (paramFile) {
-      try {
-        const sanitizedFileName = sanitizeFileName(paramFile.name);
-        console.log(sanitizeFileName);
-        const date = new Date();
-
-        const timestamp = `${date.getFullYear()}-${date.getMonth() + 1
-          }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
-
-        var fileName = timestamp + "_" + sanitizedFileName;
-
-        var filePath = `files/${dataroomId}/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("file_uploads")
-          // .upload(`files/${sanitizedFileName}`, file);
-          .upload(filePath, paramFile);
-
-        if (uploadError) throw uploadError;
-
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
-        if (userError) throw userError;
-        const { error: insertError } = await supabase
-          .from("file_uploads")
-          .insert([
-            {
-              name: sanitizedFileName,
-              file_path: filePath,
-              uploaded_by: user.email,
-              upload_at: new Date().toISOString(),
-              dataroom_id: dataroomId,
-              file_size_mb: paramFile.size / (1024 * 1024),
-            },
-          ]);
-
-        if (insertError) throw insertError;
-
-        onUpload({
-          name: sanitizedFileName,
-          uploaded_by: user.email,
-          file_path: filePath,
-
-          upload_at: new Date().toISOString(),
-        });
-      } catch (err) {
-        console.error("Error uploading file:", err.message);
-      }
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-lg w-[520px] p-6">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Upload File</h2>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
-          >
-            <i className="fas fa-times"></i>
-          </button>
-        </div>
-
-        {/* Drag & Drop Box */}
-        <div
-          className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-colors ${dragActive ? "border-[#A3E636] bg-[#A3E636]/10" : "border-black/10"
-            }`}
-          onDragEnter={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-        >
-          <input
-            multiple
-            ref={inputRef}
-            type="file"
-            className="hidden"
-            onChange={handleChange}
-          />
-
-          <div className="flex flex-col items-center">
-            <div className="w-14 h-14 bg-[#A3E636]/10 rounded-2xl flex items-center justify-center">
-              <i className="fas fa-cloud-upload-alt text-[#A3E636] text-2xl"></i>
-            </div>
-
-            {/* Scrollable File List */}
-            {files.length > 0 ? (
-              <div className="mt-4 w-full max-h-60 overflow-y-auto border-t border-black/10">
-                <ul className="divide-y divide-black/10">
-                  {files.map((e, index) => (
-                    <li key={index} className="px-4 py-2 flex items-center justify-between">
-                      <div className="flex-1 truncate">
-                        <p className="text-lg font-medium truncate">{e.name}</p>
-                      </div>
-                      <p className="text-sm text-black/40 w-24 text-center">
-                        {(e.size / (1024 * 1024)).toFixed(2)} MB
-                      </p>
-                      <button
-                        className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition"
-                        onClick={() => removeFile(index)}
-                      >
-                        <i className="fas fa-trash-alt text-lg"></i>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <div className="mt-3 text-gray-600">
-                <p className="text-lg font-medium">Drag and drop your file here</p>
-                <p className="text-sm text-gray-500">or click to browse from your computer</p>
-              </div>
-            )}
-          </div>
-
-          <button
-            onClick={() => inputRef.current?.click()}
-            className="mt-3 px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 hover:bg-gray-200 transition-colors"
-          >
-            Choose Files
-          </button>
-        </div>
-
-        {/* Buttons */}
-        <div className="flex justify-end gap-3 mt-5">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 hover:bg-gray-200 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => handleSubmit(files)}
-            disabled={files.length === 0}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${files.length > 0
-              ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
-              : "bg-gray-100 text-gray-400 cursor-not-allowed"
-              }`}
-          >
-            Upload
-          </button>
-        </div>
-      </div>
-    </div>
-
-
-  );
-}
-
 function Contentmanager({ items = [], dataroomId }) {
   const [files, setFiles] = useState(items);
   const [expandedRow, setExpandedRow] = useState(null);
@@ -279,8 +18,6 @@ function Contentmanager({ items = [], dataroomId }) {
   const [fileToRemove, setFileToRemove] = useState(null);
   const [isLocked, setIsLocked] = useState(false);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
-
-
 
   const customStyles = {
     content: {
@@ -957,6 +694,83 @@ function Contentmanager({ items = [], dataroomId }) {
             </h1>
             <div className="flex flex-wrap gap-2 md:gap-3">
               <ModernButton
+                text="Download All"
+                icon="fa-download"
+                onClick={async () => {
+                  const {
+                    data: { user },
+                    error: userError,
+                  } = await supabase.auth.getUser();
+                  if (userError) throw userError;
+
+                  var response = await supabase
+                    .from("subscriptions")
+                    .select("id")
+                    .eq("user_email", user.email)
+                    .single();
+
+                  if (!response.data) {
+                    setShowSubscribeModal(true); // Show the subscribe alert
+                    return;
+                  }
+                  downloadAllFiles();
+                }}
+                variant="secondary"
+              />
+
+              {isLocked && (
+                <ModernButton
+                  text="Unlock All"
+                  icon="fa-lock-open"
+                  onClick={async () => {
+                    const {
+                      data: { user },
+                      error: userError,
+                    } = await supabase.auth.getUser();
+                    if (userError) throw userError;
+
+                    var response = await supabase
+                      .from("subscriptions")
+                      .select("id")
+                      .eq("user_email", user.email)
+                      .single();
+
+                    if (!response.data) {
+                      setShowSubscribeModal(true); // Show the subscribe alert
+                      return;
+                    }
+                    toggleLockAll();
+                  }}
+                  variant="danger"
+                />
+              )}
+              {!isLocked && (
+                <ModernButton
+                  text="Lock All"
+                  icon="fa-lock"
+                  onClick={async () => {
+                    const {
+                      data: { user },
+                      error: userError,
+                    } = await supabase.auth.getUser();
+                    if (userError) throw userError;
+
+                    var response = await supabase
+                      .from("subscriptions")
+                      .select("id")
+                      .eq("user_email", user.email)
+                      .single();
+
+                    if (!response.data) {
+                      setShowSubscribeModal(true); // Show the subscribe alert
+                      return;
+                    }
+                    toggleLockAll();
+                  }}
+                  variant="danger"
+                />
+              )}
+              <ModernButton
                 text={window.innerWidth > 768 ? "Upload" : ""}
                 icon="fa-cloud-upload-alt"
                 onClick={async () => {
@@ -983,7 +797,10 @@ function Contentmanager({ items = [], dataroomId }) {
                 className="w-10 md:w-auto"
               />
             </div>
-            <SubscribeAlert isOpen={showSubscribeModal} onClose={() => setShowSubscribeModal(false)} />
+            <SubscribeAlert
+              isOpen={showSubscribeModal}
+              onClose={() => setShowSubscribeModal(false)}
+            />
           </div>
 
           {/* Table Header - Hidden on mobile */}
@@ -1069,8 +886,9 @@ function Contentmanager({ items = [], dataroomId }) {
                         className="flex items-center justify-center text-gray-600 hover:text-yellow-600 flex-1"
                       >
                         <i
-                          className={`fas fa-${file.locked ? "lock" : "lock-open"
-                            } text-sm md:text-base`}
+                          className={`fas fa-${
+                            file.locked ? "lock" : "lock-open"
+                          } text-sm md:text-base`}
                         ></i>
                         <span className="ml-2 text-sm">
                           {file.locked ? "Unlock" : "Lock"}
@@ -1131,8 +949,9 @@ function Contentmanager({ items = [], dataroomId }) {
               <div
                 key={index}
                 className={`grid grid-cols-[1fr_auto] md:grid-cols-[2fr_1fr_1fr_auto] gap-2 md:gap-6 
-    items-center py-3 px-3 md:px-4 hover:bg-black/5 transition-colors ${file.locked ? "bg-amber-50" : ""
-                  }`}
+    items-center py-3 px-3 md:px-4 hover:bg-black/5 transition-colors ${
+      file.locked ? "bg-amber-50" : ""
+    }`}
               >
                 {/* File Name and Icon Section */}
                 <div className="flex items-center gap-2 md:gap-3 min-w-0 col-span-2 md:col-span-1">
@@ -1212,8 +1031,9 @@ function Contentmanager({ items = [], dataroomId }) {
                     className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
                   >
                     <i
-                      className={`fas fa-${file.locked ? "lock" : "lock-open"
-                        } text-sm md:text-base`}
+                      className={`fas fa-${
+                        file.locked ? "lock" : "lock-open"
+                      } text-sm md:text-base`}
                     ></i>
                   </button>
                   <button
@@ -1250,6 +1070,252 @@ function Contentmanager({ items = [], dataroomId }) {
           }}
         />
       )}
+    </div>
+  );
+}
+function UploadModal({ onClose, onUpload, dataroomId }) {
+  const [dragActive, setDragActive] = useState(false);
+  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
+  const inputRef = useRef(null);
+
+  const handleDragEnter = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setDragActive(false);
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      console.log("files__", file);
+
+      setFile(e.dataTransfer.files[0]);
+      console.log("files__", e.dataTransfer.files);
+      console.log("files__", file);
+      var filesList = [];
+      for (let i = 0; i < e.dataTransfer.files.length; i++) {
+        filesList.push(e.dataTransfer.files[i]);
+      }
+      setFiles(filesList);
+    }
+  };
+
+  const handleChange = (e) => {
+    e.preventDefault();
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+      var filesList = [];
+      for (let i = 0; i < e.target.files.length; i++) {
+        filesList.push(e.target.files[i]);
+      }
+      setFiles(filesList);
+      console.log("files__", file);
+    }
+  };
+
+  const removeFile = (index) => {
+    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  };
+
+  const sanitizeFileName = (fileName) => {
+    // Replace all non-alphanumeric characters, spaces, and special symbols with underscores
+    return fileName
+      .replace(/[^a-zA-Z0-9._-]/g, "_") // Replace unsupported characters with "_"
+      .replace(/_+/g, "_") // Replace multiple underscores with a single underscore
+      .trim(); // Remove any leading/trailing underscores
+  };
+
+  const handleSubmit = async () => {
+    for (var i = 0; i < files.length; i++) {
+      setFile(files[i]);
+      console.log("setting_files=>", files[i], file);
+      await uploadFile(files[i]);
+      setFile(null);
+    }
+    onClose();
+  };
+  async function uploadFile(paramFile) {
+    if (paramFile) {
+      try {
+        const sanitizedFileName = sanitizeFileName(paramFile.name);
+        console.log(sanitizeFileName);
+        const date = new Date();
+
+        const timestamp = `${date.getFullYear()}-${
+          date.getMonth() + 1
+        }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
+
+        var fileName = timestamp + "_" + sanitizedFileName;
+
+        var filePath = `files/${dataroomId}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("file_uploads")
+          // .upload(`files/${sanitizedFileName}`, file);
+          .upload(filePath, paramFile);
+
+        if (uploadError) throw uploadError;
+
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+        if (userError) throw userError;
+        const { error: insertError } = await supabase
+          .from("file_uploads")
+          .insert([
+            {
+              name: sanitizedFileName,
+              file_path: filePath,
+              uploaded_by: user.email,
+              upload_at: new Date().toISOString(),
+              dataroom_id: dataroomId,
+              file_size_mb: paramFile.size / (1024 * 1024),
+            },
+          ]);
+
+        if (insertError) throw insertError;
+
+        onUpload({
+          name: sanitizedFileName,
+          uploaded_by: user.email,
+          file_path: filePath,
+
+          upload_at: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.error("Error uploading file:", err.message);
+      }
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl shadow-lg w-[520px] p-6">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Upload File</h2>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
+          >
+            <i className="fas fa-times"></i>
+          </button>
+        </div>
+
+        {/* Drag & Drop Box */}
+        <div
+          className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
+            dragActive ? "border-[#A3E636] bg-[#A3E636]/10" : "border-black/10"
+          }`}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+        >
+          <input
+            multiple
+            ref={inputRef}
+            type="file"
+            className="hidden"
+            onChange={handleChange}
+          />
+
+          <div className="flex flex-col items-center">
+            <div className="w-14 h-14 bg-[#A3E636]/10 rounded-2xl flex items-center justify-center">
+              <i className="fas fa-cloud-upload-alt text-[#A3E636] text-2xl"></i>
+            </div>
+
+            {/* Scrollable File List */}
+            {files.length > 0 ? (
+              <div className="mt-4 w-full max-h-60 overflow-y-auto border-t border-black/10">
+                <ul className="divide-y divide-black/10">
+                  {files.map((e, index) => (
+                    <li
+                      key={index}
+                      className="px-4 py-2 flex items-center justify-between"
+                    >
+                      <div className="flex-1 truncate">
+                        <p className="text-lg font-medium truncate">{e.name}</p>
+                      </div>
+                      <p className="text-sm text-black/40 w-24 text-center">
+                        {(e.size / (1024 * 1024)).toFixed(2)} MB
+                      </p>
+                      <button
+                        className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition"
+                        onClick={() => removeFile(index)}
+                      >
+                        <i className="fas fa-trash-alt text-lg"></i>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <div className="mt-3 text-gray-600">
+                <p className="text-lg font-medium">
+                  Drag and drop your file here
+                </p>
+                <p className="text-sm text-gray-500">
+                  or click to browse from your computer
+                </p>
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={() => inputRef.current?.click()}
+            className="mt-3 px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 hover:bg-gray-200 transition-colors"
+          >
+            Choose Files
+          </button>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex justify-end gap-3 mt-5">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 hover:bg-gray-200 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => handleSubmit(files)}
+            disabled={files.length === 0}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              files.length > 0
+                ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
+                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+            }`}
+          >
+            Upload
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1359,4 +1425,22 @@ function ContentMobileView({ files: [] }) {
     </div>
   );
 }
+export function ModernButton({ text, icon, onClick, variant = "primary" }) {
+  const baseClasses =
+    "px-4 py-2.5 rounded-xl font-medium inline-flex items-center gap-2 transition-all duration-200";
+  const variants = {
+    primary:
+      "bg-[#A3E636] hover:bg-[#93d626] text-black shadow-[0_2px_8px_rgba(163,230,54,0.25)] hover:shadow-[0_4px_12px_rgba(163,230,54,0.35)]",
+    secondary: "bg-black/5 hover:bg-black/10 text-black",
+    danger: "bg-red-50 hover:bg-red-100 text-red-600",
+  };
+
+  return (
+    <button onClick={onClick} className={`${baseClasses} ${variants[variant]}`}>
+      <i className={`fas ${icon} text-lg`}></i>
+      <span>{text}</span>
+    </button>
+  );
+}
+
 export default Contentmanager;
