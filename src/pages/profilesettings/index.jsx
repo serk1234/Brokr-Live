@@ -10,6 +10,7 @@ function MainComponent() {
   const [name, setName] = useState("");
   const [organization, setOrganization] = useState("");
 
+
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState("");
 
@@ -125,6 +126,7 @@ function MainComponent() {
         handleAutoUpgrade={handleAutoUpgrade}
         storageUsed={storageUsed}
         storageLimit={storageLimit}
+
       />
 
       {/* Footer */}

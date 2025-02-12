@@ -24,23 +24,14 @@ function Teamsecteam({ dataroomName }) {
   useEffect(() => {
     const fetchCreatorAndUsers = async () => {
       try {
-        const {
-          data: { user },
-          error: authError,
-        } = await supabase.auth.getUser();
-
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError) {
-          console.error(
-            "Error fetching authenticated user:",
-            authError.message
-          );
+          console.error("Error fetching authenticated user:", authError.message);
           return;
         }
 
-        // Set the creator's email
         setCreatorEmail(user.email);
 
-        // Fetch all users in the dataroom
         const { data, error } = await supabase
           .from("dataroom_teams")
           .select("*")
@@ -49,10 +40,16 @@ function Teamsecteam({ dataroomName }) {
 
         if (error) throw error;
 
+        // Fetch profile pictures from localStorage
+        const usersWithPictures = data.map((u) => ({
+          ...u,
+          profilePic: localStorage.getItem(`profilePic-${u.email}`) || null,
+        }));
+
         // Prioritize creator by placing their entry first
         const sortedUsers = [
-          ...data.filter((u) => u.email === user.email),
-          ...data.filter((u) => u.email !== user.email),
+          ...usersWithPictures.filter((u) => u.email === user.email),
+          ...usersWithPictures.filter((u) => u.email !== user.email),
         ];
 
         setUsers(sortedUsers || []);
@@ -243,58 +240,64 @@ function Teamsecteam({ dataroomName }) {
         />
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {users.map((user, index) => (
+      {users.map((user, index) => {
+        // Calculate dynamic width based on email length
+        const emailWidth = Math.max(user.email.length * 10, 250); // Minimum width 250px
+
+        return (
           <div
             key={index}
-            className={`p-6 rounded-lg shadow-sm transition-all duration-200 ${
-              user.email === creatorEmail
-                ? "bg-black text-white hover:border-[#A3E636]" // Admin box style with hover
-                : "bg-gray-100 border border-[#ddd] hover:border-[#A3E636]" // Regular box style with hover
-            }`}
+            className="bg-black text-white p-4 rounded-lg shadow-md"
+            style={{
+              width: `${emailWidth}px`, // Dynamic width
+              maxWidth: "100%", // Prevents overflow
+            }}
           >
-            <div className="flex justify-between items-center">
-              <div>
-                <div className="font-semibold">{user.email}</div>
-                {user.email === creatorEmail && (
-                  <div className="text-sm">Admin</div>
-                )}
-              </div>
-              {user.email !== creatorEmail && (
-                <button
-                  className="w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full"
-                  onClick={() => handleRemove(user)}
-                >
-                  <i className="fas fa-trash-alt"></i>
-                </button>
+            {/* Profile Pic & Admin Text in a Row */}
+            <div className="flex items-center gap-3">
+              {/* Profile Picture */}
+              {user.profilePic ? (
+                <img
+                  src={user.profilePic}
+                  alt="Admin Profile"
+                  className="w-10 h-10 rounded-full border border-gray-300 object-cover"
+                />
+              ) : (
+                <i className="fas fa-user-circle text-3xl text-gray-400"></i> // Default icon
+              )}
+
+              {/* Admin Label */}
+              {user.email === creatorEmail && (
+                <p className="text-[#A3E636] font-semibold text-sm">Admin</p>
               )}
             </div>
-            <div>
-              {user.email !== creatorEmail && ( // Hide "Invited By" for Admin
-                <div className="text-gray-600">
-                  Invited By: {user.invited_by || "N/A"}
-                </div>
-              )}
-              <div
-                className={`${
-                  user.email === creatorEmail ? "text-white" : "text-gray-600"
-                }`}
-              >
-                Created At:{" "}
-                {`${new Date(user.created_at).toLocaleDateString(
-                  "en-US"
-                )} ${new Date(user.created_at).toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "numeric",
-                  second: "numeric",
-                  hour12: true,
-                })}`}
-              </div>
-            </div>
+
+            {/* Email - Full Width, No Truncation */}
+            <p className="font-semibold text-white text-sm md:text-base mt-2 break-words">
+              {user.email}
+            </p>
+
+            {/* Created At - Below Email */}
+            <p className="text-gray-400 text-sm mt-1">
+              Created At:{" "}
+              {`${new Date(user.created_at).toLocaleDateString("en-US")} ${new Date(
+                user.created_at
+              ).toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "numeric",
+                second: "numeric",
+                hour12: true,
+              })}`}
+            </p>
           </div>
-        ))}
-      </div>
+        );
+      })}
+
+
+
+
     </div>
+
   );
 }
 

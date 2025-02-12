@@ -43,18 +43,17 @@ function Contentmanager({ items = [], dataroomId }) {
       try {
         const { data, error } = await supabase
           .from("file_uploads")
-          .select("name, file_path, uploaded_by, upload_at, locked, id")
+          .select("name, new_name, file_path, uploaded_by, upload_at, locked, id") // ✅ Include new_name
           .eq("dataroom_id", dataroomId)
           .eq("deleted", false);
+
         if (error) {
           console.error("Error fetching files:", error.message);
         } else {
           setFiles(
             (data || []).map((file) => ({
               ...file,
-              upload_at: file.upload_at
-                ? new Date(file.upload_at).toISOString()
-                : null,
+              upload_at: file.upload_at ? new Date(file.upload_at).toISOString() : null,
             }))
           );
         }
@@ -66,28 +65,27 @@ function Contentmanager({ items = [], dataroomId }) {
     fetchFiles();
   }, [dataroomId]);
 
+
   const handleFileView = async (file) => {
-    const displayName = getDisplayName(file); // Use new_name if available
     setSelectedFile({
       ...file,
-      name: displayName, // Updated to use the display name
+      name: getDisplayName(file), // This updates the displayed name but NOT the file fetch
       uploadedBy: file.uploaded_by,
       uploadDate: file.upload_at,
     });
+
     setLoadingContent(true);
 
     try {
-      console.log(file);
       const { data, error } = await supabase.storage
         .from("file_uploads")
-        // .getPublicUrl(`files/${dataroomId}/${displayName}`);
-        .getPublicUrl(file.file_path);
+        .getPublicUrl(file.file_path); // ✅ Always use `file_path`, not name!
 
       if (error) {
         console.error("Error fetching file URL:", error.message);
         setFileURL("");
       } else {
-        setFileURL(data.publicUrl);
+        setFileURL(data.publicUrl); // ✅ This ensures the correct file loads
       }
     } catch (err) {
       console.error("Unexpected error fetching file URL:", err.message);
@@ -112,38 +110,37 @@ function Contentmanager({ items = [], dataroomId }) {
 
   const handleNameChange = async (file) => {
     try {
-      // Update the new_name field in Supabase with the edited name
       const { error } = await supabase
         .from("file_uploads")
-        .update({ new_name: newName }) // Update only the new_name field
-        .eq("name", file.name) // Match the original name
-        .eq("dataroom_id", dataroomId); // Ensure it's for the correct dataroom
+        .update({ new_name: newName }) // ✅ Update only `new_name`, NOT `file_path`
+        .eq("id", file.id);
 
       if (error) throw error;
 
-      // Update the local state with the new_name field
-      const updatedFiles = files.map((f) =>
-        f.name === file.name ? { ...f, new_name: newName } : f
+      setFiles((prevFiles) =>
+        prevFiles.map((f) =>
+          f.id === file.id ? { ...f, new_name: newName } : f
+        )
       );
-      setFiles(updatedFiles);
 
-      // Update selectedFile if it matches the renamed file
-      if (selectedFile?.name === file.name) {
+      if (selectedFile?.id === file.id) {
         setSelectedFile((prevSelectedFile) => ({
           ...prevSelectedFile,
-          new_name: newName,
+          name: newName, // ✅ This ensures UI updates but the file path stays the same
         }));
       }
 
       console.log(`Updated file name to: ${newName}`);
-      setEditingName(null); // Exit editing mode
+      setEditingName(null);
     } catch (err) {
       console.error("Error updating file name:", err.message);
     }
   };
 
+
   // Function to get the display name (new_name or fallback to name)
   const getDisplayName = (file) => file.new_name || file.name;
+
 
   const toggleLock = async (file) => {
     console.log("toggleLock", file);
@@ -692,7 +689,38 @@ function Contentmanager({ items = [], dataroomId }) {
             <h1 className="text-3xl font-light hover:text-[#A3E636] transition-colors duration-300">
               Contents
             </h1>
-            <div className="flex flex-wrap gap-2 md:gap-3">
+
+            {/* ✅ Keep all buttons in a single row */}
+            <div className="flex gap-2 md:gap-3 items-center flex-nowrap">
+              {/* ✅ Upload Button - First */}
+              <ModernButton
+                text="Upload"
+                icon="fa-cloud-upload-alt"
+                onClick={async () => {
+                  const {
+                    data: { user },
+                    error: userError,
+                  } = await supabase.auth.getUser();
+                  if (userError) throw userError;
+
+                  var response = await supabase
+                    .from("subscriptions")
+                    .select("id")
+                    .eq("user_email", user.email)
+                    .single();
+
+                  if (!response.data) {
+                    setShowSubscribeModal(true);
+                    return;
+                  }
+
+                  setShowUploadModal(true);
+                }}
+                variant="primary"
+                className="w-auto"
+              />
+
+              {/* ✅ Download All Button - Second */}
               <ModernButton
                 text="Download All"
                 icon="fa-download"
@@ -710,7 +738,7 @@ function Contentmanager({ items = [], dataroomId }) {
                     .single();
 
                   if (!response.data) {
-                    setShowSubscribeModal(true); // Show the subscribe alert
+                    setShowSubscribeModal(true);
                     return;
                   }
                   downloadAllFiles();
@@ -718,7 +746,8 @@ function Contentmanager({ items = [], dataroomId }) {
                 variant="secondary"
               />
 
-              {isLocked && (
+              {/* ✅ Lock/Unlock Button - Third */}
+              {isLocked ? (
                 <ModernButton
                   text="Unlock All"
                   icon="fa-lock-open"
@@ -736,15 +765,14 @@ function Contentmanager({ items = [], dataroomId }) {
                       .single();
 
                     if (!response.data) {
-                      setShowSubscribeModal(true); // Show the subscribe alert
+                      setShowSubscribeModal(true);
                       return;
                     }
                     toggleLockAll();
                   }}
                   variant="danger"
                 />
-              )}
-              {!isLocked && (
+              ) : (
                 <ModernButton
                   text="Lock All"
                   icon="fa-lock"
@@ -762,7 +790,7 @@ function Contentmanager({ items = [], dataroomId }) {
                       .single();
 
                     if (!response.data) {
-                      setShowSubscribeModal(true); // Show the subscribe alert
+                      setShowSubscribeModal(true);
                       return;
                     }
                     toggleLockAll();
@@ -770,38 +798,16 @@ function Contentmanager({ items = [], dataroomId }) {
                   variant="danger"
                 />
               )}
-              <ModernButton
-                text={window.innerWidth > 768 ? "Upload" : ""}
-                icon="fa-cloud-upload-alt"
-                onClick={async () => {
-                  const {
-                    data: { user },
-                    error: userError,
-                  } = await supabase.auth.getUser();
-                  if (userError) throw userError;
-
-                  var response = await supabase
-                    .from("subscriptions")
-                    .select("id")
-                    .eq("user_email", user.email)
-                    .single();
-
-                  if (!response.data) {
-                    setShowSubscribeModal(true); // Show the subscribe alert
-                    return;
-                  }
-
-                  setShowUploadModal(true);
-                }}
-                variant="primary"
-                className="w-10 md:w-auto"
-              />
             </div>
+
             <SubscribeAlert
               isOpen={showSubscribeModal}
               onClose={() => setShowSubscribeModal(false)}
             />
           </div>
+
+
+
 
           {/* Table Header - Hidden on mobile */}
           {/*   <div className="hidden md:grid md:grid-cols-[2fr_1fr_1fr_auto] gap-6 py-3 px-4 border-b border-black/10">
@@ -886,9 +892,8 @@ function Contentmanager({ items = [], dataroomId }) {
                         className="flex items-center justify-center text-gray-600 hover:text-yellow-600 flex-1"
                       >
                         <i
-                          className={`fas fa-${
-                            file.locked ? "lock" : "lock-open"
-                          } text-sm md:text-base`}
+                          className={`fas fa-${file.locked ? "lock" : "lock-open"
+                            } text-sm md:text-base`}
                         ></i>
                         <span className="ml-2 text-sm">
                           {file.locked ? "Unlock" : "Lock"}
@@ -949,9 +954,8 @@ function Contentmanager({ items = [], dataroomId }) {
               <div
                 key={index}
                 className={`grid grid-cols-[1fr_auto] md:grid-cols-[2fr_1fr_1fr_auto] gap-2 md:gap-6 
-    items-center py-3 px-3 md:px-4 hover:bg-black/5 transition-colors ${
-      file.locked ? "bg-amber-50" : ""
-    }`}
+    items-center py-3 px-3 md:px-4 hover:bg-black/5 transition-colors ${file.locked ? "bg-amber-50" : ""
+                  }`}
               >
                 {/* File Name and Icon Section */}
                 <div className="flex items-center gap-2 md:gap-3 min-w-0 col-span-2 md:col-span-1">
@@ -1031,9 +1035,8 @@ function Contentmanager({ items = [], dataroomId }) {
                     className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
                   >
                     <i
-                      className={`fas fa-${
-                        file.locked ? "lock" : "lock-open"
-                      } text-sm md:text-base`}
+                      className={`fas fa-${file.locked ? "lock" : "lock-open"
+                        } text-sm md:text-base`}
                     ></i>
                   </button>
                   <button
@@ -1165,9 +1168,8 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
         console.log(sanitizeFileName);
         const date = new Date();
 
-        const timestamp = `${date.getFullYear()}-${
-          date.getMonth() + 1
-        }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
+        const timestamp = `${date.getFullYear()}-${date.getMonth() + 1
+          }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
 
         var fileName = timestamp + "_" + sanitizedFileName;
 
@@ -1229,9 +1231,8 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
 
         {/* Drag & Drop Box */}
         <div
-          className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
-            dragActive ? "border-[#A3E636] bg-[#A3E636]/10" : "border-black/10"
-          }`}
+          className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-colors ${dragActive ? "border-[#A3E636] bg-[#A3E636]/10" : "border-black/10"
+            }`}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
@@ -1306,11 +1307,10 @@ function UploadModal({ onClose, onUpload, dataroomId }) {
           <button
             onClick={() => handleSubmit(files)}
             disabled={files.length === 0}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              files.length > 0
-                ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
-                : "bg-gray-100 text-gray-400 cursor-not-allowed"
-            }`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${files.length > 0
+              ? "bg-[#A3E636] hover:bg-[#93d626] text-black"
+              : "bg-gray-100 text-gray-400 cursor-not-allowed"
+              }`}
           >
             Upload
           </button>

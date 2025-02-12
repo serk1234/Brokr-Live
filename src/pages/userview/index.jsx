@@ -14,6 +14,20 @@ import Onboarding from "../onboarding";
 
 function UserView() {
   const [userEmail, setUserEmail] = useState("");
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
+
+
+
+  const handleLeave = async () => {
+    await supabase
+      .from("invited_users")
+      .delete()
+      .eq("email", userEmail)
+      .eq("dataroom_id", router.query.id);
+
+    setShowLeaveModal(false);
+    router.push("/dashboard"); // Redirect to dashboard
+  };
   const [dataroom, setDataroom] = useState({
     name: "Loading...",
     status: "Loading...",
@@ -238,11 +252,16 @@ function UserView() {
           onAfterOpen={() => { }}
           onRequestClose={() => { }}
           style={customStyles}
-          contentLabel="Example Modal"
+          contentLabel="NDA Modal"
         >
           <Onboarding
             roomId={router.query.id}
-            onClosed={() => {
+            onClosed={async () => {
+              await supabase
+                .from("invited_users")
+                .update({ status: "active" })
+                .eq("dataroom_id", dataroom.id)
+                .eq("email", userEmail);
               setShowNDA(false);
             }}
           />
@@ -252,25 +271,10 @@ function UserView() {
       {/* Responsive Layout */}
       <div className="flex flex-1 flex-col sm:flex-row">
         {/* Sidebar for Contents */}
-        <div className="w-full sm:w-1/4 bg-gray-50 border-r border-gray-200 p-4">
-          <ModernButton
-            text="Leave"
-            icon="fa-delete"
-            onClick={async () => {
-              const response = await supabase
-                .from("invited_users")
-                .delete()
-                .eq("email", userEmail)
-                .eq("dataroom_id", router.query.id);
-              alert("Leaved sucessfully");
-              console.log(response);
-
-              router.back();
-            }}
-            variant="secondary"
-          />
+        <div className="w-full sm:w-1/5 bg-gray-50 border-r border-gray-200 p-4 flex flex-col">
+          {/* Contents */}
           <h2 className="text-lg font-medium mb-4">Contents</h2>
-          <ul className="space-y-2">
+          <ul className="space-y-2 flex-grow overflow-auto">
             {files.map((file, index) => (
               <li
                 key={index}
@@ -279,15 +283,50 @@ function UserView() {
                 onClick={() => handleFileClick(file)}
               >
                 <i
-                  className={`fas ${file.locked ? "fa-lock" : "fa-file"
-                    } text-gray-500 mr-2`}
+                  className={`fas ${file.locked ? "fa-lock" : "fa-file"} text-gray-500 mr-2`}
                 ></i>
                 <span className="flex-1 truncate">{getDisplayName(file)}</span>
               </li>
             ))}
           </ul>
+
+          {/* Leave Icon Stays at Bottom */}
+          <div className="mt-auto flex justify-end">
+            <i
+              className="fa-solid fa-door-open text-2xl cursor-pointer text-gray-600 hover:text-red-500 transition"
+              onClick={() => setShowLeaveModal(true)}
+            ></i>
+          </div>
+
+          {/* Leave Confirmation Modal */}
+          {showLeaveModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+              <div className="bg-white rounded-lg p-6 shadow-lg w-96 space-y-4">
+                <h2 className="text-xl font-semibold">Confirm Leave</h2>
+                <p className="text-sm text-gray-600">
+                  Are you sure you want to leave this dataroom?
+                </p>
+                <div className="flex justify-end space-x-4">
+                  <button
+                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
+                    onClick={() => setShowLeaveModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                    onClick={handleLeave}
+                  >
+                    Leave
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
+
+        {/* File Viewer */}
         <div className="flex-1 bg-white p-6">
           {selectedFile ? (
             <Viewer

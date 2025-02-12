@@ -13,6 +13,8 @@ function MainComponent() {
   const [showModal, setShowModal] = useState(false);
   const [newDataroomName, setNewDataroomName] = useState("");
   const [newOrganizationName, setNewOrganizationName] = useState("");
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
   const [userEmail, setUserEmail] = useState("");
   const router = useRouter();
 
@@ -21,19 +23,26 @@ function MainComponent() {
     const fetchUser = async () => {
       const {
         data: { user },
-        error,
       } = await supabase.auth.getUser();
       if (user) {
         setUserEmail(user.email);
         fetchUserDatarooms(user.email);
         fetchInvitedDatarooms(user.email);
-      } else if (error) {
-        console.error("Error fetching user:", error.message);
       }
     };
 
     fetchUser();
+
+    // Check if user has seen the tutorial
+    if (!localStorage.getItem("hasSeenTutorial")) {
+      setShowTutorial(true);
+    }
   }, []);
+
+  const handleCloseTutorial = () => {
+    setShowTutorial(false);
+    localStorage.setItem("hasSeenTutorial", "true");
+  };
 
   // Fetch user's own datarooms
   const fetchUserDatarooms = async (email) => {
@@ -61,6 +70,15 @@ function MainComponent() {
     } else {
       const transformedData = data.map((entry) => entry.datarooms);
       setInvitedDatarooms(transformedData);
+    }
+  };
+
+  const handleNextTutorialStep = () => {
+    if (currentStep < 1) {
+      setCurrentStep((prev) => prev + 1);
+    } else {
+      setShowTutorial(false);
+      localStorage.setItem("hasSeenTutorial", "true"); // Mark tutorial as seen
     }
   };
 
@@ -263,26 +281,57 @@ Assignment: This Agreement may not be assigned by either party without the prior
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 flex flex-col">
-      <div className="relative z-50">
-        <HeaderLive
-          email={userEmail || "Loading..."}
-          setShowModal={setShowModal}
-        />
-      </div>
+    <div className="relative min-h-screen flex flex-col bg-gradient-to-br from-white to-gray-50">
+      {/* Dark overlay when tutorial is active */}
+      {showTutorial && (
+        <div className="absolute inset-0 bg-black opacity-80 z-40"></div>
+      )}
 
-      <div className="container mx-auto px-4 py-8 flex-grow">
+      <HeaderLive email={userEmail || "Loading..."} setShowModal={setShowModal} />
+
+      <div className="container mx-auto px-4 py-8 flex-grow relative">
         <div className="max-w-4xl mx-auto space-y-8">
+          {/* Start Tutorial Button */}
+          <div className="flex justify-end">
+            <button
+              className="px-4 py-2 bg-blue-500 text-white text-sm rounded shadow-lg hover:bg-blue-600 transition"
+              onClick={() => setShowTutorial(true)}
+            >
+              Start Tutorial
+            </button>
+          </div>
+
           {/* Team Section */}
-          <div className="bg-black rounded-xl p-4 shadow-md">
+          <div className="bg-black rounded-xl p-4 shadow-md relative z-50">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-white">Team</h2>
-              <StylizedButton
-                text={<i className="fas fa-plus"></i>}
-                className="px-3 py-2 bg-[#A3E636] text-black text-sm rounded"
-                onClick={() => setShowModal(true)}
-              />
+
+              {/* Highlighted + Button */}
+              <div className="relative z-50">
+                <StylizedButton
+                  text={<i className="fas fa-plus"></i>}
+                  className={`px-3 py-2 bg-[#A3E636] text-black text-sm rounded ${showTutorial ? "animate-pulse shadow-lg border-4 border-yellow-400" : ""
+                    }`}
+                  onClick={() => setShowModal(true)}
+                />
+
+                {/* Tutorial Popup */}
+                {showTutorial && (
+                  <div className="absolute top-12 right-0 bg-white text-black p-4 rounded shadow-lg w-64 border border-gray-300 z-50">
+                    <p className="text-sm font-semibold">This is where you create a dataroom.</p>
+                    <button
+                      className="mt-2 px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition"
+                      onClick={handleCloseTutorial}
+                    >
+                      Got it
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
+
+
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {userDatarooms.map((room) => (
                 <div

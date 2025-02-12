@@ -21,10 +21,91 @@ function NewComponent({ email }) {
 
   const handleCloseSubscribe = () => setshowSubscribeTable(false);
   const router = useRouter();
-  const [showPopup, setShowPopup] = useState(false); // State to manage popup visibility
+  const [showPopup, setShowPopup] = useState(false);
+  const [showPhotoPopup, setShowPhotoPopup] = useState(false); // State to manage popup visibility
   const [popupMessage, setPopupMessage] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [showSubscribeTable, setshowSubscribeTable] = useState(false);
+  const [profilePic, setProfilePic] = useState(null);
+  // State for organization picture
+  const [orgPic, setOrgPic] = useState(null);
+
+  // Load saved organization picture from localStorage
+  useEffect(() => {
+    const storedOrgPic = localStorage.getItem(`orgPic-${email}`);
+    if (storedOrgPic) {
+      setOrgPic(storedOrgPic);
+    }
+  }, [email]);
+
+  // Handle Organization Picture Upload
+  const handleOrgImageUpload = (event) => {
+    let file = event.target.files[0];
+    if (!file) return;
+
+    const imageUrl = URL.createObjectURL(file);
+    setOrgPic(imageUrl);
+    localStorage.setItem(`orgPic-${email}`, imageUrl);
+    setTimeout(() => {
+      setShowOrgPopup(false);
+    }, 300);
+  };
+
+  // Handle Remove Organization Picture
+  const handleRemoveOrgPic = () => {
+    setOrgPic(null);
+    localStorage.removeItem(`orgPic-${email}`);
+    setTimeout(() => {
+      setShowOrgPopup(false);
+    }, 300);
+  };
+
+  // State for organization picture popup
+  const [showOrgPopup, setShowOrgPopup] = useState(false);
+
+
+
+  // Load saved profile picture from localStorage
+  useEffect(() => {
+    const storedPic = localStorage.getItem(`profilePic-${email}`);
+    if (storedPic) {
+      setProfilePic(storedPic);
+      ; // Update header image
+    }
+  }, [email,]);
+
+  // Handle Image Upload
+  const handleImageUpload = (event) => {
+    let file = event.target.files[0];
+    if (!file) return;
+
+    const imageUrl = URL.createObjectURL(file);
+    setProfilePic(imageUrl);
+    localStorage.setItem(`profilePic-${email}`, imageUrl);
+
+    // Ensure UI updates before closing the popup
+    setTimeout(() => {
+      setShowPhotoPopup(false);
+    }, 100);
+  };
+
+  const handleRemoveProfilePic = () => {
+    setProfilePic(null);
+    localStorage.removeItem(`profilePic-${email}`);
+
+    // Ensure UI updates before closing the popup
+    setTimeout(() => {
+      setShowPhotoPopup(false);
+    }, 100);
+  };
+
+
+  // Function to trigger the general popup
+  const triggerPopup = (message) => {
+    setPopupMessage(message);
+    setShowPopup(true);
+  };
+
   const handleRedirectToPortal = async () => {
     if (!customerId) {
       alert("Please enter a valid Customer ID.");
@@ -196,6 +277,132 @@ function NewComponent({ email }) {
             />
           </div>
 
+          {/* Profile Picture Section */}
+          <div className="flex gap-4 items-center mb-6">
+            <i className="fas fa-camera text-xl text-gray-400"></i>
+            <div className="flex flex-col">
+              <p className="text-sm text-gray-500">Profile Picture</p>
+
+              {/* Profile Image & Change Photo Button */}
+              <div
+                className="cursor-pointer flex items-center gap-4 mt-2"
+                onClick={() => setShowPhotoPopup(true)} // Opens profile photo popup
+              >
+                {profilePic ? (
+                  <img
+                    src={profilePic}
+                    alt="Profile"
+                    className="w-14 h-14 rounded-full border border-gray-300 object-cover"
+                  />
+                ) : (
+                  <div className="w-14 h-14 flex items-center justify-center rounded-full border border-gray-300 bg-gray-200">
+                    <i className="fas fa-user text-gray-500 text-xl"></i>
+                  </div>
+                )}
+                <ModernButton text="Change Photo" />
+              </div>
+            </div>
+          </div>
+
+
+          {/* Instagram-Style Change Photo Popup */}
+          {showPhotoPopup && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+              <div className="bg-white rounded-xl shadow-lg w-80 text-center p-5">
+                <h3 className="text-lg font-semibold mb-4">Change Profile Photo</h3>
+
+                {/* Upload Photo */}
+                <label className="block text-blue-500 text-sm py-3 hover:bg-gray-100 cursor-pointer border-b">
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                  Upload Photo
+                </label>
+
+                {/* Remove Photo */}
+                {profilePic && (
+                  <button
+                    className="block text-red-500 text-sm py-3 hover:bg-gray-100 border-b w-full"
+                    onClick={handleRemoveProfilePic}
+                  >
+                    Remove Current Photo
+                  </button>
+                )}
+
+                {/* Cancel Button */}
+                <button
+                  className="block text-gray-600 text-sm py-3 hover:bg-gray-100 w-full"
+                  onClick={() => setShowPhotoPopup(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Organization Picture Section */}
+          <div className="flex gap-4 items-center mb-6">
+            <i className="fas fa-building text-xl text-gray-400"></i>
+            <div className="flex flex-col">
+              <p className="text-sm text-gray-500">Organization Picture</p>
+
+              {/* Organization Image & Change Button */}
+              <div
+                className="cursor-pointer flex items-center gap-4 mt-2"
+                onClick={() => setShowOrgPopup(true)} // Opens organization popup
+              >
+                {orgPic ? (
+                  <img
+                    src={orgPic}
+                    alt="Organization"
+                    className="w-14 h-14 rounded-full border border-gray-300 object-cover"
+                  />
+                ) : (
+                  <div className="w-14 h-14 flex items-center justify-center rounded-full border border-gray-300 bg-gray-200">
+                    <i className="fas fa-people-group text-gray-500 text-xl"></i>
+                  </div>
+                )}
+                <ModernButton text="Change Organization Photo" />
+              </div>
+            </div>
+          </div>
+
+          {/* Organization Picture Popup */}
+          {showOrgPopup && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+              <div className="bg-white rounded-xl shadow-lg w-80 text-center p-5">
+                <h3 className="text-lg font-semibold mb-4">Change Organization Picture</h3>
+
+                {/* Upload Organization Photo */}
+                <label className="block text-blue-500 text-sm py-3 hover:bg-gray-100 cursor-pointer border-b">
+                  <input type="file" accept="image/*" className="hidden" onChange={handleOrgImageUpload} />
+                  Upload Photo
+                </label>
+
+                {/* Remove Organization Photo */}
+                {orgPic && (
+                  <button
+                    className="block text-red-500 text-sm py-3 hover:bg-gray-100 border-b w-full"
+                    onClick={handleRemoveOrgPic}
+                  >
+                    Remove Current Photo
+                  </button>
+                )}
+
+                {/* Cancel Button */}
+                <button
+                  className="block text-gray-600 text-sm py-3 hover:bg-gray-100 w-full"
+                  onClick={() => setShowOrgPopup(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+
+
+
+
+          {/* Editable Fields */}
           {isEditing ? (
             <div className="space-y-4">
               <div>
@@ -248,6 +455,8 @@ function NewComponent({ email }) {
             </div>
           )}
         </div>
+
+
 
         {/* Subscription Section */}
         <>

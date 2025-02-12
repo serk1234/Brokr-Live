@@ -1,13 +1,16 @@
-"use client";
+"use client"
+
+
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import Popup from "../components/Popup"; // Adjust the path based on your file structure
+import Popup from "../components/Popup";
 import { supabase } from "./supabaseClient";
 
 function MainComponent() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [popupMessage, setPopupMessage] = useState(null);
+  const [showInfoPopup, setShowInfoPopup] = useState(false);
   const router = useRouter(); // For redirecting the user
 
   // Listen for auth state changes and redirect to dashboard
@@ -30,17 +33,8 @@ function MainComponent() {
   // Email Login
   const handleLogin = async () => {
     setLoading(true);
-    console.log(location.hostname);
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options:
-          location.hostname === "localhost" || location.hostname === "127.0.0.1"
-            ? {
-                emailRedirectTo: "http://localhost:3001/auth/confirm",
-              }
-            : null,
-      });
+      const { error } = await supabase.auth.signInWithOtp({ email });
       if (error) throw error;
       setPopupMessage("Check your email for the magic link!");
     } catch (error) {
@@ -49,6 +43,7 @@ function MainComponent() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-black bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGZpbGw9IiMxYTFhMWEiIGQ9Ik0wIDBoNjB2NjBIMHoiLz48cGF0aCBkPSJNNjAgMEgwdjYwaDYwVjB6TTAgMGg2MHY2MEgwVjB6IiBzdHJva2U9IiMyNTI1MjUiIHN0cm9rZS13aWR0aD0iLjUiLz48L2c+PC9zdmc+')] flex items-center justify-center px-4">
@@ -71,22 +66,47 @@ function MainComponent() {
             disabled={loading}
           />
 
-          {/* Continue with Email Button */}
+          {/* Continue with Email Button - EXACTLY like the original */}
           <button
             onClick={handleLogin}
             disabled={loading}
-            className={`btn btn-email ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className={`w-full px-4 py-2 bg-[#A3E636] text-black font-semibold rounded-md border border-black shadow-[2px_2px_0px_0px_#000] transition ${loading ? "opacity-50 cursor-not-allowed" : "hover:bg-[#96CC2C]"
+              }`}
           >
             {loading ? "Loading..." : "Continue with Email"}
           </button>
+
+          {/* Question Mark Icon */}
+          <div className="flex justify-center mt-2">
+            <i
+              className="fa-regular fa-question-circle text-gray-500 text-xl cursor-pointer hover:text-gray-700 transition"
+              onClick={() => setShowInfoPopup(true)}
+            ></i>
+          </div>
         </div>
       </div>
 
-      {/* Popup */}
+      {/* Popup Messages */}
       {popupMessage && (
         <Popup message={popupMessage} onClose={() => setPopupMessage(null)} />
+      )}
+
+      {/* Info Popup for Question Mark */}
+      {showInfoPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 shadow-lg w-96 space-y-4 text-center">
+            <h2 className="text-lg font-semibold">Need Help?</h2>
+            <p className="text-sm text-gray-600">
+              Sign up or log in by entering your email above.
+            </p>
+            <button
+              className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
+              onClick={() => setShowInfoPopup(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

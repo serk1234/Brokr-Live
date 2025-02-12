@@ -407,86 +407,100 @@ function Usermanagement() {
         <div></div>
 
         {activeTab === "active" &&
-          activeUsers.map((user) => (
-            <div
-              key={user.email}
-              className="bg-[#f5f5f5] p-4 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4"
-            >
-              {/* Left Section: Email */}
-              <div className="font-medium">{user.email}</div>
+          activeUsers.map((user) => {
+            const storedProfilePic = localStorage.getItem(`profilePic-${user.email}`);
 
+            return (
+              <div
+                key={user.email}
+                className="bg-[#f5f5f5] p-4 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4 flex flex-row items-center justify-between gap-4"
+              >
+                {/* Left Section: Profile Picture & Email */}
+                <div className="flex items-center gap-3">
+                  {/* Show profile picture only if it exists */}
+                  {storedProfilePic && (
+                    <img
+                      src={storedProfilePic}
+                      alt="User Profile"
+                      className="w-10 h-10 rounded-full border border-gray-300 object-cover"
+                    />
+                  )}
 
-              {/* Right Section: Details and Trash Button */}
-              <div className="flex flex-row justify-between items-center sm:justify-end sm:gap-4 w-full sm:w-auto">
-                <div className="text-gray-500 text-sm sm:text-base text-right sm:text-left">
-                  Active Since:{" "}
-                  {`${new Date(user.invited_at).toLocaleDateString(
-                    "en-US"
-                  )} ${new Date(user.invited_at).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "numeric",
-                    second: "numeric",
-                    hour12: true,
-                  })}`}
+                  {/* User Email */}
+                  <div className="font-medium">{user.email}</div>
                 </div>
-                <button
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition sm:w-8 sm:h-8"
-                  onClick={() => confirmRemoveUser(user)}
-                >
-                  <i className="fas fa-trash-alt text-lg sm:text-base"></i>
-                </button>
+
+                {/* Right Section: Active Since & Remove Button */}
+                <div className="flex items-center gap-4">
+                  <div className="text-gray-500 text-sm">
+                    Active Since:{" "}
+                    {`${new Date(user.invited_at).toLocaleDateString("en-US")} 
+              ${new Date(user.invited_at).toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "numeric",
+                      second: "numeric",
+                      hour12: true,
+                    })}`}
+                  </div>
+
+                  <button
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition"
+                    onClick={() => confirmRemoveUser(user)}
+                  >
+                    <i className="fas fa-trash-alt text-lg"></i>
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
         {activeTab === "invited" &&
-          invitedUsers.map((user) => (
-            <div
-              key={user.email}
-              className="bg-[#f5f5f5] p-4 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4"
-            >
-              {/* Left Section (Mobile: Email + Invited At stacked, Desktop: Only Email) */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
-                <div className="font-medium">{user.email}</div>
-                {/* Show "Invited At" BELOW email on mobile, move it to the right on desktop */}
-                <div className="text-gray-500 text-sm sm:hidden">
-                  Invited At:{" "}
-                  {`${new Date(user.invited_at).toLocaleDateString(
-                    "en-US"
-                  )} ${new Date(user.invited_at).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "numeric",
-                    second: "numeric",
-                    hour12: true,
-                  })}`}
-                </div>
-              </div>
+          invitedUsers.map((user) => {
+            const storedProfilePic = localStorage.getItem(`profilePic-${user.email}`);
 
-              {/* Right Section (Desktop: Invited At + Trash Icon, Mobile: Only Trash Icon) */}
-              <div className="flex flex-row items-center sm:gap-4">
-                {/* "Invited At" on desktop only */}
-                <div className="hidden sm:block text-gray-500 text-sm sm:text-base sm:whitespace-nowrap">
-                  Invited At:{" "}
-                  {`${new Date(user.invited_at).toLocaleDateString(
-                    "en-US"
-                  )} ${new Date(user.invited_at).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "numeric",
-                    second: "numeric",
-                    hour12: true,
-                  })}`}
+            return (
+              <div
+                key={user.email}
+                className="bg-[#f5f5f5] p-4 rounded-xl border border-[#ddd] hover:border-[#A3E636] hover:bg-[#eee] transition-all duration-300 mb-4 flex flex-row items-center justify-between gap-4"
+              >
+                {/* Left Section: Profile Picture & Email */}
+                <div className="flex items-center gap-3">
+                  {/* Show profile picture only if it exists */}
+                  {storedProfilePic && (
+                    <img
+                      src={storedProfilePic}
+                      alt="User Profile"
+                      className="w-10 h-10 rounded-full border border-gray-300 object-cover"
+                    />
+                  )}
+
+                  {/* User Email */}
+                  <div className="font-medium">{user.email}</div>
                 </div>
 
-                {/* Trash Button (Always aligned right) */}
-                <button
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition sm:w-8 sm:h-8"
-                  onClick={() => confirmRemoveUser(user)}
-                >
-                  <i className="fas fa-trash-alt text-lg sm:text-base"></i>
-                </button>
+                {/* Right Section: Invited At & Remove Button */}
+                <div className="flex items-center gap-4">
+                  <div className="text-gray-500 text-sm">
+                    Invited At:{" "}
+                    {`${new Date(user.invited_at).toLocaleDateString("en-US")} 
+              ${new Date(user.invited_at).toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "numeric",
+                      second: "numeric",
+                      hour12: true,
+                    })}`}
+                  </div>
+
+                  <button
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition"
+                    onClick={() => confirmRemoveUser(user)}
+                  >
+                    <i className="fas fa-trash-alt text-lg"></i>
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
         {confirmationPopup && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

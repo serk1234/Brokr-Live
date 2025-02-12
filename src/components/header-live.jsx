@@ -10,7 +10,31 @@ function HeaderLive({ email, setShowModal }) {
   const [dataroomOpen, setDataroomOpen] = useState(false);
   const [teamDatarooms, setTeamDatarooms] = useState([]);
   const [userDatarooms, setUserDatarooms] = useState([]);
+  const [profilePic, setProfilePic] = useState(null);
+  const [orgPic, setOrgPic] = useState(null);
+
+
+
   const router = useRouter();
+
+  useEffect(() => {
+    const storedOrgPic = localStorage.getItem(`orgPic-${email}`);
+    if (storedOrgPic) {
+      setOrgPic(storedOrgPic);
+    }
+  }, [email]);
+
+
+
+
+  // Load profile picture from localStorage
+  useEffect(() => {
+    const storedPic = localStorage.getItem(`profilePic-${email}`);
+    if (storedPic) {
+      setProfilePic(storedPic);
+    }
+  }, [email]);
+
 
   useEffect(() => {
     const fetchDatarooms = async () => {
@@ -83,12 +107,22 @@ function HeaderLive({ email, setShowModal }) {
     <>
       <header className="bg-black p-4 flex items-center justify-between backdrop-blur-lg border-b border-gray-800">
         <div className="flex items-center gap-4">
+          {/* Organization Logo OR Text */}
           <a
             onClick={() => router.push("/dashboard")}
             className="text-white font-semibold text-xl font-inter hover:text-[#A3E636] transition-colors cursor-pointer"
           >
-            brokr
+            {orgPic ? (
+              <img
+                src={orgPic}
+                alt="Organization Logo"
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              "brokr"
+            )}
           </a>
+
 
           {/* Dataroom Dropdown */}
           <div className="relative inline-block min-w-[48px]">
@@ -169,17 +203,30 @@ function HeaderLive({ email, setShowModal }) {
         </div>
 
         {/* Profile Dropdown (With Hover Effects) */}
-        <div className="relative inline-block min-w-[48px]">
+        <div className="relative inline-block">
           <button
-            onClick={() => setProfileOpen(!profileOpen)}
-            className="group w-full px-4 py-2 rounded-lg text-gray-800 font-medium bg-gray-200 hover:bg-gray-300 transition-all duration-200 flex items-center gap-2"
+            className="flex items-center bg-gray-200 text-black px-4 py-2 rounded-lg"
+            onClick={() => setProfileOpen(!profileOpen)} // ✅ This will toggle the dropdown
           >
-            <i className="fas fa-user"></i>
-            <span className="text-black font-medium font-inter hidden sm:inline">
-              {email || "User"}
-            </span>
-            <i className="fas fa-chevron-down transition-transform duration-200 ease-in-out"></i>
+
+            {/* Profile Picture OR FontAwesome Icon */}
+            {profilePic ? (
+              <img
+                src={profilePic}
+                alt="Profile"
+                className="w-6 h-6 rounded-full object-cover mr-2"
+              />
+            ) : (
+              <i className="fas fa-user text-black text-lg mr-2"></i>
+            )}
+
+            {/* Email Display */}
+            <span className="font-medium hidden sm:inline">{email}</span>
+
+            {/* Dropdown Arrow */}
+            <i className="fas fa-chevron-down text-gray-600 ml-2"></i>
           </button>
+
           {profileOpen && (
             <div className="absolute right-0 mt-2 w-[220px] bg-black/95 backdrop-blur-xl border border-gray-800 rounded-xl shadow-2xl p-2 transition-all duration-200 ease-in-out">
               <div className="px-4 py-3 border-b border-gray-800 font-inter">
